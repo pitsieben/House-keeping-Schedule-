@@ -1,0 +1,11 @@
+{
+  "name": "House Quest",
+  "short_name": "House Quest",
+  "description": "Roommate chore game: duties, swaps, points and a leaderboard.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14102a",
+  "theme_color": "#14102a",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
