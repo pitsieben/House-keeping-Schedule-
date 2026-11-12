@@ -97,7 +97,18 @@ Simply forgetting a duty only gives the normal penalty. **Only lying about it is
 
 ---
 
-## 6. Get reminders: Calendar
+## 6. Your room: collectibles, outfits and dirt
+
+The **🛏 Rooms** tab shows everyone's pixel bedroom.
+
+- **Monthly achievements** (🌅 Early Bird, ✨ Clean Sweeper, 🔥 On Fire, 🦹 Opportunist, 🤝 Team Player, 🧼 Spotless Month, 🐉 Boss Slayer, 👑 Monthly Champion) each unlock a **collectible** for your room. Levelling up unlocks more.
+- Tap a collectible to put it on display or into storage. The shelf, wall and floor have limited space.
+- The more achievements you collect, the more **outfits** you unlock (Tracksuit, Barça Kit, Hawaiian, Tuxedo, Superhero, Golden Janitor). Your outfit shows everywhere in the app.
+- **Below 0 points, your room gets dirty:** unmade bed → clothes on the floor → cobwebs → flies → biohazard 🤢. Get back above 0 and it's clean again.
+
+---
+
+## 7. Get reminders: Calendar
 
 Go to the **Calendar** tab and tap **Subscribe** on **your own** feed. Every turn then appears in your iPhone calendar with an alert, even when the app is closed.
 
@@ -105,7 +116,7 @@ Go to the **Calendar** tab and tap **Subscribe** on **your own** feed. Every tur
 
 ---
 
-## 7. Admin (Pit only)
+## 8. Admin (Pit only)
 
 Pit has a PIN-locked **🛡 Admin** tab for reviewing flags and correcting ticks: mark fake, undo, mark done, excuse. Every admin change shows up in the **Activity** feed on the Today tab, so everyone can see what was changed.
 
