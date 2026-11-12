@@ -149,23 +149,27 @@ function banners(scores, now) {
 
 function hearts(n) { return '❤'.repeat(Math.max(0, 3 - n)) + '🖤'.repeat(Math.min(3, n)); }
 
+// Heaven (top) ↔ Earth (0 pts, middle) ↔ Hell (bottom). Points are squashed with tanh so nobody leaves the scene.
+const SCALE = 100;
+const heightOf = (points) => (1 - Math.tanh(points / SCALE)) / 2; // 0 = heaven, .5 = earth, 1 = hell
+
 function partyScene(scores) {
-  const ranked = rankings(scores);
-  const top = ranked[0].points > 0 && ranked[0].points > (ranked[1]?.points ?? -1e9) ? ranked[0].id : null;
+  const top = (() => {
+    const r = rankings(scores);
+    return r[0].points > 0 && r[0].points > (r[1]?.points ?? -1e9) ? r[0].id : null;
+  })();
+  const clouds = [[14, 6], [58, 12], [38, 3], [78, 5]].map(([x, y]) => `<i class="cloud" style="left:${x}%;top:${y}%"></i>`).join('');
+  const flames = [4, 18, 33, 47, 61, 76, 90].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
   return `<section class="scene">
-    <div class="party">${ranked.map((o, i) => {
-      const r = person(o.id);
-      const pct = o.next ? Math.min(100, ((o.xp - o.base) / (o.next - o.base)) * 100) : 100;
-      return `<div class="member ${o.id === ui.me ? 'me' : ''} ${o.id === top ? 'leader' : ''}" style="--c:${r.color}">
-        <div class="rank">#${i + 1}</div>
-        ${hero(o.id, scores, { crown: o.id === top, size: 'lg' })}
-        <div class="floor"></div>
-        <b class="nm">${r.name}</b>
-        <div class="tiny muted">LV ${o.level} · ${o.title}</div>
-        <div class="bar"><i style="width:${pct}%"></i></div>
-        <div class="pts">${o.points} <small>pts</small></div>
-        <div class="tiny hearts" title="Strikes in rolling 30 days">${hearts(o.recentStrikes)}</div>
-      </div>`; }).join('')}</div>
+    ${clouds}${flames}
+    <span class="zone z-heaven">☁ HEAVEN</span><span class="zone z-earth">🌍 EARTH · 0</span><span class="zone z-hell">🔥 HELL</span>
+    ${ROOMMATES.map((r, i) => {
+      const o = scores[r.id];
+      return `<div class="member ${r.id === ui.me ? 'you' : ''} ${r.id === top ? 'leader' : ''}" style="--c:${r.color};left:${i * 33.33 + 1}%;top:calc((100% - 190px) * ${heightOf(o.points).toFixed(3)})">
+        ${hero(r.id, scores, { crown: r.id === top, size: 'lg' })}
+        <div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points} <small>pts</small></div>
+        <div class="tiny hearts" title="Strikes in rolling 30 days">${hearts(o.recentStrikes)}</div></div>
+      </div>`; }).join('')}
   </section>`;
 }
 
