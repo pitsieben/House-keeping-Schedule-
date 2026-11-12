@@ -9,8 +9,8 @@
 //  avatars:     { [roommateId]: 'sprite key' }
 //  log:         { [timestamp-id]: { t, text } }  activity feed
 
-const LOCAL_KEY = 'house-quest-state-v1';
-const QUEUE_KEY = 'house-quest-pending-v1';
+const LOCAL_KEY = 'house-quest-state-v2';
+const QUEUE_KEY = 'house-quest-pending-v2';
 const TOKEN_KEY = 'house-quest-gh-token';
 
 // Progress is stored as data/state.json on a dedicated `data` branch of this GitHub repo
