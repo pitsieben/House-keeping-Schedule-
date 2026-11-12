@@ -109,18 +109,52 @@ const SWEAT = [[12, 8], [12, 9]];
 const TOP = 5; // canvas rows above the sprite (room for the crown)
 const cache = new Map();
 
-/** Returns a data-URL PNG of the sprite (16 x 29 px). Display it with `image-rendering: pixelated`. */
-export function spriteURL(key, { crown = false, sweat = false } = {}) {
-  const id = `${key}|${crown}|${sweat}`;
-  if (cache.has(id)) return cache.get(id);
+// ---- Outfits: recolour each hero's clothes (jacket / tee / pants / shoes) + optional cape ----
+// Which palette letters are which piece of clothing, per hero.
+const ROLES = {
+  s1: { jacket: ['N'], tee: ['W'], tee2: ['G'], pants: ['P'], shoes: ['K'] },
+  s2: { jacket: ['O'], tee: ['W'], tee2: ['D'], pants: ['P'], shoes: ['K'] },
+  s3: { jacket: ['J'], tee: ['U'], tee2: ['Z'], pants: ['P'], shoes: ['K'] },
+};
+// `need` = number of monthly achievements required to unlock
+export const OUTFITS = {
+  everyday: { name: 'Everyday', need: 0 },
+  tracksuit: { name: 'Tracksuit', need: 1, jacket: '#c0392b', tee: '#f5f5f5', tee2: '#f5f5f5', pants: '#a83226', shoes: '#f5f5f5' },
+  barca: { name: 'Barça Kit', need: 2, jacket: '#a50044', tee: '#004d98', tee2: '#a50044', pants: '#004d98', shoes: '#111111' },
+  hawaii: { name: 'Hawaiian', need: 3, jacket: '#ff8c42', tee: '#2ec4b6', tee2: '#ffe066', pants: '#f1e3c3', shoes: '#8b5a2b' },
+  tuxedo: { name: 'Tuxedo', need: 5, jacket: '#141414', tee: '#fafafa', tee2: '#b91c1c', pants: '#141414', shoes: '#0a0a0a' },
+  hero: { name: 'Superhero', need: 7, jacket: '#1d4ed8', tee: '#fbbf24', tee2: '#dc2626', pants: '#1d4ed8', shoes: '#dc2626', cape: '#dc2626' },
+  gold: { name: 'Golden Janitor', need: 10, jacket: '#d4a017', tee: '#fde68a', tee2: '#d4a017', pants: '#b7791f', shoes: '#fde68a', cape: '#fbbf24' },
+};
+export const OUTFIT_KEYS = Object.keys(OUTFITS);
+
+function paletteFor(key, outfit) {
   const def = SPRITES[key] || GENERIC;
+  const o = OUTFITS[outfit];
+  const pal = { ...def.pal };
+  const roles = ROLES[key];
+  if (o && roles) for (const [role, letters] of Object.entries(roles)) if (o[role]) letters.forEach((l) => { pal[l] = o[role]; });
+  return { def, pal, cape: o?.cape };
+}
+
+/** Draw a hero onto any 2D canvas context at (x, y) = top-left of the 16×24 body. */
+export function drawHero(g, key, x, y, { outfit = 'everyday' } = {}) {
+  const { def, pal, cape } = paletteFor(key, outfit);
+  if (cape) { g.fillStyle = cape; g.fillRect(x + 2, y + 11, 1, 10); g.fillRect(x + 13, y + 11, 1, 10); }
+  def.rows.forEach((row, ry) => [...row].forEach((ch, rx) => {
+    if (ch === '.') return;
+    g.fillStyle = pal[ch]; g.fillRect(x + rx, y + ry, 1, 1);
+  }));
+}
+
+/** Returns a data-URL PNG of the sprite (16 x 29 px). Display it with `image-rendering: pixelated`. */
+export function spriteURL(key, { crown = false, sweat = false, outfit = 'everyday' } = {}) {
+  const id = `${key}|${crown}|${sweat}|${outfit}`;
+  if (cache.has(id)) return cache.get(id);
   const c = document.createElement('canvas');
   c.width = 16; c.height = 24 + TOP;
   const g = c.getContext('2d');
-  def.rows.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === '.') return;
-    g.fillStyle = def.pal[ch]; g.fillRect(x, y + TOP, 1, 1);
-  }));
+  drawHero(g, key, 0, TOP, { outfit });
   if (crown) CROWN.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === '.') return;
     g.fillStyle = ch === 'R' ? '#ef4444' : '#fbbf24'; g.fillRect(x + 4, y + 1, 1, 1);

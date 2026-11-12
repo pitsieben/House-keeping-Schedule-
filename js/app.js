@@ -3,7 +3,8 @@ import {
   person, ymd, parseYmd, addDays, startOfDay, captainFor, dutiesForDate, dutiesBetween,
   dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs,
 } from './schedule.js';
-import { spriteURL } from './sprites.js';
+import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
+import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
 
@@ -37,10 +38,26 @@ function countdown(ms) {
 // Each roommate always gets their own pixel hero
 const HEROES = { hrithik: 's1', paco: 's2', pit: 's3' };
 
+// achievements, memoised per state object + minute (heroes are drawn many times per render)
+let achMemo = { state: null, min: -1, val: null };
+function achievementsNow() {
+  const now = getNow(), min = Math.floor(now.getTime() / 60000);
+  if (achMemo.state !== store.state || achMemo.min !== min) achMemo = { state: store.state, min, val: computeAchievements(store.state, now) };
+  return achMemo.val;
+}
+
+// chosen outfit, only if (still) unlocked
+function outfitOf(id) {
+  const o = store.state.outfits?.[id];
+  if (!o || !OUTFITS[o]) return 'everyday';
+  const n = (achievementsNow()[id] || []).length;
+  return n >= OUTFITS[o].need ? o : 'everyday';
+}
+
 function hero(id, scores, { crown = false, size = 'md' } = {}) {
   const key = HEROES[id];
   const sweat = (scores?.[id]?.recentStrikes || 0) > 0;
-  return `<img class="sprite ${size}" alt="" src="${spriteURL(key, { crown, sweat })}">`;
+  return `<img class="sprite ${size}" alt="" src="${spriteURL(key, { crown, sweat, outfit: outfitOf(id) })}">`;
 }
 
 // ---------- views ----------
@@ -350,6 +367,55 @@ function badgesFor(o) {
   return b;
 }
 
+// ---------- rooms ----------
+const roomCache = new Map();
+function roomImage(opts) {
+  const sig = JSON.stringify(opts);
+  if (!roomCache.has(sig)) { const c = document.createElement('canvas'); drawRoom(c, opts); roomCache.set(sig, c.toDataURL('image/png')); }
+  return roomCache.get(sig);
+}
+
+function roomsView(scores, now) {
+  const who = ui.room || ui.me, mine = who === ui.me, r = person(who);
+  const mineAch = achievementsNow()[who] || [];
+  const owned = ownedItems(mineAch, scores[who].xp);
+  const saved = store.state.rooms?.[who]?.placed;
+  const placed = placedItems(owned, saved);
+  const dirt = dirtLevel(scores[who].points);
+  const d = DIRT[dirt];
+  const outfit = outfitOf(who);
+  const img = roomImage({ who, color: r.color, items: placed, dirt, outfit, heroKey: HEROES[who] });
+  const flies = dirt >= 4 ? [12, 30, 55, 78].map((x, i) => `<i class="fly" style="left:${x}%;top:${50 + (i % 2) * 14}%;animation-delay:-${i * 0.7}s"></i>`).join('') : '';
+  const month = ymd(now).slice(0, 7);
+  const monthName = now.toLocaleDateString('en-GB', { month: 'long' });
+  const thisMonth = new Set(mineAch.filter((a) => a.month === month).map((a) => a.type));
+  const past = mineAch.filter((a) => a.month !== month);
+  const fmtMonth = (m) => parseYmd(`${m}-01`).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+  return `
+  <div class="roompick">${ROOMMATES.map((p) => `<button class="btn ${p.id === who ? '' : 'ghost'}" data-act="room" data-who="${p.id}" style="--c:${p.color}">${hero(p.id, null, { size: 'xs' })}${p.name}</button>`).join('')}</div>
+  <section class="room ${dirt >= 5 ? 'gross' : ''}"><img src="${img}" alt="${r.name}'s room">${flies}</section>
+  <p class="tiny roomstate">${d.emoji} <b>${r.name}'s room: ${d.name}</b>${dirt ? ` · ${scores[who].points} pts — back above 0 cleans it up` : ''}</p>
+
+  <h2>🏅 ${monthName} achievements</h2>
+  <div class="achs">${Object.entries(ACHIEVEMENTS).map(([k, a]) => `<div class="ach ${thisMonth.has(k) ? 'got' : ''}" title="${esc(a.desc)}">
+    <span>${a.emoji}</span><b>${a.name}</b><small>${esc(a.desc)}${a.monthEnd ? ' · awarded at month end' : ''}</small></div>`).join('')}</div>
+  ${past.length ? `<p class="tiny muted">Earlier: ${past.map((a) => `${ACHIEVEMENTS[a.type].emoji} ${ACHIEVEMENTS[a.type].name} (${fmtMonth(a.month)})`).join(' · ')}</p>` : ''}
+
+  <h2>🎁 Collectibles <small>${owned.length}/${Object.keys(ITEMS).length}${mine ? ' · tap to show/hide' : ''}</small></h2>
+  <div class="items">${Object.keys(ITEMS).map((k) => {
+    const has = owned.includes(k), on = placed.includes(k);
+    return `<button class="item ${has ? 'has' : ''} ${on ? 'on' : ''}" ${mine && has ? `data-act="place" data-item="${k}"` : 'disabled'}>
+      <b>${has ? ITEMS[k].name : '???'}</b><small>${has ? (on ? '✓ on display' : 'in storage') + ` · ${ITEMS[k].slot}` : `🔒 ${esc(ITEM_SOURCE[k])}`}</small></button>`;
+  }).join('')}</div>
+
+  <h2>👕 Outfits <small>${mineAch.length} achievement${mineAch.length === 1 ? '' : 's'} so far</small></h2>
+  <div class="outfits">${OUTFIT_KEYS.map((k) => {
+    const o = OUTFITS[k], has = mineAch.length >= o.need, on = outfit === k;
+    return `<button class="outfit ${on ? 'on' : ''} ${has ? '' : 'locked'}" ${mine && has ? `data-act="outfit" data-outfit="${k}"` : 'disabled'}>
+      <img class="sprite" alt="" src="${spriteURL(HEROES[who], { outfit: k })}"><b>${o.name}</b><small>${has ? (on ? '✓ wearing' : 'unlocked') : `🔒 ${o.need} achievements`}</small></button>`;
+  }).join('')}</div>`;
+}
+
 function ranksView(scores) {
   const ranked = rankings(scores);
   const medals = ['🥇', '🥈', '🥉'];
@@ -464,7 +530,7 @@ function adminView(now) {
 }
 
 function shell(inner) {
-  const tabs = [['today', '🏠', 'Today'], ['week', '🗓', 'Schedule'], ['ranks', '🏆', 'Ranks'], ['cal', '📅', 'Calendar'], ['rules', '📜', 'Rules']];
+  const tabs = [['today', '🏠', 'Today'], ['week', '🗓', 'Week'], ['ranks', '🏆', 'Ranks'], ['room', '🛏', 'Rooms'], ['cal', '📅', 'Calendar'], ['rules', '📜', 'Rules']];
   if (ui.me === ADMIN) tabs.push(['admin', '🛡', 'Admin']);
   return `
   <header class="top"><h1 class="logo tiny">HOUSE QUEST</h1>
@@ -481,7 +547,7 @@ function render() {
   const scores = computeScores(store.state, now);
   const views = {
     today: () => todayView(scores, now), week: () => weekView(now), ranks: () => ranksView(scores),
-    cal: calendarView, rules: rulesView, admin: () => (ui.me === ADMIN ? adminView(now) : rulesView()),
+    room: () => roomsView(scores, now), cal: calendarView, rules: rulesView, admin: () => (ui.me === ADMIN ? adminView(now) : rulesView()),
   };
   app.innerHTML = shell(views[ui.tab]());
 }
@@ -535,6 +601,21 @@ const actions = {
   aunexcuse: (el) => { store.unexcuse(el.dataset.id); },
   adismiss: (el) => { store.patch(['flags', el.dataset.id], undefined); },
   alock: () => { localStorage.removeItem(ADMIN_OK_KEY); },
+  room: (el) => { ui.room = el.dataset.who; },
+  place: (el) => {
+    const now = getNow(), scores = computeScores(store.state, now);
+    const owned = ownedItems(achievementsNow()[ui.me] || [], scores[ui.me].xp);
+    let list = placedItems(owned, store.state.rooms?.[ui.me]?.placed);
+    const k = el.dataset.item;
+    if (list.includes(k)) list = list.filter((x) => x !== k);
+    else {
+      const slot = ITEMS[k].slot;
+      if (list.filter((x) => ITEMS[x].slot === slot).length >= SLOTS[slot]) { toast(`The ${slot} is full — hide something there first`); return; }
+      list = [...list, k];
+    }
+    store.patch(['rooms', ui.me, 'placed'], list);
+  },
+  outfit: (el) => { store.patch(['outfits', ui.me], el.dataset.outfit); },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
