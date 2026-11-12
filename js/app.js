@@ -66,8 +66,11 @@ function cloudSetupHtml() {
 
 function tokenFormHtml() {
   if (store.canWrite) return `<p class="tiny muted">🔑 GitHub token saved on this device.</p><button class="btn ghost" data-act="copylink">Copy invite link for a roommate</button> <button class="btn ghost" data-act="rmtoken">Remove token</button>`;
-  return `<form data-act="settoken"><label class="tiny">GitHub token (fine-grained, this repo only, <i>Contents: Read and write</i>) — see README</label>
-    <input name="token" type="password" placeholder="github_pat_…" autocomplete="off" required><button class="btn">Save & sync ☁</button></form>`;
+  const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  return `<form data-act="settoken">${standalone ? '<p class="tiny muted">📱 The Home Screen app keeps its own storage, separate from Safari — add the token here once.</p>' : ''}
+    <button type="button" class="btn" data-act="pastetoken">📋 Paste invite link or token</button>
+    <label class="tiny">…or type it: GitHub token (fine-grained, this repo only, <i>Contents: Read and write</i>)</label>
+    <input name="token" type="password" placeholder="github_pat_… or invite link" autocomplete="off" required><button class="btn ghost">Save & sync ☁</button></form>`;
 }
 
 function statusChip(st, duty, now) {
@@ -435,6 +438,13 @@ const actions = {
     const link = `${location.origin}${location.pathname}#t=${encodeURIComponent(store.token)}`;
     try { await navigator.clipboard.writeText(link); toast('Invite link copied — send it privately'); } catch { prompt('Copy this link and send it privately:', link); }
   },
+  pastetoken: async () => {
+    let text = '';
+    try { text = await navigator.clipboard.readText(); } catch { /* permission denied */ }
+    const tok = extractToken(text);
+    if (!tok) { toast('Clipboard has no token — copy the invite link first'); return; }
+    await saveToken(tok);
+  },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
@@ -481,14 +491,27 @@ app.addEventListener('click', (e) => {
   const fn = actions[el.dataset.act];
   if (fn) { fn(el); render(); }
 });
+// accepts a raw token or a full invite link (…#t=<token>)
+function extractToken(text) {
+  const t = String(text || '').trim();
+  const m = t.match(/#t=([^&\s]+)/);
+  const tok = m ? decodeURIComponent(m[1]) : t;
+  return /^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(tok) ? tok : '';
+}
+async function saveToken(tok) {
+  store.token = tok;
+  await store.pull();
+  await store.flush();
+  toast('🔑 Token saved — syncing');
+}
+
 app.addEventListener('submit', async (e) => {
   const form = e.target.closest('[data-act="settoken"]');
   if (!form) return;
   e.preventDefault();
-  store.token = new FormData(form).get('token');
-  await store.pull();
-  await store.flush();
-  render();
+  const tok = extractToken(new FormData(form).get('token'));
+  if (!tok) { toast("That doesn't look like a token or invite link"); return; }
+  await saveToken(tok);
 });
 
 // ---------- reminders (only while the app is open; the calendar feeds cover the closed-app case) ----------
