@@ -2,7 +2,7 @@
 
 > 👋 **Roommates: start with the [tutorial](TUTORIAL.md).**
 
-A roommate chore game for Paco · Pit · Hrithik, built from the *House System* PDFs (10–23 Nov 2026 trial).
+A roommate chore game for Paco · Pit · Hritik, built from the *House System* PDFs (10–23 Nov 2026 trial).
 
 - **House Captain rota** (morning + evening resets), **weekly cleaning boss** (rotates every week), **laundry priority** — all computed from the rules, matching the fridge calendar.
 - **Points & leaderboard**: on-time duties earn points, missed ones cost points + a strike, 3 strikes in 30 days triggers the household review. Levels, streaks, badges, crown for the leader.
@@ -25,7 +25,7 @@ Progress is saved as `state.json` on a separate **`data`** branch of this repo (
 
 **Once per person/device:**
 1. GitHub → Settings → Developer settings → **Fine-grained personal access tokens** → *Generate*. Repository access: **only** `House-keeping-Schedule-`. Permission: **Contents → Read and write**. Pick a long expiry.
-   (Paco and Hrithik need to be **collaborators** on the repo, or use *your* token on their phones.)
+   (Paco and Hritik need to be **collaborators** on the repo, or use *your* token on their phones.)
 2. Open the site → pick your name → **Rules → Account → paste token → Save & sync**.
 
 **Shortcut:** once your own device has the token, tap *Copy invite link for a roommate* and send it to them privately (e.g. direct message). Opening that link on their phone saves the token there automatically and removes it from the address bar. Anyone with the link can write to the repo, so don't post it publicly or commit it.

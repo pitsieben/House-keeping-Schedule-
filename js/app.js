@@ -354,7 +354,7 @@ function weekView(now) {
   <div class="scroll"><table class="tbl"><thead><tr><th>Due</th>${ROOMMATES.map((r) => `<th>${r.name}</th>`).join('')}</tr></thead><tbody>
     ${sundays.map((s) => `<tr><td><b>${fmtDay(s)}</b></td>${weekJobs(s).map((j) => `<td>${j.job.emoji} ${esc(j.job.name.split(' /')[0])}</td>`).join('')}</tr>`).join('')}
   </tbody></table></div>
-  <p class="tiny muted">Friday's captain rotates Paco → Pit → Hrithik. Bathrooms are excluded. Weekly deadline: Sunday 8 pm.</p>`;
+  <p class="tiny muted">Friday's captain rotates Paco → Pit → Hritik. Bathrooms are excluded. Weekly deadline: Sunday 8 pm.</p>`;
 }
 
 function badgesFor(o) {
@@ -475,10 +475,10 @@ function calendarView() {
 function rulesView() {
   return `
   <h2>📜 The House System</h2>
-  <div class="card"><b>House Captain</b><p class="tiny">One roommate is captain each day and does the morning reset (before leaving, ~5–10 min) and the evening reset (by 10:30 pm, ~10–15 min). Mon–Tue Paco · Wed Pit · Thu Hrithik · Fri rotates · Sat Pit · Sun Hrithik.</p>
+  <div class="card"><b>House Captain</b><p class="tiny">One roommate is captain each day and does the morning reset (before leaving, ~5–10 min) and the evening reset (by 10:30 pm, ~10–15 min). Mon–Tue Paco · Wed Pit · Thu Hritik · Fri rotates · Sat Pit · Sun Hritik.</p>
   <p class="tiny muted">The captain isn't responsible for someone else's cooking mess or belongings.</p></div>
   <div class="card"><b>Weekly cleaning (Sun 8 pm)</b><p class="tiny">${JOBS.map((j) => `${j.emoji} <b>${esc(j.name)}</b>: ${esc(j.desc)}`).join('<br>')}</p><p class="tiny muted">Assignments rotate weekly. Bathrooms excluded.</p></div>
-  <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hrithik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
+  <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hritik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
   <div class="card"><b>Account</b><p class="tiny muted">Playing as ${person(ui.me).name} · ${store.mode === 'cloud' ? (store.canWrite ? '☁ synced via GitHub' : '👀 read-only (no token)') : '💾 offline — changes are queued'}${store.pending.length ? ` · ${store.pending.length} waiting to upload` : ''}</p>
