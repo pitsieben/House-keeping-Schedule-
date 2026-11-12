@@ -1,7 +1,12 @@
 {
  "completions": {},
  "swaps": {},
- "excused": {},
+ "excused": {
+  "2026-11-12:AM": {
+   "by": "pit",
+   "at": 1794515455043
+  }
+ },
  "avatars": {},
  "log": {
   "1794479661076-nxm7": {
@@ -15,6 +20,10 @@
   "1794515402548-kr84": {
    "t": 1794515402548,
    "text": "🛡 Admin excused Hrithik's morning reset"
+  },
+  "1794515455043-0lw5": {
+   "t": 1794515455043,
+   "text": "Pit excused Hrithik's morning reset (emergency)"
   }
  },
  "admin": {
