@@ -62,7 +62,7 @@ function cloudSetupHtml() {
 }
 
 function tokenFormHtml() {
-  if (store.canWrite) return `<p class="tiny muted">🔑 GitHub token saved on this device.</p><button class="btn ghost" data-act="rmtoken">Remove token</button>`;
+  if (store.canWrite) return `<p class="tiny muted">🔑 GitHub token saved on this device.</p><button class="btn ghost" data-act="copylink">Copy invite link for a roommate</button> <button class="btn ghost" data-act="rmtoken">Remove token</button>`;
   return `<form data-act="settoken"><label class="tiny">GitHub token (fine-grained, this repo only, <i>Contents: Read and write</i>) — see README</label>
     <input name="token" type="password" placeholder="github_pat_…" autocomplete="off" required><button class="btn">Save & sync ☁</button></form>`;
 }
@@ -344,6 +344,10 @@ const findDuty = (id) => dutiesForDate(parseYmd(id.split(':')[0])).find((d) => d
 const actions = {
   login: (el) => { ui.me = el.dataset.id; setCookie('house-quest-me', ui.me); localStorage.setItem('house-quest-me', ui.me); },
   logout: () => { ui.me = ''; clearCookie('house-quest-me'); localStorage.removeItem('house-quest-me'); },
+  copylink: async () => {
+    const link = `${location.origin}${location.pathname}#t=${encodeURIComponent(store.token)}`;
+    try { await navigator.clipboard.writeText(link); toast('Invite link copied — send it privately'); } catch { prompt('Copy this link and send it privately:', link); }
+  },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   hero: (el) => { store.setAvatar(ui.me, el.dataset.key); },
   changehero: () => { store.setAvatar(ui.me, undefined); },
@@ -426,6 +430,9 @@ function checkReminders() {
 }
 
 // ---------- boot ----------
+// Invite link: https://site/#t=<token> → store the token, then wipe it from the address bar (fragments never leave the browser)
+const inviteToken = new URLSearchParams(location.hash.slice(1)).get('t');
+if (inviteToken) { store.token = inviteToken; history.replaceState(null, '', location.pathname + location.search); }
 store.subscribe(() => render());
 render();
 store.connect().then(render);

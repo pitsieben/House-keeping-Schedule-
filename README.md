@@ -26,6 +26,8 @@ Progress is saved as `state.json` on a separate **`data`** branch of this repo (
    (Paco and Hrithik need to be **collaborators** on the repo, or use *your* token on their phones.)
 2. Open the site → pick your name → **Rules → Account → paste token → Save & sync**.
 
+**Shortcut:** once your own device has the token, tap *Copy invite link for a roommate* and send it to them privately (e.g. direct message). Opening that link on their phone saves the token there automatically and removes it from the address bar. Anyone with the link can write to the repo, so don't post it publicly or commit it.
+
 The token stays in that browser only (never in the repo). Edits are queued if you're offline and merged on top of others' changes, so nobody's ticks overwrite each other. The repo must be **public** for read-only viewers; the token is what limits writes.
 
 **Remembered player:** your name is stored in a 1-year cookie, so the next visit on that device skips the "who are you" screen (*Switch player* clears it).
