@@ -5,6 +5,10 @@
   "2026-11-12:AM": {
    "by": "pit",
    "at": 1794515907145
+  },
+  "2026-11-12:PM": {
+   "by": "pit",
+   "at": 1794520355136
   }
  },
  "avatars": {},
@@ -44,6 +48,10 @@
   "1794520353924-zrlj": {
    "t": 1794520353924,
    "text": "🛡 Admin un-ticked Hrithik's evening reset"
+  },
+  "1794520355163-7m6k": {
+   "t": 1794520355163,
+   "text": "🛡 Admin excused Hrithik's evening reset"
   }
  },
  "admin": {
