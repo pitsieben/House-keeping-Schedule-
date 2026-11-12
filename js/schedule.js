@@ -152,7 +152,9 @@ export function computeScores(state, now = new Date()) {
     streak: 0, best: 0, sweeps: 0, perfectWeeks: 0, strikes: [], earlyBird: 0,
   }]));
   const penStart = parseYmd(CONFIG.penaltyStart);
-  const all = dutiesBetween(parseYmd(CONFIG.trialStart), now).sort((a, b) => a.deadline - b.deadline);
+  // look a week ahead too, so a duty ticked early (e.g. Sunday's weekly cleaning done on Thursday) scores right away;
+  // unticked future duties are 'open'/'future' and don't affect the score
+  const all = dutiesBetween(parseYmd(CONFIG.trialStart), addDays(now, 7)).sort((a, b) => a.deadline - b.deadline);
   const perDay = {};
   const perWeek = {};
 
