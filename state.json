@@ -1,5 +1,10 @@
 {
- "completions": {},
+ "completions": {
+  "2026-11-15:clean:pit": {
+   "by": "pit",
+   "at": 1794516301948
+  }
+ },
  "swaps": {},
  "excused": {
   "2026-11-12:AM": {
@@ -32,6 +37,10 @@
   "1794515907145-sj1l": {
    "t": 1794515907145,
    "text": "Pit excused Hrithik's morning reset (emergency)"
+  },
+  "1794516301948-s5t1": {
+   "t": 1794516301948,
+   "text": "Pit completed weekly cleaning: living room / entrance / hallway (+30)"
   }
  },
  "admin": {
