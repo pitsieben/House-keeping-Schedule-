@@ -6,7 +6,12 @@
   }
  },
  "swaps": {},
- "excused": {},
+ "excused": {
+  "2026-11-12:AM": {
+   "by": "pit",
+   "at": 1794515907145
+  }
+ },
  "avatars": {},
  "log": {
   "1794479661076-nxm7": {
@@ -28,6 +33,10 @@
   "1794515791702-afi6": {
    "t": 1794515791702,
    "text": "Pit completed weekly cleaning: living room / entrance / hallway (+30)"
+  },
+  "1794515907145-sj1l": {
+   "t": 1794515907145,
+   "text": "Pit excused Hrithik's morning reset (emergency)"
   }
  },
  "admin": {
