@@ -1,0 +1,1 @@
+exterior.png: nature sprites from the Craftpix free "Main characters home" top-down pixel art pack (https://craftpix.net/freebies/). Used for the Ascent scene background; see the Craftpix licence for terms.

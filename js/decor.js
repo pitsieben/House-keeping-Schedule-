@@ -22,11 +22,18 @@ const sprites = {
       return a.map((r) => r.join('')); })(),
     pal: { b: '#3d5a80', y: '#ffd166' } },
 };
-const buried = { chest: 2, gem: 2, key: 2, bandage: 2, acorn: 2, log: 2 };
+// nature sprites cut from the house pack sheet: [x, y, w, h]
+const SHEET = new URL('../img/nature/exterior.png', import.meta.url).href, SHEET_W = 240;
+const NAT = {
+  bigTree: [155, 467, 72, 77], tree: [179, 558, 57, 65], round: [65, 320, 62, 78], apple: [1, 324, 61, 73], bush: [6, 455, 36, 34], bush2: [3, 610, 43, 43],
+  shrub: [49, 626, 29, 27], shroom: [64, 548, 32, 41], shrooms: [69, 595, 24, 25], scarecrow: [4, 547, 52, 56], well: [1, 498, 35, 41],
+  stump: [96, 598, 29, 22], stump2: [165, 635, 37, 28], log: [88, 630, 36, 22], rock: [7, 409, 34, 32], rockS: [49, 403, 30, 28],
+  boulderA: [0, 656, 54, 63], boulderB: [69, 656, 53, 60], boulderC: [132, 672, 38, 45], boulderD: [179, 672, 40, 47], crystalA: [178, 729, 29, 30], crystalB: [210, 729, 29, 30],
+};
 
-// [sprite, left %, vertical position 0-1, scale]
+// [sprite, left %, vertical position 0-1, scale]; nature sprites ('n:name') with y = 'b' stand on the bottom edge of the band
 const BY_LAYER = {
-  0: [['sun', 8, 0.05, 3], ['skyline', 0, 1, 0]],
+  0: [['sun', 8, 0.05, 3], ['n:apple', 1, 'b', 1], ['n:shrooms', 31, 'b', 2], ['n:bush', 43, 'b', 1], ['n:scarecrow', 58, 'b', 1], ['n:bigTree', 76, 'b', 1]],
   20: [['bird', 18, 0.3, 3], ['bird', 40, 0.65, 3], ['bird', 72, 0.2, 3]],
   40: [['skyline', 40, 1, 0]],
   80: [['plane', 12, 0.3, 3], ['plane', 62, 0.7, 2]],
@@ -34,11 +41,10 @@ const BY_LAYER = {
   112: [['sat', 55, 0.4, 3], ['planet2', 12, 0.2, 3]],
   150: [['sat', 20, 0.5, 3], ['planet', 78, 0.3, 2]],
   172: [['moon', 62, 0.3, 4]],
-  '-20': [['worm', 14, 0.5, 3], ['acorn', 50, 0.3], ['worm', 74, 0.7, 3]],
-  '-34': [['key', 25, 0.55], ['log', 78, 0.3]],
-  '-60': [['gem', 12, 0.4], ['chest', 55, 0.5], ['gem', 84, 0.7]],
-  '-91': [['bandage', 20, 0.5], ['gem', 66, 0.4]],
-  '-115': [['gem', 40, 0.5]],
+  '-20': [['n:stump', 8, 0.35, 2], ['worm', 36, 0.65, 3], ['n:log', 50, 0.3, 2], ['n:stump2', 76, 0.45, 2]],
+  '-34': [['n:rockS', 20, 0.6, 2], ['n:rock', 70, 0.4, 2]],
+  '-60': [['n:boulderA', 6, 0.5, 1], ['n:boulderC', 40, 0.5, 1], ['n:boulderD', 70, 0.5, 1]],
+  '-91': [['n:crystalA', 15, 0.5, 2], ['n:crystalB', 62, 0.4, 2]],
 };
 const cache = {};
 const imgOf = (name) => {
@@ -49,8 +55,14 @@ const imgOf = (name) => {
 export function decorFor(from, h) {
   const list = BY_LAYER[from]; if (!list || h < 14) return '';
   return list.map(([n, x, y, sc = 2]) => {
+    if (n.startsWith('n:')) {
+      const r = NAT[n.slice(2)]; if (!r) return '';
+      let k = sc; while (k > 1 && r[3] * k > h) k--;
+      if (r[3] * k > h) return '';
+      const top = y === 'b' ? h - r[3] * k : (h - r[3] * k) * y;
+      return `<i class="deco nat" style="left:${x}%;top:${top.toFixed(0)}px;width:${r[2] * k}px;height:${r[3] * k}px;background:url(${SHEET}) -${r[0] * k}px -${r[1] * k}px / ${SHEET_W * k}px auto no-repeat"></i>`;
+    }
     const im = imgOf(n);
-    if (!im) { const px = 14 * sc; return `<i class="ic n-${n} deco" style="--s:${sc};left:${x}%;top:${Math.max(0, (h - px) * y).toFixed(0)}px"></i>`; }
     if (n === 'skyline') return `<img class="deco sky" alt="" src="${im.url}" style="left:${x}%;bottom:0;width:${im.w * 3}px">`;
     const w = im.w * sc, hh = im.h * sc;
     if (hh > h) return '';
