@@ -1,10 +1,5 @@
 {
- "completions": {
-  "2026-11-12:AM": {
-   "by": "hrithik",
-   "at": 1794479661076
-  }
- },
+ "completions": {},
  "swaps": {},
  "excused": {},
  "avatars": {},
@@ -12,6 +7,10 @@
   "1794479661076-nxm7": {
    "t": 1794479661076,
    "text": "Hrithik completed morning reset (+10)"
+  },
+  "1794515394598-fe5u": {
+   "t": 1794515394598,
+   "text": "🛡 Admin un-ticked Hrithik's morning reset"
   }
  },
  "admin": {
