@@ -66,7 +66,7 @@ input, textarea { -webkit-user-select: text; user-select: text; font-size: 16px;
 .member .pts { font-family: var(--px); font-size: 12px; margin-top: 4px; }
 .member .alt { font-size: 10px; color: var(--muted); line-height: 1.2; }
 .member .hearts { font-size: 11px; letter-spacing: 0; white-space: nowrap; }
-.scene .legend { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; z-index: 1; border-left: 1px solid #fff9; }
+.scene .legend { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; z-index: 3; border-left: 1px solid #fff6; background: #0000002e; }
 .legend .tk { position: absolute; left: 0; width: 5px; height: 0; border-top: 1px solid #fff8; }
 .legend .tk.major { width: 10px; border-top-color: #fffc; }
 .legend .tk.mark { width: 8px; border-top-color: #fff; }
@@ -251,7 +251,7 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .tbl { background: none; border-radius: 0; } .tbl td, .tbl th { border-bottom: 2px dotted #3f4752; } .tbl tr.today td { background: #ffffff12; }
 
 /* Ascent sky: cloud-set picture by time of day / weather, faded into the space layers above */
-.scene .sky { position: absolute; left: 0; right: 16px; z-index: 0; overflow: hidden; }
+.scene .sky { position: absolute; left: 0; right: 0; z-index: 0; overflow: hidden; }
 .scene .skyimg { position: absolute; inset: 0; background-size: cover; background-position: center bottom; background-repeat: no-repeat; image-rendering: pixelated;
   -webkit-mask-image: linear-gradient(to top, #000 55%, transparent); mask-image: linear-gradient(to top, #000 55%, transparent); }
 .scene .skytint { position: absolute; inset: 0; background: #2b3441; }
@@ -263,7 +263,7 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 @keyframes snowfall { to { background-position: 14px 60px; } }
 @keyframes flash { 0%, 93%, 96%, 100% { background-color: transparent; } 94%, 97% { background-color: #ffffff66; } }
 @media (prefers-reduced-motion: reduce) { .scene .fx { animation: none; } }
-.scene .gtint { position: absolute; left: 0; right: 16px; bottom: 0; z-index: 1; pointer-events: none; }
-.scene .snowcap { position: absolute; left: 0; right: 16px; height: 12px; z-index: 1; background: #f4f8ff; box-shadow: 0 4px 0 #dbe6f5; image-rendering: pixelated; }
+.scene .gtint { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; pointer-events: none; }
+.scene .snowcap { position: absolute; left: 0; right: 0; height: 12px; z-index: 1; background: #f4f8ff; box-shadow: 0 4px 0 #dbe6f5; image-rendering: pixelated; }
 .scene .band { image-rendering: pixelated; }
 .scene .grass { height: 16px; top: auto; bottom: 0; border-bottom: 0; image-rendering: pixelated; z-index: 1; }
