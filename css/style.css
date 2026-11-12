@@ -66,7 +66,7 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 .member .pts { font-family: var(--px); font-size: 12px; margin-top: 4px; }
 .member .alt { font-size: 10px; color: var(--muted); line-height: 1.2; }
 .member .hearts { font-size: 11px; letter-spacing: 0; white-space: nowrap; }
-.scene .legend { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; z-index: 3; border-left: 1px solid #fff9; }
+.scene .legend { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; z-index: 1; border-left: 1px solid #fff9; }
 .legend .tk { position: absolute; left: 0; width: 5px; height: 0; border-top: 1px solid #fff8; }
 .legend .tk.major { width: 10px; border-top-color: #fffc; }
 .legend .tk.mark { width: 8px; border-top-color: #fff; }
