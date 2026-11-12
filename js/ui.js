@@ -8,7 +8,7 @@ const MAP = {
   '🏠': 'house', '🗓': 'notebook', '🏆': 'gem', '🏅': 'gem', '🛏': 'chest', '🎁': 'chest', '📅': 'mail', '📜': 'scroll', '🛡': 'medkit',
   '🚩': 'alert', '🚨': 'alert', '⚠': 'alert', '☣': 'alert', '❌': 'x', '✖': 'x', '✕': 'x', '❤': 'heart', '🖤': 'heart dim',
   '💾': 'save', '☁': 'save', '🔑': 'key', '🤥': 'face', '🦹': 'face', '✅': 'clover', '🟠': 'pine', '🌅': 'melon', '✨': 'clover',
-  '🔥': 'cherry', '🤝': 'bandage', '🧼': 'pine', '🐉': 'gamepad', '👑': 'gem', '👕': 'bag', '🐦': 'apple', '😇': 'clover', '👀': 'pencil', '📋': 'notebook',
+  '🔥': 'cherry', '🤝': 'bandage', '🧼': 'pine', '🐉': 'gamepad', '👑': 'gem', '👕': 'bag', '🐦': 'apple', '😇': 'clover', '👀': 'pencil', '⏳': 'log', '📋': 'notebook',
 };
 const KNOWN = new Set(ICONS);
 const RE = /(\p{Extended_Pictographic}\uFE0F?|[✔✖✕✓⇄⬇])\s?/gu, HAS = /\p{Extended_Pictographic}|[✔✖✕✓⇄⬇]/u;
