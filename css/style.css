@@ -222,16 +222,11 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 /* hearts are hand-drawn 7×7 sprites */
 .hearts .ic { --s: 2; margin: 0 2px 0 0; vertical-align: -1px; } .hearts { letter-spacing: 0; line-height: 1; }
 
-/* scene tags use framed panels in the roommate's colour; decor sits behind the heroes */
+/* scene tags use framed panels in the roommate's colour */
 .member .tag { border: 0; border-style: solid; border-width: 10px; border-image: var(--px-card) 6 fill / 10px / 0 stretch; image-rendering: pixelated; background: none; padding: 0 0 2px; left: 0; right: 0; top: 2px; }
 .c-paco .tag { border-image-source: var(--px-paco-dk); } .c-pit .tag { border-image-source: var(--px-pit-dk); } .c-hrithik .tag { border-image-source: var(--px-hrithik-dk); }
 .member .nm { font-size: 8px; } .member .pts { font-size: 11px; margin-top: 2px; } .member .alt { font-size: 11px; }
 .member .head { border: 0; border-radius: 0; background: #101214; box-shadow: 0 0 0 2px var(--c); }
-.scene .deco { position: absolute; image-rendering: pixelated; z-index: 0; opacity: .95; pointer-events: none; }
-.scene .deco.sky { opacity: .55; } .scene .band { isolation: isolate; }
-.scene .ic.deco { margin: 0; vertical-align: 0; }
-@keyframes drift { 50% { transform: translateX(10px); } } .scene .deco:not(.sky):not(.ic) { animation: drift 6s steps(6) infinite; }
-@media (prefers-reduced-motion: reduce) { .scene .deco { animation: none !important; } }
 
 /* leaderboard: no boxes, just drawn pieces on a dotted rule */
 .board { margin: 6px 0; }

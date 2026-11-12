@@ -111,3 +111,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/store.js` polls every 120 s without a token (20 s with one) via a self-scheduling timer; a 403/429 backs off 5 → 10 → 30 min and resets on the next success; tab-focus refresh and the update check in `js/app.js` are skipped while rate limited. Section G item 2 is done.
 - Checked: 5 new checks in `tests/run.mjs` (delays, back-off steps, cap, recovery); `npm test` ALL CHECKS PASSED (22).
 - Not verified: a real 1 h run against api.github.com; the same session wrote code and checks (no separate game-checker pass).
+
+### 2026-11-12 Ascent decor removed
+- Changed: deleted `js/decor.js` and its CSS; the Ascent scene is back to its original layers (stars, clouds, bones, flames) with no extra sprites.
+- Checked: `npm test` ALL CHECKS PASSED (22).
+- Not verified: visually in the live scene.

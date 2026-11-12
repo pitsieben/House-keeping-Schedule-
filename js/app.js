@@ -5,7 +5,6 @@ import {
 } from './schedule.js';
 import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
-import { decorFor } from './decor.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
@@ -253,7 +252,6 @@ function partyScene(scores) {
     if (l.deco === 'clouds') deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
     if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
     if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
-    deco += decorFor(l.from, h);
     const grass = l.from === 0 ? '<i class="grass"></i>' : '';
     return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background:${l.color}">${grass}${deco}</div>`;
   }).join('');
