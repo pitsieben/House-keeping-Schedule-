@@ -121,3 +121,8 @@ Template (one entry per completed step, newest last):
 - Changed: new `js/sky.js` + `img/sky/` (8 cloud sets from the Clouds pack). The set is chosen from the phase of day (night, dawn, morning, day, golden hour, dusk, twilight, relative to sunrise/sunset) and the weather (clear, partly, cloudy, fog, rain, snow, storm); grey weather uses the overcast set plus a tint, rain/snow/storm add animated overlays. The sky picture fades into the space layers. The ground gets a colour wash by phase, a wet tint in rain/fog, a snow cap, and a grass colour. Weather + sunrise/sunset come from Open-Meteo for Barcelona coordinates (no key, no personal data), cached 30 min in localStorage; offline falls back to clear with 07:30/18:00. Test with `?now=…&weather=rain|snow|storm|fog|cloudy|partly|clear`.
 - Checked: `npm test` passes; screenshots for dusk/clear, midday/rain and night/snow.
 - Not verified: real Open-Meteo response in the browser; sky layers high above the ground (needs positive scores); phone.
+
+### 2026-11-12 Detailed ground textures
+- Changed: new `js/ground.js` draws 96×96 px tiles on a canvas (shown at 2x) for each underground layer: dirt with roots and pebbles, sandy bone layer with strata, cracked rock, crust with strata and gold flecks, mantle swirls, glowing magma. The grass edge is a drawn blade tile in the weather/time grass colour and now sits on the ground line. Time-of-day/weather washes still apply on top.
+- Checked: `npm test` passes; screenshot of the full scene at midday/clear.
+- Not verified: other times/weather with the new textures; phone.

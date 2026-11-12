@@ -6,6 +6,7 @@ import {
 import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
+import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
@@ -194,13 +195,13 @@ function fmtMeters(p) {
 }
 // ascending by points; each layer runs from its `from` up to the next layer's `from`
 const LAYERS = [
-  { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames' },
-  { from: -130, name: 'Lower mantle', color: '#b3331a' },
-  { from: -115, name: 'Upper mantle', color: '#8a2c16' },
-  { from: -91, name: "Earth's crust", color: '#5c4a44' },
-  { from: -60, name: 'Bedrock', color: '#55575c' },
-  { from: -34, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones' },
-  { from: -20, name: 'Roots & worms', color: '#5d3f25' },
+  { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames', tex: 'magma' },
+  { from: -130, name: 'Lower mantle', color: '#b3331a', tex: 'mantle' },
+  { from: -115, name: 'Upper mantle', color: '#8a2c16', tex: 'mantle' },
+  { from: -91, name: "Earth's crust", color: '#5c4a44', tex: 'crust' },
+  { from: -60, name: 'Bedrock', color: '#55575c', tex: 'rock' },
+  { from: -34, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones', tex: 'sand' },
+  { from: -20, name: 'Roots & worms', color: '#5d3f25', tex: 'dirt' },
   { from: 0, name: 'Ground level', color: '#8fd3f7' },
   { from: 20, name: 'Birds & rooftops', color: '#7cc4f5' },
   { from: 40, name: 'Skyscrapers', color: '#62b2ec' },
@@ -253,8 +254,8 @@ function partyScene(scores) {
     if (l.deco === 'clouds' && false) deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
     if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
     if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
-    const grass = l.from === 0 ? `<i class="grass" style="background:${skyFor(getNow()).grass}"></i>` : '';
-    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background:${l.color}">${grass}${deco}</div>`;
+    const grass = l.from === 0 ? `<i class="grass" style="background:${grassEdge(skyFor(getNow()).grass)} repeat-x bottom / 32px 16px"></i>` : '';
+    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background-color:${l.color}${l.tex ? `;background-image:${groundTexture(l.tex)};background-size:192px 192px` : ''}">${grass}${deco}</div>`;
   }).join('');
 
   // sky picture (time of day + weather) over the sky layers, fading out towards space

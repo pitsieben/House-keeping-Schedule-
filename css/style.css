@@ -265,3 +265,5 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 @media (prefers-reduced-motion: reduce) { .scene .fx { animation: none; } }
 .scene .gtint { position: absolute; left: 0; right: 16px; bottom: 0; z-index: 1; pointer-events: none; }
 .scene .snowcap { position: absolute; left: 0; right: 16px; height: 12px; z-index: 1; background: #f4f8ff; box-shadow: 0 4px 0 #dbe6f5; image-rendering: pixelated; }
+.scene .band { image-rendering: pixelated; }
+.scene .grass { height: 16px; top: auto; bottom: 0; border-bottom: 0; image-rendering: pixelated; z-index: 1; }
