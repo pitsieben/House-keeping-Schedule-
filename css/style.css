@@ -28,7 +28,7 @@ b { font-weight: 700; }
 
 .sprite { image-rendering: pixelated; display: block; margin: 0 auto; }
 .sprite.xs { width: 22px; } .sprite.sm { width: 48px; } .sprite.md { width: 80px; } .sprite.lg { width: 112px; }
-.member .sprite.lg { width: min(84px, 100%); }
+.member .sprite.lg { width: min(var(--w, 84px), 100%); }
 .me .sprite.xs { width: 20px; margin: 0; }
 
 .card, .duty, .rankrow, .banner { background: var(--card); border: 2px solid var(--line); border-radius: 14px; padding: 14px; margin: 10px 0; }
@@ -59,6 +59,9 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 .member.leader .sprite { animation: hop .8s steps(4) infinite; }
 .member .tag { position: absolute; left: 3px; right: 3px; top: 6px; padding: 4px 2px; border-radius: 8px; background: #101214e6; border: 2px solid var(--c); }
 .member .nm { font-family: var(--px); font-size: 9px; color: var(--c); display: block; }
+.member .head { display: inline-block; margin-bottom: 3px; padding: 2px 6px; border-radius: 6px; background: #101214e6; border: 2px solid var(--c);
+  font: 700 10px Inter, sans-serif; color: #fff; white-space: nowrap; } .member .head b { color: var(--c); }
+.member.you .head b::after { content: ' ◀'; font-size: 7px; }
 .member.you .nm::after { content: ' ◀'; font-size: 7px; }
 .member .pts { font-family: var(--px); font-size: 12px; margin-top: 4px; }
 .member .alt { font-size: 10px; color: var(--muted); line-height: 1.2; }

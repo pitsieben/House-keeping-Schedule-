@@ -151,7 +151,7 @@ function hearts(n) { return '❤'.repeat(Math.max(0, 3 - n)) + '🖤'.repeat(Mat
 
 // ---- The Ascent: points → altitude. 1 point ≈ a log step: meters = 10^(|pts|/20) − 1 (above the ground = up, below = digging down).
 // The camera zooms out to keep all three of you (and the ground) in view.
-const SCENE_H = 560, PAD_TOP = 175, PAD_BOTTOM = 90;
+const SCENE_H = 560, HERO_W = 84; // sprite is 16×29 px → height = width × 29/16
 const clampPts = (p) => Math.max(-130, Math.min(172, p)); // the Moon and the magma are the ends of the scale
 const meters = (p) => 10 ** (Math.abs(p) / 20) - 1;
 function fmtMeters(p) {
@@ -197,7 +197,11 @@ function partyScene(scores) {
   let lo = Math.min(0, ...pts), hi = Math.max(0, ...pts);
   const mid = (lo + hi) / 2, span = Math.max(70, (hi - lo) * 1.18);
   lo = mid - span / 2; hi = mid + span / 2;
-  const yTop = PAD_TOP, yBot = SCENE_H - PAD_BOTTOM;
+  // the further we zoom out, the smaller the heroes; when tiny they just get a little name header
+  const zoom = Math.max(0.28, Math.min(1, 70 / span));
+  const heroW = Math.round(HERO_W * zoom), heroH = heroW * 29 / 16;
+  const compact = zoom < 0.6;
+  const yTop = heroH + (compact ? 30 : 20), yBot = SCENE_H - (compact ? 14 : 90);
   const yOf = (p) => yTop + ((hi - p) / (hi - lo)) * (yBot - yTop);
   const yMin = yOf(hi), yMax = yOf(lo);          // pixel range that is "inside" the axis
   const sceneTop = yTop - 0, sceneBot = yBot;
@@ -233,11 +237,13 @@ function partyScene(scores) {
 
   const heroes = ROOMMATES.map((r, i) => {
     const o = scores[r.id];
-    return `<div class="member ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
-      <div class="figure">${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
-      <div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points}<small>pts</small></div>
+    const sign = o.points > 0 ? '+' : '';
+    const head = compact ? `<div class="head"><b>${r.name}</b> ${sign}${o.points}</div>` : '';
+    return `<div class="member ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
+      <div class="figure">${head}${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
+      ${compact ? '' : `<div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points}<small>pts</small></div>
       <div class="alt tiny">${o.points === 0 ? 'on earth' : (o.points > 0 ? '▲ ' : '▼ ') + fmtMeters(clampPts(o.points))}</div>
-      <div class="hearts">${hearts(o.recentStrikes)}</div></div>
+      <div class="hearts">${hearts(o.recentStrikes)}</div></div>`}
     </div>`;
   }).join('');
 
