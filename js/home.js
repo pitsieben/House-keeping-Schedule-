@@ -1,8 +1,8 @@
-// The house and its garden (top-down pixel art, Craftpix "Main characters home" free pack, see assets/home/CREDITS.txt).
+// The house and its garden (top-down pixel art, Craftpix "Main characters home" free pack, see img/home/CREDITS.txt).
 // Each roommate looks after one plant: it thrives while their room is tidy and withers when it isn't.
 export const HOME_W = 240, HOME_H = 192;
-const SHEET = new URL('../assets/home/exterior.png', import.meta.url).href;
-export const SMOKE = new URL('../assets/home/Smoke_animation.png', import.meta.url).href;
+const SHEET = new URL('../img/home/exterior.png', import.meta.url).href;
+export const SMOKE = new URL('../img/home/Smoke_animation.png', import.meta.url).href;
 // [x, y, w, h] on exterior.png
 const S = {
   house: [12, 0, 134, 128], cobble: [8, 134, 34, 34],

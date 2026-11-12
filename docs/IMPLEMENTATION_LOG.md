@@ -93,6 +93,6 @@ Template (one entry per completed step, newest last):
 - Not verified: subscribed iPhone calendar picking up the renamed events.
 
 ### 2026-11-12 Home garden scene from Craftpix pixel assets
-- Changed: new `js/home.js` + `assets/home/` (only `exterior.png`, `Smoke_animation.png`, `CREDITS.txt` copied from the uploaded Craftpix pack; raw `Assets/` stays untracked). Rooms tab now opens with a top-down house; each roommate has a plant (Paco and Hritik an apple tree, Pit a bush) that withers into a dirt patch at dirt level ≥ 3. Chimney smoke is a CSS sprite animation. `npm run check` covers `home.js`.
+- Changed: new `js/home.js` + `img/home/` (only `exterior.png`, `Smoke_animation.png`, `CREDITS.txt` copied from the uploaded Craftpix pack; raw `Assets/` stays untracked). Rooms tab now opens with a top-down house; each roommate has a plant (Paco and Hritik an apple tree, Pit a bush) that withers into a dirt patch at dirt level ≥ 3. Chimney smoke is a CSS sprite animation. `npm run check` covers `home.js`.
 - Checked: `npm test` passes; headless-browser screenshots of healthy and withered states and the Rooms tab at 390 px, no console errors.
 - Not verified: on a real phone; the second pack (Pocket Inventory UI) is not used yet.
