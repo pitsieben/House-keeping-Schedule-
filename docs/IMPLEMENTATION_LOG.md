@@ -96,3 +96,8 @@ Template (one entry per completed step, newest last):
 - Changed: new `js/home.js` + `img/home/` (only `exterior.png`, `Smoke_animation.png`, `CREDITS.txt` copied from the uploaded Craftpix pack; raw `Assets/` stays untracked). Rooms tab now opens with a top-down house; each roommate has a plant (Paco and Hritik an apple tree, Pit a bush) that withers into a dirt patch at dirt level ≥ 3. Chimney smoke is a CSS sprite animation. `npm run check` covers `home.js`.
 - Checked: `npm test` passes; headless-browser screenshots of healthy and withered states and the Rooms tab at 390 px, no console errors.
 - Not verified: on a real phone; the second pack (Pocket Inventory UI) is not used yet.
+
+### 2026-11-12 Pixel UI kit replaces emojis, rounded boxes and the tab bar
+- Changed: dropped the house scene (not wanted). New `js/ui.js` + `img/ui/`: (1) emojis in rendered text are swapped for icon sprites from the Pocket Inventory pack, or dropped (`iconize`, run after each render); (2) cards, banners, buttons, chips use 9-slice `border-image` panels built at runtime from the Complete UI Essential Pack frames (CC BY 4.0, credit in `img/ui/CREDITS.txt`), recoloured per state and per roommate; (3) bottom nav is round Pocket Inventory buttons with hover/pressed/selected states and a bobbing icon. Medals are now 1st/2nd/3rd text.
+- Checked: `npm test` passes; headless-browser screenshots of Today and Rooms at 390 px, no emoji left in the DOM, no console errors from the new code.
+- Not verified: Ranks, Calendar, Rules, Admin and login screens after the restyle; real phone; new emojis in future text map to nothing unless added to `MAP` in `js/ui.js`.

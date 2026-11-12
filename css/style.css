@@ -148,10 +148,6 @@ form[data-act="settoken"] { margin-top: 12px; }
 .roompick .btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border-color: var(--c); }
 .roompick .btn:not(.ghost) { background: var(--c); color: #101214; }
 .roompick .sprite.xs { width: 14px; margin: 0; }
-.home { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); line-height: 0; margin-bottom: 8px; background: #86a85c; aspect-ratio: 240 / 192; }
-.home img { width: 100%; image-rendering: pixelated; }
-.home .smoke { position: absolute; left: 23.5%; top: -3%; width: 20%; aspect-ratio: 1; background-size: 600% 100%; image-rendering: pixelated; animation: puff 1.2s steps(6) infinite; }
-@keyframes puff { to { background-position: 120% 0; } }
 .room { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); line-height: 0; }
 .room img { width: 100%; image-rendering: pixelated; }
 .room .fly { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 1px; animation: buzz 1.6s steps(6) infinite; }
@@ -165,4 +161,60 @@ form[data-act="settoken"] { margin-top: 12px; }
 .item:disabled, .outfit:disabled { cursor: default; }
 .item:not(.has) { opacity: .55; } .item.on, .outfit.on { border-color: var(--ok); }
 .outfit { text-align: center; } .outfit .sprite { width: 40px; margin: 0 auto 4px; } .outfit.locked .sprite { filter: brightness(0) opacity(.5); }
-@media (prefers-reduced-motion: reduce) { .room .fly, .home .smoke { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .room .fly { animation: none; } }
+
+/* ---------- pixel UI kit (panels = 9-slice of the pack's holder, see js/ui.js) ---------- */
+.ic { display: inline-block; width: calc(var(--w, 12) * var(--s, 1) * 1px); height: calc(var(--h, 12) * var(--s, 1) * 1px); background: center / 100% 100% no-repeat;
+  image-rendering: pixelated; vertical-align: -2px; margin: 0 3px 0 0; }
+.ic.dim { filter: grayscale(1) brightness(.5); }
+h2 .ic { --s: 1.5; margin-right: 6px; vertical-align: -3px; }
+.ach span .ic { --s: 2; margin: 0 0 4px; }
+.ach span:empty { display: none; }
+.sync .ic { margin: 0; }
+
+.card, .duty, .rankrow, .banner, .ach, .item, .outfit, .btn, .me, .toast {
+  border: 0; border-radius: 0; border-style: solid; border-width: 12px; border-image: var(--px-card) 6 fill / 12px / 0 stretch; image-rendering: pixelated; background: none; }
+.card, .duty, .rankrow, .banner { padding: 6px 8px; margin: 8px 0; }
+.card.pick { border-image-source: var(--px-card); }
+.duty, .rankrow { box-shadow: inset 6px 0 0 var(--c); padding-left: 14px; }
+.duty.mine { border-image-source: var(--px-hi); }
+.duty.missed { border-image-source: var(--px-bad); } .duty.done { border-image-source: var(--px-ok); }
+.banner.swap { border-image-source: var(--px-blue); } .banner.warn { border-image-source: var(--px-gold); } .banner.bad { border-image-source: var(--px-bad); background: none; }
+.ach { border-image-source: var(--px-card); padding: 0 2px; } .ach.got { border-image-source: var(--px-gold); }
+.item, .outfit { border-image-source: var(--px-card); padding: 0 2px; } .item.on, .outfit.on { border-image-source: var(--px-ok); }
+.btn { border-image-source: var(--px-btn); border-width: 10px; border-image-width: 10px; padding: 2px 6px; background: none; min-height: 40px; }
+.btn.go { border-image-source: var(--px-go); } .btn.warn { border-image-source: var(--px-warn); } .btn.ghost { border-image-source: var(--px-ghost); }
+.btn:active { transform: translateY(2px); }
+.btn:hover:not(:disabled) { filter: brightness(1.15); }
+.roompick .btn { border-width: 10px; }
+.roompick .btn.sel { border-image-source: var(--px-pit-on); color: #101214; } .roompick .btn.ghost { border-image-source: var(--px-pit-off); }
+.c-paco.sel { border-image-source: var(--px-paco-on) !important; } .c-paco.ghost { border-image-source: var(--px-paco-off) !important; }
+.c-pit.sel { border-image-source: var(--px-pit-on) !important; } .c-pit.ghost { border-image-source: var(--px-pit-off) !important; }
+.c-hrithik.sel { border-image-source: var(--px-hrithik-on) !important; } .c-hrithik.ghost { border-image-source: var(--px-hrithik-off) !important; }
+.me { padding: 0 6px 0 0; border-width: 10px; } .me.c-paco { border-image-source: var(--px-paco-off); } .me.c-pit { border-image-source: var(--px-pit-off); } .me.c-hrithik { border-image-source: var(--px-hrithik-off); }
+.toast { border-image-source: var(--px-toast); padding: 0 8px; } 
+.card.pick .sprite { margin-top: -4px; }
+
+/* bottom nav: round pack buttons that light up and bob when selected */
+body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+.tabs { background: #243946; border-top: 4px solid #41555f; box-shadow: 0 -4px 0 #31444d; backdrop-filter: none; padding-top: 4px; }
+.tabs button { background: none !important; color: #cdd9de; font: 700 10px Inter; padding: 0; max-width: 64px; }
+.tabs .orb { position: relative; display: block; width: 48px; height: 48px; margin: 0 auto 1px; background: url(../img/ui/orb-0.png) center / 48px 48px no-repeat; image-rendering: pixelated; }
+.tabs .orb .ic { --s: 2; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; }
+.tabs button:hover .orb { background-image: url(../img/ui/orb-1.png); }
+.tabs button:active .orb { background-image: url(../img/ui/orb-2.png); }
+.tabs button:active .orb .ic { transform: translate(-50%, -46%); }
+.tabs button.on { color: #ffe3b0; }
+.tabs button.on .orb { background-image: url(../img/ui/orb-3.png); }
+.tabs button.on .orb .ic { animation: orbbob .9s steps(2) infinite; }
+@keyframes orbbob { 0% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, -62%); } }
+@media (prefers-reduced-motion: reduce) { .tabs button.on .orb .ic { animation: none; } }
+.medal { font-family: var(--px); font-size: 12px; color: #ffe3b0; min-width: 34px; }
+.banner { flex-wrap: nowrap; align-items: flex-start; }
+.duty, .rankrow { position: relative; box-shadow: none; padding-left: 8px; }
+.duty::before, .rankrow::before { content: ''; position: absolute; left: -8px; top: -6px; bottom: -6px; width: 6px; background: var(--c); }
+.chip, .badge, .scene, .member .tag, .member .head, input, .tbl, .bar, .bar i, .room, .roompick .btn, .link { border-radius: 0; }
+.chip, .badge { border-width: 2px; }
+.scene, .room { border: 4px solid #0a0e14; box-shadow: 0 0 0 2px #3f4752; }
+.chip.open { color: #93c5fd; }
+input { border: 2px solid #3f4752; border-bottom-color: #000; }

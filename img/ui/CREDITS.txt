@@ -1,0 +1,2 @@
+UI frames (frame.png, slot-*.png): "Complete UI Essential Pack" by Crusenho Agus Hennihuno (https://crusenho.itch.io), CC BY 4.0 (LICENSE-flat-ui.txt). Recoloured at runtime in js/ui.js.
+Icons and round tab buttons: "Pocket Inventory Series #2 Pixel Map" pack.
