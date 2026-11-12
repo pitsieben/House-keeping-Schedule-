@@ -4,6 +4,7 @@ import {
   dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs,
 } from './schedule.js';
 import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
+import { drawHome, SMOKE, HOME_W, HOME_H } from './home.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
@@ -375,6 +376,12 @@ function roomImage(opts) {
   return roomCache.get(sig);
 }
 
+let homeURL = '', homeSig = '';
+function homeImage(dirts) {
+  const sig = JSON.stringify(dirts);
+  if (sig !== homeSig) { homeSig = sig; const c = document.createElement('canvas'); drawHome(c, dirts).then(() => { homeURL = c.toDataURL('image/png'); const el = document.querySelector('.home img'); if (el) el.src = homeURL; }); }
+  return homeURL;
+}
 function roomsView(scores, now) {
   const who = ui.room || ui.me, mine = who === ui.me, r = person(who);
   const mineAch = achievementsNow()[who] || [];
@@ -393,6 +400,7 @@ function roomsView(scores, now) {
   const fmtMonth = (m) => parseYmd(`${m}-01`).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
   return `
   <div class="roompick">${ROOMMATES.map((p) => `<button class="btn ${p.id === who ? '' : 'ghost'}" data-act="room" data-who="${p.id}" style="--c:${p.color}">${hero(p.id, null, { size: 'xs' })}${p.name}</button>`).join('')}</div>
+  <section class="home" aria-label="The house"><img alt="The house and garden" src="${homeImage(Object.fromEntries(ROOMMATES.map((p) => [p.id, dirtLevel(scores[p.id].points)])))}"><i class="smoke" style="background-image:url(${SMOKE})"></i></section>
   <section class="room ${dirt >= 5 ? 'gross' : ''}"><img src="${img}" alt="${r.name}'s room">${flies}</section>
   <p class="tiny roomstate">${d.emoji} <b>${r.name}'s room: ${d.name}</b>${dirt ? ` · ${scores[who].points} pts — back above 0 cleans it up` : ''}</p>
 

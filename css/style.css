@@ -148,6 +148,10 @@ form[data-act="settoken"] { margin-top: 12px; }
 .roompick .btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border-color: var(--c); }
 .roompick .btn:not(.ghost) { background: var(--c); color: #101214; }
 .roompick .sprite.xs { width: 14px; margin: 0; }
+.home { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); line-height: 0; margin-bottom: 8px; background: #86a85c; aspect-ratio: 240 / 192; }
+.home img { width: 100%; image-rendering: pixelated; }
+.home .smoke { position: absolute; left: 23.5%; top: -3%; width: 20%; aspect-ratio: 1; background-size: 600% 100%; image-rendering: pixelated; animation: puff 1.2s steps(6) infinite; }
+@keyframes puff { to { background-position: 120% 0; } }
 .room { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); line-height: 0; }
 .room img { width: 100%; image-rendering: pixelated; }
 .room .fly { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 1px; animation: buzz 1.6s steps(6) infinite; }
@@ -161,4 +165,4 @@ form[data-act="settoken"] { margin-top: 12px; }
 .item:disabled, .outfit:disabled { cursor: default; }
 .item:not(.has) { opacity: .55; } .item.on, .outfit.on { border-color: var(--ok); }
 .outfit { text-align: center; } .outfit .sprite { width: 40px; margin: 0 auto 4px; } .outfit.locked .sprite { filter: brightness(0) opacity(.5); }
-@media (prefers-reduced-motion: reduce) { .room .fly { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .room .fly, .home .smoke { animation: none; } }
