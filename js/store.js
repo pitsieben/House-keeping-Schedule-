@@ -15,7 +15,7 @@ const TOKEN_KEY = 'house-quest-gh-token';
 
 // Progress is stored as data/state.json on a dedicated `data` branch of this GitHub repo
 // (so it never triggers a Pages rebuild). Reading is public; writing needs a fine-grained token.
-const REPO = 'pitsieben/House-keeping-Schedule-';
+export const REPO = 'pitsieben/House-keeping-Schedule-';
 const BRANCH = 'data';
 const FILE = 'state.json';
 const API = `https://api.github.com/repos/${REPO}`;

@@ -4,7 +4,7 @@ import {
   dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs,
 } from './schedule.js';
 import { spriteURL } from './sprites.js';
-import { store } from './store.js';
+import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
 
 const app = document.getElementById('app');
@@ -644,6 +644,29 @@ function checkReminders() {
 // Invite link: https://site/#t=<token> → store the token, then wipe it from the address bar (fragments never leave the browser)
 const inviteToken = new URLSearchParams(location.hash.slice(1)).get('t');
 if (inviteToken) { store.token = inviteToken; history.replaceState(null, '', location.pathname + location.search); }
+// ---------- auto-update: when a new version is merged to main, reload (after the Pages deploy has had time to finish) ----------
+let bootSha = '', updating = false;
+async function checkForUpdate() {
+  if (updating) return;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/commits/main`, { headers: { ...store.headers(), Accept: 'application/vnd.github.sha' }, cache: 'no-store' });
+    if (!r.ok) return;
+    const sha = (await r.text()).trim();
+    if (!bootSha) { bootSha = sha; return; }
+    if (sha === bootSha) return;
+    updating = true;
+    toast('✨ New version — updating in 2 min');
+    const reloadWhenIdle = () => {
+      if (document.activeElement?.matches('input') || store.pending.length) return setTimeout(reloadWhenIdle, 15000);
+      location.reload();
+    };
+    setTimeout(reloadWhenIdle, 120000); // GitHub Pages needs ~1 min to publish after the merge
+  } catch { /* offline: try again later */ }
+}
+checkForUpdate();
+setInterval(checkForUpdate, 5 * 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(); });
+
 store.subscribe(() => render());
 render();
 store.connect().then(render);
