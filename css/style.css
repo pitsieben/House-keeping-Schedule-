@@ -66,10 +66,13 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 .member .pts { font-family: var(--px); font-size: 12px; margin-top: 4px; }
 .member .alt { font-size: 10px; color: var(--muted); line-height: 1.2; }
 .member .hearts { font-size: 11px; letter-spacing: 0; white-space: nowrap; }
-.scene .legend { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; z-index: 3; background: #1012148c; border-left: 1px solid #fff5; }
+.scene .legend { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; z-index: 3; border-left: 1px solid #fff9; }
 .legend .tk { position: absolute; left: 0; width: 5px; height: 0; border-top: 1px solid #fff8; }
 .legend .tk.major { width: 10px; border-top-color: #fffc; }
+.legend .tk.mark { width: 8px; border-top-color: #fff; }
 .legend .tk.zero { width: 16px; border-top: 2px solid #fff; }
+.legend .tk { filter: drop-shadow(0 1px 0 #0008); }
+.legend .tk b { position: absolute; right: 100%; top: -6px; padding-right: 4px; font: 600 9px/1 Inter, sans-serif; color: #fff; white-space: nowrap; text-shadow: 0 1px 2px #000, 0 0 2px #000; }
 .pts small { font-size: 8px; color: var(--muted); margin-left: 3px; }
 .pts.big { font-size: 22px; text-align: right; min-width: 70px; }
 .bar { height: 8px; margin: 6px 12px 0; background: #0005; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }

@@ -183,6 +183,8 @@ const LAYERS = [
   { from: 172, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
 ];
 
+const fmtDist = (m) => (m < 1000 ? `${m} m` : `${(m / 1000).toLocaleString('en-US')} km`);
+
 function niceStep(span) {
   return [5, 10, 20, 25, 50, 100].find((st) => span / st <= 9) || 200;
 }
@@ -232,6 +234,21 @@ function partyScene(scores) {
     const y = yOf(p);
     if (y < 4 || y > SCENE_H - 4 || p < -130 || p > 172) continue;
     ruler.push(`<i class="tk ${p % 20 === 0 ? 'major' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px"></i>`);
+  }
+  // small distance labels: 50 m, then round 1-2-5 steps (100 m, 200 m, 500 m, 1 km …) (skipped when too close together)
+  const marks = [50];
+  for (let e = 100; e <= 1e9; e *= 10) marks.push(e, 2 * e, 5 * e);
+  for (const dir of [1, -1]) {
+    let last = yOf(0);
+    for (const m of marks) {
+      const p = dir * 20 * Math.log10(m + 1);
+      if (p < -130 || p > 172) break;
+      const y = yOf(p);
+      if (y < 8 || y > SCENE_H - 8) continue;
+      if (Math.abs(y - last) < 26) continue;
+      last = y;
+      ruler.push(`<i class="tk mark" style="top:${y.toFixed(1)}px"><b>${dir < 0 ? '−' : ''}${fmtDist(m)}</b></i>`);
+    }
   }
 
   const heroes = ROOMMATES.map((r, i) => {
