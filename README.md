@@ -18,24 +18,19 @@ Time-travel for testing: `http://localhost:8080/?now=2026-11-14T09:00`
 Push this folder to the repo, then **Settings → Pages → Deploy from branch → `main` / root**.
 The site appears at `https://pitsieben.github.io/House-keeping-Schedule-/`.
 
-## 2. Share progress between your three phones (Firebase, free)
-GitHub Pages is static, so a tiny free database keeps everyone's ticks in sync. Without it the app still works, but each phone only sees its own data.
+## 2. Sync progress through GitHub (leaderboard on every device)
+Progress is saved as `state.json` on a separate **`data`** branch of this repo (created automatically on the first save, so it never redeploys the site). Anyone opening the site sees the live leaderboard (refreshes every 20 s); saving ticks needs a token.
 
-1. https://console.firebase.google.com → **Add project** → **Build → Firestore Database → Create** (production mode).
-2. **Project settings → Your apps → Web (`</>`)** → copy the config into [`js/firebase-config.js`](js/firebase-config.js) as `window.FIREBASE_CONFIG = {...}`.
-3. **Firestore → Rules**, publish:
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{db}/documents {
-       match /houses/{code} {
-         allow get, create, update: if true;   // no "list" → you must know the house code
-         allow delete: if false;
-       }
-     }
-   }
-   ```
-4. Open the site, tap your name, and enter a **house code** (e.g. `latin-lovers-7f3k`). Everyone enters the same code. Treat it like a password — it is not stored in the repo.
+**Once per person/device:**
+1. GitHub → Settings → Developer settings → **Fine-grained personal access tokens** → *Generate*. Repository access: **only** `House-keeping-Schedule-`. Permission: **Contents → Read and write**. Pick a long expiry.
+   (Paco and Hrithik need to be **collaborators** on the repo, or use *your* token on their phones.)
+2. Open the site → pick your name → **Rules → Account → paste token → Save & sync**.
+
+**Shortcut:** once your own device has the token, tap *Copy invite link for a roommate* and send it to them privately (e.g. direct message). Opening that link on their phone saves the token there automatically and removes it from the address bar. Anyone with the link can write to the repo, so don't post it publicly or commit it.
+
+The token stays in that browser only (never in the repo). Edits are queued if you're offline and merged on top of others' changes, so nobody's ticks overwrite each other. The repo must be **public** for read-only viewers; the token is what limits writes.
+
+**Remembered player:** your name is stored in a 1-year cookie, so the next visit on that device skips the "who are you" screen (*Switch player* clears it).
 
 ## 3. Apple Calendar + notifications
 Open the **Calendar** tab on each phone and tap **Subscribe** for your own feed (plus the whole-house feed if you like). Each turn has an alert (morning at 07:45, evening 21:30 & 22:00, weekly cleaning Sat 17:00 / Sun 17:00 / 19:00).
@@ -45,4 +40,5 @@ Calendar feeds live in `calendar/*.ics`; regenerate with `npm run calendar` afte
 - A static subscription can't know about swaps made in the app — use *Download my current schedule* in the Calendar tab for a snapshot that includes them.
 - Web apps can't push while fully closed (iOS limitation without a server), so the calendar alerts are the reliable ping. Add the site to your Home Screen to also get in-app reminders.
 - Tweak points, deadlines, the penalty start date and names in `js/schedule.js`.
+- The token is a write key to this repo's contents — keep it to the three of you; revoke it in GitHub settings anytime.
 - Honor system: the app only lets you tick your own duties, but there's no password.

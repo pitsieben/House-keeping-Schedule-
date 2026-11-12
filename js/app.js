@@ -12,7 +12,12 @@ const params = new URLSearchParams(location.search);
 const NOW_OVERRIDE = params.get('now'); // ?now=2026-11-14T09:00 → time-travel for testing
 const getNow = () => (NOW_OVERRIDE ? new Date(NOW_OVERRIDE) : new Date());
 
-const ui = { tab: 'today', me: localStorage.getItem('house-quest-me') || '', swapFor: null, toast: '' };
+// "Who am I" is remembered in a 1-year cookie (localStorage as fallback)
+const getCookie = (k) => document.cookie.split('; ').find((c) => c.startsWith(k + '='))?.split('=')[1] || '';
+const setCookie = (k, v, days = 365) => { document.cookie = `${k}=${encodeURIComponent(v)}; max-age=${days * 86400}; path=/; SameSite=Lax`; };
+const clearCookie = (k) => { document.cookie = `${k}=; max-age=0; path=/`; };
+const validMe = (id) => (ROOMMATES.some((r) => r.id === id) ? id : '');
+const ui = { tab: 'today', me: validMe(decodeURIComponent(getCookie('house-quest-me')) || localStorage.getItem('house-quest-me') || ''), swapFor: null, toast: '' };
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -52,12 +57,14 @@ function loginView() {
 }
 
 function cloudSetupHtml() {
-  if (!store.cloudAvailable) {
-    return `<p class="tiny muted">💾 Local mode — progress is saved on this device only. See README to turn on shared sync.</p>`;
-  }
-  if (store.houseCode) return '';
-  return `<form class="card" data-act="housecode"><label class="tiny">House code (ask your roommates — everyone enters the same one)</label>
-    <input name="code" placeholder="e.g. latin-lovers-7f3k" autocomplete="off" required><button class="btn">Join house ☁</button></form>`;
+  if (store.canWrite) return '';
+  return `<p class="tiny muted">${store.mode === 'cloud' ? '👀 Read-only: you can see the shared leaderboard.' : '💾 Offline.'} To save your ticks for everyone, add your GitHub token in <b>Rules → Account</b> (once per device).</p>`;
+}
+
+function tokenFormHtml() {
+  if (store.canWrite) return `<p class="tiny muted">🔑 GitHub token saved on this device.</p><button class="btn ghost" data-act="copylink">Copy invite link for a roommate</button> <button class="btn ghost" data-act="rmtoken">Remove token</button>`;
+  return `<form data-act="settoken"><label class="tiny">GitHub token (fine-grained, this repo only, <i>Contents: Read and write</i>) — see README</label>
+    <input name="token" type="password" placeholder="github_pat_…" autocomplete="off" required><button class="btn">Save & sync ☁</button></form>`;
 }
 
 function heroPicker() {
@@ -302,8 +309,8 @@ function rulesView() {
   <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hrithik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
-  <div class="card"><b>Account</b><p class="tiny muted">Playing as ${person(ui.me).name} · ${store.mode === 'cloud' ? '☁ synced with the house' : '💾 local only on this device'}</p>
-  <button class="btn ghost" data-act="changehero">Change hero</button> <button class="btn ghost" data-act="logout">Switch player</button>${store.error ? `<p class="tiny bad">Sync error: ${esc(store.error)}</p>` : ''}</div>`;
+  <div class="card"><b>Account</b><p class="tiny muted">Playing as ${person(ui.me).name} · ${store.mode === 'cloud' ? (store.canWrite ? '☁ synced via GitHub' : '👀 read-only (no token)') : '💾 offline — changes are queued'}${store.pending.length ? ` · ${store.pending.length} waiting to upload` : ''}</p>
+  <button class="btn ghost" data-act="changehero">Change hero</button> <button class="btn ghost" data-act="logout">Switch player</button>${tokenFormHtml()}${store.error ? `<p class="tiny bad">Sync error: ${esc(store.error)}</p>` : ''}</div>`;
 }
 
 function shell(inner) {
@@ -311,7 +318,7 @@ function shell(inner) {
   return `
   <header class="top"><h1 class="logo tiny">HOUSE QUEST</h1>
     <div class="me" style="--c:${person(ui.me).color}">${hero(ui.me, null, { size: 'xs' })}<span>${person(ui.me).name}</span>
-    <span class="sync" title="${store.mode === 'cloud' ? 'Synced' : 'Local only'}">${store.mode === 'cloud' ? '☁' : '💾'}</span></div></header>
+    <span class="sync" title="${store.mode === 'cloud' ? 'Synced' : 'Offline'}">${store.mode === 'cloud' ? (store.pending.length ? '⏳' : '☁') : '💾'}</span></div></header>
   <main class="page">${inner}</main>
   <nav class="tabs">${tabs.map(([k, i, l]) => `<button data-act="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}"><span>${i}</span>${l}</button>`).join('')}</nav>
   ${ui.toast ? `<div class="toast">${esc(ui.toast)}</div>` : ''}`;
@@ -335,8 +342,13 @@ function toast(t) { ui.toast = t; render(); setTimeout(() => { ui.toast = ''; re
 const findDuty = (id) => dutiesForDate(parseYmd(id.split(':')[0])).find((d) => d.id === id);
 
 const actions = {
-  login: (el) => { ui.me = el.dataset.id; localStorage.setItem('house-quest-me', ui.me); },
-  logout: () => { ui.me = ''; localStorage.removeItem('house-quest-me'); },
+  login: (el) => { ui.me = el.dataset.id; setCookie('house-quest-me', ui.me); localStorage.setItem('house-quest-me', ui.me); },
+  logout: () => { ui.me = ''; clearCookie('house-quest-me'); localStorage.removeItem('house-quest-me'); },
+  copylink: async () => {
+    const link = `${location.origin}${location.pathname}#t=${encodeURIComponent(store.token)}`;
+    try { await navigator.clipboard.writeText(link); toast('Invite link copied — send it privately'); } catch { prompt('Copy this link and send it privately:', link); }
+  },
+  rmtoken: () => { store.token = ''; store.mode = 'local'; },
   hero: (el) => { store.setAvatar(ui.me, el.dataset.key); },
   changehero: () => { store.setAvatar(ui.me, undefined); },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
@@ -385,11 +397,12 @@ app.addEventListener('click', (e) => {
   if (fn) { fn(el); render(); }
 });
 app.addEventListener('submit', async (e) => {
-  const form = e.target.closest('[data-act="housecode"]');
+  const form = e.target.closest('[data-act="settoken"]');
   if (!form) return;
   e.preventDefault();
-  store.houseCode = new FormData(form).get('code');
-  await store.connect();
+  store.token = new FormData(form).get('token');
+  await store.pull();
+  await store.flush();
   render();
 });
 
@@ -417,6 +430,9 @@ function checkReminders() {
 }
 
 // ---------- boot ----------
+// Invite link: https://site/#t=<token> → store the token, then wipe it from the address bar (fragments never leave the browser)
+const inviteToken = new URLSearchParams(location.hash.slice(1)).get('t');
+if (inviteToken) { store.token = inviteToken; history.replaceState(null, '', location.pathname + location.search); }
 store.subscribe(() => render());
 render();
 store.connect().then(render);
