@@ -1,10 +1,5 @@
 {
- "completions": {
-  "2026-11-12:PM": {
-   "by": "hrithik",
-   "at": 1794520186718
-  }
- },
+ "completions": {},
  "swaps": {},
  "excused": {
   "2026-11-12:AM": {
@@ -45,6 +40,10 @@
   "1794520186718-0cby": {
    "t": 1794520186718,
    "text": "Hrithik completed evening reset (late)"
+  },
+  "1794520353924-zrlj": {
+   "t": 1794520353924,
+   "text": "🛡 Admin un-ticked Hrithik's evening reset"
   }
  },
  "admin": {
