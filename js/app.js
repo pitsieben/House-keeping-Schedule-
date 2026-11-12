@@ -183,14 +183,6 @@ const LAYERS = [
   { from: 172, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
 ];
 
-function fmtRuler(p) {
-  const m = 10 ** (Math.abs(p) / 20);
-  if (m < 1000) return `${Math.round(m)}m`;
-  if (m < 1e6) return `${Math.round(m / 1000)}km`;
-  const sup = '⁰¹²³⁴⁵⁶⁷⁸⁹';
-  return `10${String(Math.round(Math.log10(m / 1000))).split('').map((d) => sup[d]).join('')}km`; // 10³km, 10⁴km …
-}
-
 function niceStep(span) {
   return [5, 10, 20, 25, 50, 100].find((st) => span / st <= 9) || 200;
 }
@@ -234,25 +226,13 @@ function partyScene(scores) {
   }).join('');
 
   const earthY = yOf(0);
-  // ruler: a tick every 10 points (≈ ×3.16), labelled every 20 points (×10: 10 m, 100 m, 1 km …)
+  // ruler: plain tick lines, every 10 points (longer every 20 = each ×10 in meters); no labels, purely illustrative
   const ruler = [];
-  let lastLabel = -99;
   for (let p = Math.ceil(lo / 10) * 10; p <= hi; p += 10) {
     const y = yOf(p);
     if (y < 4 || y > SCENE_H - 4 || p < -130 || p > 172) continue;
-    const major = p % 20 === 0;
-    const label = major && Math.abs(y - lastLabel) >= 16 ? (p === 0 ? '0' : (p < 0 ? '−' : '') + fmtRuler(p)) : '';
-    if (label) lastLabel = y;
-    ruler.push(`<i class="tk ${major ? 'major' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px">${label ? `<b>${label}</b>` : ''}</i>`);
+    ruler.push(`<i class="tk ${p % 20 === 0 ? 'major' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px"></i>`);
   }
-  // faint layer names inside the scene, at the top-left of each band
-  let lastName = -99;
-  const names = bands.slice().sort((x, y2) => x.top - y2.top).map(({ l, top, bottom }) => {
-    const y = Math.max(top, 0) + 4;
-    if (bottom - top < 18 || y - lastName < 16 || y > SCENE_H - 16) return '';
-    lastName = y;
-    return `<span class="ln" style="top:${y.toFixed(1)}px">${l.name}</span>`;
-  }).join('');
 
   const heroes = ROOMMATES.map((r, i) => {
     const o = scores[r.id];
@@ -270,7 +250,6 @@ function partyScene(scores) {
     ${bandHtml}
     <div class="earthline" style="top:${earthY.toFixed(1)}px"></div>
     <div class="world">${heroes}</div>
-    ${names}
     <aside class="legend">${ruler.join('')}</aside>
   </section>`;
 }
