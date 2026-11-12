@@ -740,7 +740,7 @@ if (inviteToken) { store.token = inviteToken; history.replaceState(null, '', loc
 // ---------- auto-update: when a new version is merged to main, reload (after the Pages deploy has had time to finish) ----------
 let bootSha = '', updating = false;
 async function checkForUpdate() {
-  if (updating) return;
+  if (updating || store.rateLimited) return;
   try {
     const r = await fetch(`https://api.github.com/repos/${REPO}/commits/main`, { headers: { ...store.headers(), Accept: 'application/vnd.github.sha' }, cache: 'no-store' });
     if (!r.ok) return;

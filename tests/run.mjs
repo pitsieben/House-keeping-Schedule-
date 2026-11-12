@@ -100,5 +100,24 @@ async function syncRun(mode) {
   check('sync: recreates missing state.json on existing branch', c.saved.completions.d1 && c.pending === 0, JSON.stringify(c));
 }
 
+// ---- rate limit: slower read-only polling, back-off on 403, recovery on success
+{
+  for (const k of Object.keys(ls)) delete ls[k];
+  let code = 200;
+  globalThis.fetch = async () => ({ status: code, ok: code < 300, headers: { get: () => null }, json: async () => ({ sha: '1', content: Buffer.from(JSON.stringify(empty())).toString('base64') }) });
+  const { store } = await import('../js/store.js?limit');
+  store.token = '';
+  await store.pull();
+  check('rate limit: read-only polls every 120 s', store.pollDelay() === 120000, store.pollDelay());
+  store.token = 'github_pat_test';
+  check('rate limit: with a token polls every 20 s', store.pollDelay() === 20000, store.pollDelay());
+  code = 403; await store.pull();
+  check('rate limit: first 403 backs off 5 min', store.rateLimited && store.pollDelay() === 300000, store.pollDelay());
+  await store.pull(); await store.pull(); await store.pull();
+  check('rate limit: repeated 403 caps at 30 min', store.pollDelay() === 1800000, store.pollDelay());
+  code = 200; await store.pull();
+  check('rate limit: recovers to normal after a success', !store.rateLimited && store.pollDelay() === 20000, store.pollDelay());
+}
+
 console.log(fail ? `\n${fail} FAILED, ${pass} passed` : `\nALL CHECKS PASSED (${pass})`);
 process.exit(fail ? 1 : 0);

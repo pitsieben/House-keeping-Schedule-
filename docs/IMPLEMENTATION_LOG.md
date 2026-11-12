@@ -106,3 +106,8 @@ Template (one entry per completed step, newest last):
 - Changed: body font is Pixelify Sans (headings keep Press Start 2P); viewport locked (`user-scalable=no`, gesture/dblclick blocked, `touch-action: manipulation`, inputs 16 px so iOS doesn't zoom). Hearts are hand-drawn 7×7 sprites (`js/ui.js`). Scene name tags use framed panels in each roommate's colour. Leaderboard rows are now box-free (rank text, hero, coloured ribbon name, icon stats, hearts, dotted rule) and fit 375 px. New `js/decor.js`: sun, skyline, birds, planes, planets, satellites, rocket, moon, worms and buried pack items (key, chest, gems…) behind the heroes in the Ascent scene.
 - Checked: `npm test` passes; 375 px headless screenshots of Ranks and Today; decor sprites drawn in isolation.
 - Not verified: sky/space layers inside the live scene (test data keeps everyone underground); on a real phone; zoom lock on iOS Safari vs Home Screen app.
+
+### 2026-11-12 Polling rate-limit back-off
+- Changed: `js/store.js` polls every 120 s without a token (20 s with one) via a self-scheduling timer; a 403/429 backs off 5 → 10 → 30 min and resets on the next success; tab-focus refresh and the update check in `js/app.js` are skipped while rate limited. Section G item 2 is done.
+- Checked: 5 new checks in `tests/run.mjs` (delays, back-off steps, cap, recovery); `npm test` ALL CHECKS PASSED (22).
+- Not verified: a real 1 h run against api.github.com; the same session wrote code and checks (no separate game-checker pass).
