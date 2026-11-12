@@ -5,6 +5,8 @@ import {
 } from './schedule.js';
 import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
+import { skyFor, refreshWeather } from './sky.js';
+import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
@@ -193,13 +195,13 @@ function fmtMeters(p) {
 }
 // ascending by points; each layer runs from its `from` up to the next layer's `from`
 const LAYERS = [
-  { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames' },
-  { from: -130, name: 'Lower mantle', color: '#b3331a' },
-  { from: -115, name: 'Upper mantle', color: '#8a2c16' },
-  { from: -91, name: "Earth's crust", color: '#5c4a44' },
-  { from: -60, name: 'Bedrock', color: '#55575c' },
-  { from: -34, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones' },
-  { from: -20, name: 'Roots & worms', color: '#5d3f25' },
+  { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames', tex: 'magma' },
+  { from: -130, name: 'Lower mantle', color: '#b3331a', tex: 'mantle' },
+  { from: -115, name: 'Upper mantle', color: '#8a2c16', tex: 'mantle' },
+  { from: -91, name: "Earth's crust", color: '#5c4a44', tex: 'crust' },
+  { from: -60, name: 'Bedrock', color: '#55575c', tex: 'rock' },
+  { from: -34, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones', tex: 'sand' },
+  { from: -20, name: 'Roots & worms', color: '#5d3f25', tex: 'dirt' },
   { from: 0, name: 'Ground level', color: '#8fd3f7' },
   { from: 20, name: 'Birds & rooftops', color: '#7cc4f5' },
   { from: 40, name: 'Skyscrapers', color: '#62b2ec' },
@@ -249,12 +251,17 @@ function partyScene(scores) {
     let deco = '';
     const h = bottom - top;
     if (l.deco === 'stars') deco = `<i class="stars"></i>`;
-    if (l.deco === 'clouds') deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
+    if (l.deco === 'clouds' && false) deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
     if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
     if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
-    const grass = l.from === 0 ? '<i class="grass"></i>' : '';
-    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background:${l.color}">${grass}${deco}</div>`;
+    const grass = l.from === 0 ? `<i class="grass" style="background:${grassEdge(skyFor(getNow()).grass)} repeat-x bottom / 32px 16px"></i>` : '';
+    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background-color:${l.color}${l.tex ? `;background-image:${groundTexture(l.tex)};background-size:192px 192px` : ''}">${grass}${deco}</div>`;
   }).join('');
+
+  // sky picture (time of day + weather) over the sky layers, fading out towards space
+  const sky = skyFor(getNow()), skyTop = Math.max(0, yOf(94)), skyBot = Math.min(SCENE_H, yOf(0));
+  const skyHtml = skyBot - skyTop > 6 ? `<div class="sky" style="top:${skyTop.toFixed(1)}px;height:${(skyBot - skyTop).toFixed(1)}px">
+    <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
 
   const earthY = yOf(0);
   // ruler: plain tick lines, every 10 points (longer every 20 = each ×10 in meters); no labels, purely illustrative
@@ -284,7 +291,7 @@ function partyScene(scores) {
     const o = scores[r.id];
     const sign = o.points > 0 ? '+' : '';
     const head = compact ? `<div class="head"><b>${r.name}</b> ${sign}${o.points}</div>` : '';
-    return `<div class="member ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
+    return `<div class="member c-${r.id} ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
       <div class="figure">${head}${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
       ${compact ? '' : `<div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points}<small>pts</small></div>
       <div class="alt tiny">${o.points === 0 ? 'on earth' : (o.points > 0 ? '▲ ' : '▼ ') + fmtMeters(clampPts(o.points))}</div>
@@ -294,6 +301,8 @@ function partyScene(scores) {
 
   return `<section class="scene" style="height:${SCENE_H}px">
     ${bandHtml}
+    ${skyHtml}
+    <i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wash}"></i>${sky.wet ? `<i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wet}"></i>` : ''}${sky.snow ? `<i class="snowcap" style="top:${(earthY - 2).toFixed(1)}px"></i>` : ''}
     <div class="earthline" style="top:${earthY.toFixed(1)}px"></div>
     <div class="world">${heroes}</div>
     <aside class="legend">${ruler.join('')}</aside>
@@ -422,16 +431,21 @@ function ranksView(scores) {
   const medals = ['1st', '2nd', '3rd'];
   return `
   <h2>Leaderboard</h2>
-  ${ranked.map((o, i) => {
+  <div class="board">${ranked.map((o, i) => {
     const r = person(o.id);
-    return `<article class="rankrow" style="--c:${r.color}">
+    const stat = (ic, n, t) => `<span class="st" title="${t}">${ic}<b>${n}</b></span>`;
+    return `<article class="rank c-${o.id}" style="--c:${r.color}">
       <div class="medal">${medals[i]}</div>
-      ${hero(o.id, scores, { crown: i === 0 && o.points > 0, size: 'sm' })}
-      <div class="grow"><b>${r.name}</b> <span class="tiny muted">LV ${o.level} ${o.title}</span>
-        <div class="tiny">✅ ${o.done} on time · 🟠 ${o.late} late · ❌ ${o.missed} missed · 🔥 streak ${o.streak} (best ${o.best}) · ${hearts(o.recentStrikes)}</div>
-        <div class="tiny">${badgesFor(o).map(([e, t]) => `<span class="badge" title="${t}">${e} ${t}</span>`).join('') || '<span class="muted">No badges yet</span>'}</div></div>
+      <div class="fig">${hero(o.id, scores, { crown: i === 0 && o.points > 0, size: 'sm' })}</div>
+      <div class="info">
+        <div class="rib"><b>${r.name}</b></div>
+        <div class="lv">LV ${o.level} · ${o.title}</div>
+        <div class="stats">${stat('✅', o.done, 'on time')}${stat('🟠', o.late, 'late')}${stat('❌', o.missed, 'missed')}${stat('🔥', `${o.streak}/${o.best}`, 'streak / best')}</div>
+        <div class="hearts">${hearts(o.recentStrikes)}</div>
+        ${badgesFor(o).length ? `<div class="bdg">${badgesFor(o).map(([e, t]) => `<span title="${t}">${e}${t}</span>`).join('')}</div>` : ''}
+      </div>
       <div class="pts big">${o.points}<small>pts</small></div>
-    </article>`; }).join('')}
+    </article>`; }).join('')}</div>
   <h2>How points work</h2>
   <table class="tbl small"><tbody>
     <tr><td>🌅 Morning reset on time</td><td class="plus">+${POINTS.done.morning}</td></tr>
@@ -725,13 +739,15 @@ function checkReminders() {
 }
 
 // ---------- boot ----------
+['gesturestart', 'gesturechange', 'gestureend'].forEach((e) => document.addEventListener(e, (ev) => ev.preventDefault()));
+document.addEventListener('dblclick', (ev) => ev.preventDefault());
 // Invite link: https://site/#t=<token> → store the token, then wipe it from the address bar (fragments never leave the browser)
 const inviteToken = new URLSearchParams(location.hash.slice(1)).get('t');
 if (inviteToken) { store.token = inviteToken; history.replaceState(null, '', location.pathname + location.search); }
 // ---------- auto-update: when a new version is merged to main, reload (after the Pages deploy has had time to finish) ----------
 let bootSha = '', updating = false;
 async function checkForUpdate() {
-  if (updating) return;
+  if (updating || store.rateLimited) return;
   try {
     const r = await fetch(`https://api.github.com/repos/${REPO}/commits/main`, { headers: { ...store.headers(), Accept: 'application/vnd.github.sha' }, cache: 'no-store' });
     if (!r.ok) return;
@@ -754,6 +770,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 store.subscribe(() => render());
 render();
 initUI().then(render);
+refreshWeather(render);
+setInterval(() => refreshWeather(render), 10 * 60000);
 store.connect().then(render);
 setInterval(() => { if (!document.activeElement?.matches('input')) render(); checkReminders(); }, 30000);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});

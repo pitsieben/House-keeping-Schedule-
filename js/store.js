@@ -19,7 +19,9 @@ export const REPO = 'pitsieben/House-keeping-Schedule-';
 const BRANCH = 'data';
 const FILE = 'state.json';
 const API = `https://api.github.com/repos/${REPO}`;
-const POLL_MS = 20000;
+const POLL_MS = 20000;          // with a token (rate limit 5000/h)
+const POLL_READONLY_MS = 120000; // without a token: unauthenticated API is only 60 req/h per IP
+const BACKOFF_MS = [300000, 600000, 1800000]; // after a 403/429: 5, 10, then 30 min
 
 const empty = () => ({ completions: {}, swaps: {}, excused: {}, avatars: {}, log: {} });
 
@@ -75,19 +77,28 @@ class Store {
   /** Start polling GitHub for the shared state. */
   async connect() {
     if (!this.timer) {
-      this.timer = setInterval(() => this.pull(), POLL_MS);
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.pull(); });
+      this.timer = true;
+      const loop = () => setTimeout(async () => { await this.pull(); loop(); }, this.pollDelay());
+      loop();
+      document.addEventListener('visibilitychange', () => { if (!document.hidden && !this.rateLimited) this.pull(); });
     }
     await this.pull();
     if (this.pending.length) this.flush();
   }
+
+  limitHits = 0;
+  get rateLimited() { return this.limitHits > 0; }
+  /** Next poll delay: slower without a token, and backing off while GitHub says we are rate limited. */
+  pollDelay() { return this.limitHits ? BACKOFF_MS[Math.min(this.limitHits, BACKOFF_MS.length) - 1] : (this.canWrite ? POLL_MS : POLL_READONLY_MS); }
 
   async fetchRemote(useEtag) {
     const headers = this.headers(useEtag && this.etag ? { 'If-None-Match': this.etag } : {});
     const res = await fetch(`${API}/contents/${FILE}?ref=${BRANCH}&_=${useEtag ? '' : Date.now()}`, { headers, cache: 'no-store' });
     if (res.status === 304) return null;
     if (res.status === 404) return { state: empty(), sha: null, missing: true };
+    if (res.status === 403 || res.status === 429) { this.limitHits++; throw new Error(`GitHub rate limit (${res.status}), retrying later`); }
     if (!res.ok) throw new Error(`GitHub ${res.status}`);
+    this.limitHits = 0;
     if (useEtag) this.etag = res.headers.get('etag');
     const j = await res.json();
     return { state: { ...empty(), ...JSON.parse(b64decode(j.content)) }, sha: j.sha };

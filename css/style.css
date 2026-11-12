@@ -1,17 +1,17 @@
 :root {
   --bg: #101214; --bg2: #181b1f; --card: #1c1f24; --line: #343a42; --text: #f2f3f5; --muted: #9aa1ab;
   --ok: #34d399; --warn: #fbbf24; --bad: #f87171; --go: #2563eb;
-  --px: 'Press Start 2P', ui-monospace, monospace;
+  --px: 'Press Start 2P', ui-monospace, monospace; --body: 'Pixelify Sans', 'Press Start 2P', ui-monospace, monospace;
 }
 * { box-sizing: border-box; }
 html { background: var(--bg); }
-html, body { margin: 0; color: var(--text); font: 15px/1.45 Inter, system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
+html, body { margin: 0; color: var(--text); font: 16px/1.4 var(--body); touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-text-size-adjust: 100%; }
 body { min-height: 100vh; padding-bottom: calc(76px + env(safe-area-inset-bottom)); background: transparent; }
 /* pixel living room in Barcelona, dimmed so text stays readable */
 body::before { content: ''; position: fixed; inset: 0; z-index: -1; image-rendering: pixelated;
   background: linear-gradient(rgba(16,18,20,.80), rgba(16,18,20,.90)), url(../assets/livingroom.svg) center / cover no-repeat; }
 h2 { font-family: var(--px); font-size: 12px; letter-spacing: .5px; margin: 26px 0 12px; line-height: 1.6; }
-h2 small { font: 500 11px Inter; color: var(--muted); margin-left: 6px; }
+h2 small { font: 500 11px var(--body); color: var(--muted); margin-left: 6px; }
 b { font-weight: 700; }
 .muted { color: var(--muted); } .tiny { font-size: 12.5px; } .bad { color: var(--bad); }
 .boot { padding: 40px; text-align: center; font-family: var(--px); font-size: 11px; }
@@ -38,7 +38,7 @@ b { font-weight: 700; }
 .card.pick .sprite { width: 96px; animation: bob 1.2s steps(2) infinite; }
 .card.feed .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 form.card { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; text-align: left; }
-input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg2); color: var(--text); font: inherit; }
+input, textarea { -webkit-user-select: text; user-select: text; font-size: 16px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg2); color: var(--text); font: inherit; }
 
 /* party scene */
 .party { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
@@ -60,7 +60,7 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 .member .tag { position: absolute; left: 3px; right: 3px; top: 6px; padding: 4px 2px; border-radius: 8px; background: #101214e6; border: 2px solid var(--c); }
 .member .nm { font-family: var(--px); font-size: 9px; color: var(--c); display: block; }
 .member .head { display: inline-block; margin-bottom: 3px; padding: 2px 6px; border-radius: 6px; background: #101214e6; border: 2px solid var(--c);
-  font: 700 10px Inter, sans-serif; color: #fff; white-space: nowrap; } .member .head b { color: var(--c); }
+  font: 700 10px var(--body); color: #fff; white-space: nowrap; } .member .head b { color: var(--c); }
 .member.you .head b::after { content: ' ◀'; font-size: 7px; }
 .member.you .nm::after { content: ' ◀'; font-size: 7px; }
 .member .pts { font-family: var(--px); font-size: 12px; margin-top: 4px; }
@@ -72,7 +72,7 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 .legend .tk.mark { width: 8px; border-top-color: #fff; }
 .legend .tk.zero { width: 16px; border-top: 2px solid #fff; }
 .legend .tk { filter: drop-shadow(0 1px 0 #0008); }
-.legend .tk b { position: absolute; right: 100%; top: -6px; padding-right: 4px; font: 600 9px/1 Inter, sans-serif; color: #fff; white-space: nowrap; text-shadow: 0 1px 2px #000, 0 0 2px #000; }
+.legend .tk b { position: absolute; right: 100%; top: -6px; padding-right: 4px; font: 600 9px/1 var(--body); color: #fff; white-space: nowrap; text-shadow: 0 1px 2px #000, 0 0 2px #000; }
 .pts small { font-size: 8px; color: var(--muted); margin-left: 3px; }
 .pts.big { font-size: 22px; text-align: right; min-width: 70px; }
 .bar { height: 8px; margin: 6px 12px 0; background: #0005; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
@@ -99,7 +99,7 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 .chip.ok { color: var(--ok); border-color: var(--ok); } .chip.warn { color: var(--warn); border-color: var(--warn); }
 .chip.bad { color: var(--bad); border-color: var(--bad); } .chip.open { color: #93c5fd; border-color: #93c5fd; } .chip.muted { color: var(--muted); }
 
-.btn { font: 700 13px Inter, sans-serif; padding: 9px 14px; border-radius: 10px; border: 2px solid var(--go); background: var(--go); color: #fff; cursor: pointer; text-decoration: none; display: inline-block; }
+.btn { font: 700 13px var(--body); padding: 9px 14px; border-radius: 10px; border: 2px solid var(--go); background: var(--go); color: #fff; cursor: pointer; text-decoration: none; display: inline-block; }
 .btn:active { transform: translateY(2px); }
 .btn.go { background: #16a34a; border-color: #4ade80; } .btn.warn { background: #b45309; border-color: var(--warn); }
 .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); }
@@ -124,7 +124,7 @@ input { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); 
 
 .tabs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 6; display: flex; justify-content: center; gap: 2px;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); background: #0c0e10f2; border-top: 2px solid var(--line); backdrop-filter: blur(8px); }
-.tabs button { flex: 1; max-width: 120px; background: none; border: 0; border-radius: 10px; color: var(--muted); font: 600 10px Inter; padding: 6px 1px; cursor: pointer; }
+.tabs button { flex: 1; max-width: 120px; background: none; border: 0; border-radius: 10px; color: var(--muted); font: 600 10px var(--body); padding: 6px 1px; cursor: pointer; }
 .tabs button span { display: block; font-size: 20px; } .tabs button.on { color: #fff; background: var(--go); }
 .toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9;
   background: #fbbf24; color: #101214; padding: 10px 18px; border-radius: 12px; font-weight: 700; box-shadow: 0 6px 20px #0008; }
@@ -198,7 +198,7 @@ h2 .ic { --s: 1.5; margin-right: 6px; vertical-align: -3px; }
 /* bottom nav: round pack buttons that light up and bob when selected */
 body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 .tabs { background: #243946; border-top: 4px solid #41555f; box-shadow: 0 -4px 0 #31444d; backdrop-filter: none; padding-top: 4px; }
-.tabs button { background: none !important; color: #cdd9de; font: 700 10px Inter; padding: 0; max-width: 64px; }
+.tabs button { background: none !important; color: #cdd9de; font: 700 10px var(--body); padding: 0; max-width: 64px; }
 .tabs .orb { position: relative; display: block; width: 48px; height: 48px; margin: 0 auto 1px; background: url(../img/ui/orb-0.png) center / 48px 48px no-repeat; image-rendering: pixelated; }
 .tabs .orb .ic { --s: 2; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; }
 .tabs button:hover .orb { background-image: url(../img/ui/orb-1.png); }
@@ -218,3 +218,52 @@ body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 .scene, .room { border: 4px solid #0a0e14; box-shadow: 0 0 0 2px #3f4752; }
 .chip.open { color: #93c5fd; }
 input { border: 2px solid #3f4752; border-bottom-color: #000; }
+
+/* hearts are hand-drawn 7×7 sprites */
+.hearts .ic { --s: 2; margin: 0 2px 0 0; vertical-align: -1px; } .hearts { letter-spacing: 0; line-height: 1; }
+
+/* scene tags use framed panels in the roommate's colour */
+.member .tag { border: 0; border-style: solid; border-width: 10px; border-image: var(--px-card) 6 fill / 10px / 0 stretch; image-rendering: pixelated; background: none; padding: 0 0 2px; left: 0; right: 0; top: 2px; }
+.c-paco .tag { border-image-source: var(--px-paco-dk); } .c-pit .tag { border-image-source: var(--px-pit-dk); } .c-hrithik .tag { border-image-source: var(--px-hrithik-dk); }
+.member .nm { font-size: 8px; } .member .pts { font-size: 11px; margin-top: 2px; } .member .alt { font-size: 11px; }
+.member .head { border: 0; border-radius: 0; background: #101214; box-shadow: 0 0 0 2px var(--c); }
+
+/* leaderboard: no boxes, just drawn pieces on a dotted rule */
+.board { margin: 6px 0; }
+.rank { position: relative; display: grid; grid-template-columns: 44px 52px 1fr auto; align-items: center; gap: 0 8px; padding: 12px 0 14px;
+  border-bottom: 4px dotted #3f4752; }
+.rank:last-child { border-bottom: 0; }
+.rank .medal { font-family: var(--px); font-size: 11px; color: #ffe3b0; text-shadow: 2px 2px 0 #000; min-width: 0; align-self: start; padding-top: 6px; }
+.rank:first-child .medal { color: #ffd23f; font-size: 13px; }
+.rank .fig .sprite { width: 44px; margin: 0; }
+.rank .info { min-width: 0; }
+.rank .rib { display: inline-block; border: 0 solid; border-width: 0 12px; border-image: var(--px-rib-pit) 0 10 fill / 0 12px / 0 stretch; image-rendering: pixelated; padding: 3px 4px 4px; color: #101214; font-size: 15px; line-height: 1; margin-bottom: 4px; }
+.rank.c-paco .rib { border-image-source: var(--px-rib-paco); } .rank.c-pit .rib { border-image-source: var(--px-rib-pit); } .rank.c-hrithik .rib { border-image-source: var(--px-rib-hrithik); }
+.rank .rib b { font-weight: 700; }
+.rank .lv { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.rank .stats { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+.rank .st { display: inline-flex; align-items: center; } .rank .st .ic { margin-right: 3px; }
+.rank .hearts { margin-top: 5px; }
+.rank .bdg { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; font-size: 12px; color: var(--muted); }
+.rank .pts.big { font-family: var(--px); font-size: 14px; min-width: 0; text-align: right; align-self: start; padding-top: 6px; }
+.rank .pts small { display: block; font-size: 7px; margin: 3px 0 0; }
+@media (max-width: 400px) { .rank { grid-template-columns: 38px 44px 1fr auto; gap: 0 6px; } .rank .fig .sprite { width: 38px; } .rank .stats { gap: 8px; font-size: 13px; } .rank .pts.big { font-size: 12px; } }
+.tbl { background: none; border-radius: 0; } .tbl td, .tbl th { border-bottom: 2px dotted #3f4752; } .tbl tr.today td { background: #ffffff12; }
+
+/* Ascent sky: cloud-set picture by time of day / weather, faded into the space layers above */
+.scene .sky { position: absolute; left: 0; right: 16px; z-index: 0; overflow: hidden; }
+.scene .skyimg { position: absolute; inset: 0; background-size: cover; background-position: center bottom; background-repeat: no-repeat; image-rendering: pixelated;
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent); mask-image: linear-gradient(to top, #000 55%, transparent); }
+.scene .skytint { position: absolute; inset: 0; background: #2b3441; }
+.scene .fx { position: absolute; inset: 0; }
+.scene .fx.rain, .scene .fx.storm { background: repeating-linear-gradient(105deg, transparent 0 7px, #cfe3ff66 7px 8px, transparent 8px 15px); background-size: 40px 40px; animation: rainfall .5s linear infinite; }
+.scene .fx.storm { box-shadow: inset 0 0 0 999px #0000; animation: rainfall .4s linear infinite, flash 5s steps(1) infinite; }
+.scene .fx.snow { background: radial-gradient(2px 2px at 20% 30%, #fff 90%, transparent), radial-gradient(2px 2px at 70% 60%, #fff 90%, transparent), radial-gradient(2px 2px at 45% 85%, #fff 90%, transparent); background-size: 60px 60px; animation: snowfall 4s linear infinite; }
+@keyframes rainfall { to { background-position: -20px 40px; } }
+@keyframes snowfall { to { background-position: 14px 60px; } }
+@keyframes flash { 0%, 93%, 96%, 100% { background-color: transparent; } 94%, 97% { background-color: #ffffff66; } }
+@media (prefers-reduced-motion: reduce) { .scene .fx { animation: none; } }
+.scene .gtint { position: absolute; left: 0; right: 16px; bottom: 0; z-index: 1; pointer-events: none; }
+.scene .snowcap { position: absolute; left: 0; right: 16px; height: 12px; z-index: 1; background: #f4f8ff; box-shadow: 0 4px 0 #dbe6f5; image-rendering: pixelated; }
+.scene .band { image-rendering: pixelated; }
+.scene .grass { height: 16px; top: auto; bottom: 0; border-bottom: 0; image-rendering: pixelated; z-index: 1; }

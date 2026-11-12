@@ -101,3 +101,28 @@ Template (one entry per completed step, newest last):
 - Changed: dropped the house scene (not wanted). New `js/ui.js` + `img/ui/`: (1) emojis in rendered text are swapped for icon sprites from the Pocket Inventory pack, or dropped (`iconize`, run after each render); (2) cards, banners, buttons, chips use 9-slice `border-image` panels built at runtime from the Complete UI Essential Pack frames (CC BY 4.0, credit in `img/ui/CREDITS.txt`), recoloured per state and per roommate; (3) bottom nav is round Pocket Inventory buttons with hover/pressed/selected states and a bobbing icon. Medals are now 1st/2nd/3rd text.
 - Checked: `npm test` passes; headless-browser screenshots of Today and Rooms at 390 px, no emoji left in the DOM, no console errors from the new code.
 - Not verified: Ranks, Calendar, Rules, Admin and login screens after the restyle; real phone; new emojis in future text map to nothing unless added to `MAP` in `js/ui.js`.
+
+### 2026-11-12 Pixel font, no zoom, drawn hearts, box-free leaderboard, Ascent decor
+- Changed: body font is Pixelify Sans (headings keep Press Start 2P); viewport locked (`user-scalable=no`, gesture/dblclick blocked, `touch-action: manipulation`, inputs 16 px so iOS doesn't zoom). Hearts are hand-drawn 7×7 sprites (`js/ui.js`). Scene name tags use framed panels in each roommate's colour. Leaderboard rows are now box-free (rank text, hero, coloured ribbon name, icon stats, hearts, dotted rule) and fit 375 px. New `js/decor.js`: sun, skyline, birds, planes, planets, satellites, rocket, moon, worms and buried pack items (key, chest, gems…) behind the heroes in the Ascent scene.
+- Checked: `npm test` passes; 375 px headless screenshots of Ranks and Today; decor sprites drawn in isolation.
+- Not verified: sky/space layers inside the live scene (test data keeps everyone underground); on a real phone; zoom lock on iOS Safari vs Home Screen app.
+
+### 2026-11-12 Polling rate-limit back-off
+- Changed: `js/store.js` polls every 120 s without a token (20 s with one) via a self-scheduling timer; a 403/429 backs off 5 → 10 → 30 min and resets on the next success; tab-focus refresh and the update check in `js/app.js` are skipped while rate limited. Section G item 2 is done.
+- Checked: 5 new checks in `tests/run.mjs` (delays, back-off steps, cap, recovery); `npm test` ALL CHECKS PASSED (22).
+- Not verified: a real 1 h run against api.github.com; the same session wrote code and checks (no separate game-checker pass).
+
+### 2026-11-12 Ascent decor removed
+- Changed: deleted `js/decor.js` and its CSS; the Ascent scene is back to its original layers (stars, clouds, bones, flames) with no extra sprites.
+- Checked: `npm test` ALL CHECKS PASSED (22).
+- Not verified: visually in the live scene.
+
+### 2026-11-12 Ascent sky and ground follow time of day and weather
+- Changed: new `js/sky.js` + `img/sky/` (8 cloud sets from the Clouds pack). The set is chosen from the phase of day (night, dawn, morning, day, golden hour, dusk, twilight, relative to sunrise/sunset) and the weather (clear, partly, cloudy, fog, rain, snow, storm); grey weather uses the overcast set plus a tint, rain/snow/storm add animated overlays. The sky picture fades into the space layers. The ground gets a colour wash by phase, a wet tint in rain/fog, a snow cap, and a grass colour. Weather + sunrise/sunset come from Open-Meteo for Barcelona coordinates (no key, no personal data), cached 30 min in localStorage; offline falls back to clear with 07:30/18:00. Test with `?now=…&weather=rain|snow|storm|fog|cloudy|partly|clear`.
+- Checked: `npm test` passes; screenshots for dusk/clear, midday/rain and night/snow.
+- Not verified: real Open-Meteo response in the browser; sky layers high above the ground (needs positive scores); phone.
+
+### 2026-11-12 Detailed ground textures
+- Changed: new `js/ground.js` draws 96×96 px tiles on a canvas (shown at 2x) for each underground layer: dirt with roots and pebbles, sandy bone layer with strata, cracked rock, crust with strata and gold flecks, mantle swirls, glowing magma. The grass edge is a drawn blade tile in the weather/time grass colour and now sits on the ground line. Time-of-day/weather washes still apply on top.
+- Checked: `npm test` passes; screenshot of the full scene at midday/clear.
+- Not verified: other times/weather with the new textures; phone.
