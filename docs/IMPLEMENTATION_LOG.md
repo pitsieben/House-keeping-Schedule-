@@ -16,7 +16,7 @@ Started 2026-11-12. Git history has the details; this file is the map.
 - Everything shown (points, levels, strikes, achievements, collectibles, dirt, altitude) is derived from `state.json` on each render; nothing derived is stored.
 - `main` protected by ruleset (PR required, no bypass), so the token cannot change code.
 - Auto-update: `sw.js` serves same-origin files network-first with revalidation (cache only offline); the app polls `commits/main` every 5 min and reloads 2 min after a change (not while typing or with unsynced ticks).
-- Player identity: 1-year cookie `house-quest-me` (+ localStorage fallback). Heroes fixed per roommate: Hrithik `s1`, Paco `s2`, Pit `s3`.
+- Player identity: 1-year cookie `house-quest-me` (+ localStorage fallback). Heroes fixed per roommate: Hritik `s1`, Paco `s2`, Pit `s3`.
 
 ## C. Where to work
 | Task | Files (key functions/types) | How to test |
@@ -79,10 +79,25 @@ Template (one entry per completed step, newest last):
 
 ### 2026-11-12 Personal rooms, monthly achievements, collectibles, outfits, dirt
 - Changed: new `js/rooms.js` (8 monthly achievements, 13 collectibles from achievements + levels 2–6, slots shelf 3 / wall 2 / floor 3 / rug 1, 6 dirt levels, 128×80 room canvas); `js/sprites.js` outfits (7, unlocked at 0/1/2/3/5/7/10 achievements) via palette roles + cape; `js/app.js` Rooms tab, outfit everywhere, place/outfit actions; state fields `rooms[who].placed`, `outfits[who]`.
-- Checked: headless with a simulated Nov (Pit perfect → 6 achievements, LV 4; Paco −300 → Biohazard; Hrithik −5 → Unmade); screenshots of all three rooms and the full tab; 7 tabs fit at 390 px.
+- Checked: headless with a simulated Nov (Pit perfect → 6 achievements, LV 4; Paco −300 → Biohazard; Hritik −5 → Unmade); screenshots of all three rooms and the full tab; 7 tabs fit at 390 px.
 - Not verified: on a real phone.
 
 ### 2026-11-12 Agent workflow, regression test, this log
 - Changed: `CLAUDE.md`, `.claude/agents/*` (explorer, tester, ui-checker, game-engineer, game-checker, pixel-artist, docs-release), `tests/run.mjs` + `npm test`/`npm run check`, `scripts/tutorial-shots.mjs`, `.gitignore` now only ignores `.claude/settings.local.json`.
 - Checked: `npm test` ALL CHECKS PASSED (17); `npm run check` clean.
 - Not verified: agents run end to end in a fresh session.
+
+### 2026-11-12 Spelling: Hritik
+- Changed: display name Hrithik → Hritik everywhere (app, page title, README, CLAUDE.md, log, `calendar/hrithik.ics` + `house.ics` regenerated, tutorial screenshots regenerated). Internal id `hrithik` and the feed filename kept so saved progress and calendar subscriptions keep working.
+- Checked: `npm test` ALL CHECKS PASSED (17); pick-name screenshot shows "Hritik".
+- Not verified: subscribed iPhone calendar picking up the renamed events.
+
+### 2026-11-12 Home garden scene from Craftpix pixel assets
+- Changed: new `js/home.js` + `img/home/` (only `exterior.png`, `Smoke_animation.png`, `CREDITS.txt` copied from the uploaded Craftpix pack; raw `Assets/` stays untracked). Rooms tab now opens with a top-down house; each roommate has a plant (Paco and Hritik an apple tree, Pit a bush) that withers into a dirt patch at dirt level ≥ 3. Chimney smoke is a CSS sprite animation. `npm run check` covers `home.js`.
+- Checked: `npm test` passes; headless-browser screenshots of healthy and withered states and the Rooms tab at 390 px, no console errors.
+- Not verified: on a real phone; the second pack (Pocket Inventory UI) is not used yet.
+
+### 2026-11-12 Pixel UI kit replaces emojis, rounded boxes and the tab bar
+- Changed: dropped the house scene (not wanted). New `js/ui.js` + `img/ui/`: (1) emojis in rendered text are swapped for icon sprites from the Pocket Inventory pack, or dropped (`iconize`, run after each render); (2) cards, banners, buttons, chips use 9-slice `border-image` panels built at runtime from the Complete UI Essential Pack frames (CC BY 4.0, credit in `img/ui/CREDITS.txt`), recoloured per state and per roommate; (3) bottom nav is round Pocket Inventory buttons with hover/pressed/selected states and a bobbing icon. Medals are now 1st/2nd/3rd text.
+- Checked: `npm test` passes; headless-browser screenshots of Today and Rooms at 390 px, no emoji left in the DOM, no console errors from the new code.
+- Not verified: Ranks, Calendar, Rules, Admin and login screens after the restyle; real phone; new emojis in future text map to nothing unless added to `MAP` in `js/ui.js`.

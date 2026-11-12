@@ -1,6 +1,6 @@
 # House Quest: working notes for Claude
 
-Static web app (GitHub Pages) that turns the house chores of Paco · Pit · Hrithik into a game. No build step, no framework, plain ES modules. Read `README.md` for setup, `TUTORIAL.md` for how roommates use it, and `docs/IMPLEMENTATION_LOG.md` for the compact log (where to work, status, next steps). Don't re-read them unless the task needs them.
+Static web app (GitHub Pages) that turns the house chores of Paco · Pit · Hritik into a game. No build step, no framework, plain ES modules. Read `README.md` for setup, `TUTORIAL.md` for how roommates use it, and `docs/IMPLEMENTATION_LOG.md` for the compact log (where to work, status, next steps). Don't re-read them unless the task needs them.
 
 ## Layout
 - `index.html`, `css/style.css`, `sw.js` (network-first service worker), `manifest.webmanifest`, icons.

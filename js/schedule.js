@@ -6,7 +6,7 @@ export const ADMIN = 'pit'; // the only roommate who sees the admin dashboard
 export const ROOMMATES = [
   { id: 'paco', name: 'Paco', color: '#f59e0b' },
   { id: 'pit', name: 'Pit', color: '#38bdf8' },
-  { id: 'hrithik', name: 'Hrithik', color: '#a78bfa' },
+  { id: 'hrithik', name: 'Hritik', color: '#a78bfa' },
 ];
 
 export const CONFIG = {
@@ -71,7 +71,7 @@ export const person = (id) => ROOMMATES.find((r) => r.id === id);
 
 export function captainFor(d) {
   const dow = d.getDay();
-  if (dow === 5) { // Friday rotates Paco → Pit → Hrithik, starting Fri 13 Nov 2026
+  if (dow === 5) { // Friday rotates Paco → Pit → Hritik, starting Fri 13 Nov 2026
     const n = weeksBetween(new Date(2026, 10, 13), d);
     return ROOMMATES[((n % 3) + 3) % 3].id;
   }

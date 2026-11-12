@@ -19,7 +19,7 @@ await p.evaluate(async(NOW)=>{
   // yesterday's (Wed 18) evening: claimed by its assignee but faked, still up for grabs
   const ev=S.dutiesForDate(S.parseYmd('2026-11-18')).find(x=>x.kind==='evening');
   st.completions[ev.id]={by:ev.assignee,at:ev.deadline-3600e3}; st.fakes[ev.id]={by:'pit',at:now-2*3600e3};
-  // a pending swap request Paco -> Hrithik for Saturday morning
+  // a pending swap request Paco -> Hritik for Saturday morning
   const sat=S.dutiesForDate(S.parseYmd('2026-11-21')).find(x=>x.kind==='morning');
   st.swaps[sat.id]={from:sat.assignee,to:'hrithik',status:'pending',at:now-3600e3};
   const L=(t,txt)=>{st.log[t+'-x']={t,text:txt}};
@@ -31,7 +31,6 @@ const shot=async(name,sel)=>{ if(sel){ const el=await p.$(sel); await el.scrollI
 await go(null); await shot('1-pick-name.png');
 await go('hrithik'); await p.evaluate(()=>window.scrollTo(0,0)); await shot('2-today.png');
 await p.addStyleTag({content:'header.top{position:static!important}'});
-await shot('3-leaderboard.png','.scene');
 await shot('4-swap-request.png','.banner.swap');
 await shot('5-your-duty.png','.duty.mine');
 await p.click('.duty.mine [data-act="swapopen"]'); await p.waitForTimeout(200); await shot('6-swap.png','.duty.mine');
