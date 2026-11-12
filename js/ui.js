@@ -1,16 +1,16 @@
 // Pixel UI kit from the "Pocket Inventory" pack: icon sprites (replace emojis), recoloured 9-slice panels, nav orbs.
 import { ROOMMATES } from './schedule.js';
 
-const ICONS = ['house', 'heart', 'x', 'alert', 'save', 'chest', 'face', 'dumbbell', 'gamepad', 'headphones', 'clover', 'notebook', 'gem', 'key', 'log',
+const ICONS = ['house', 'x', 'alert', 'save', 'chest', 'face', 'dumbbell', 'gamepad', 'headphones', 'clover', 'notebook', 'gem', 'key', 'log',
   'bandage', 'medkit', 'mail', 'apple', 'melon', 'pine', 'cherry', 'acorn', 'scroll', 'wrench', 'pencil', 'bag'];
 // emoji → icon name ('' = just drop it)
 const MAP = {
   '🏠': 'house', '🗓': 'notebook', '🏆': 'gem', '🏅': 'gem', '🛏': 'chest', '🎁': 'chest', '📅': 'mail', '📜': 'scroll', '🛡': 'medkit',
-  '🚩': 'alert', '🚨': 'alert', '⚠': 'alert', '☣': 'alert', '❌': 'x', '✖': 'x', '✕': 'x', '❤': 'heart', '🖤': 'heart dim',
+  '🚩': 'alert', '🚨': 'alert', '⚠': 'alert', '☣': 'alert', '❌': 'x', '✖': 'x', '✕': 'x', '❤': 'heart', '🖤': 'heartx',
   '💾': 'save', '☁': 'save', '🔑': 'key', '🤥': 'face', '🦹': 'face', '✅': 'clover', '🟠': 'pine', '🌅': 'melon', '✨': 'clover',
   '🔥': 'cherry', '🤝': 'bandage', '🧼': 'pine', '🐉': 'gamepad', '👑': 'gem', '👕': 'bag', '🐦': 'apple', '😇': 'clover', '👀': 'pencil', '⏳': 'log', '📋': 'notebook',
 };
-const KNOWN = new Set(ICONS);
+const KNOWN = new Set([...ICONS, 'heart', 'heartx']);
 const RE = /(\p{Extended_Pictographic}\uFE0F?|[✔✖✕✓⇄⬇])\s?/gu, HAS = /\p{Extended_Pictographic}|[✔✖✕✓⇄⬇]/u;
 
 const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
@@ -46,8 +46,18 @@ function tint(img, { rot = 0, hue = null, sat = 0.35, light = 1, alpha = 1 }) {
 const hueOf = (hex) => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), d = mx - Math.min(r, g, b);
   return d ? (60 * (mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4)) : 0; };
 
+// hand-drawn pixel art from text rows
+export function art(rows, pal, scale = 1) {
+  const c = document.createElement('canvas'); c.width = rows[0].length; c.height = rows.length;
+  const g = c.getContext('2d');
+  rows.forEach((row, y) => [...row].forEach((ch, x) => { if (pal[ch]) { g.fillStyle = pal[ch]; g.fillRect(x, y, 1, 1); } }));
+  return c.toDataURL('image/png');
+}
+const HEART = ['.oo.oo.', 'orhrrro', 'orrrrro', 'orrrrro', '.orrro.', '..oro..', '...o...'];
+const HEART_PAL = { full: { o: '#2a0e14', r: '#e5384c', h: '#ff9aa8' }, empty: { o: '#1b1d22', r: '#3a3f48', h: '#4a505a' } };
+
 export async function initUI() {
-  const [frame, blue, orange, ...icons] = await Promise.all([load(url('frame')), load(url('slot-blue')), load(url('slot-orange')), ...ICONS.map((n) => load(url(n)))]);
+  const [frame, blue, orange, ribbon, ...icons] = await Promise.all([load(url('frame')), load(url('slot-blue')), load(url('slot-orange')), load(url('ribbon')), ...ICONS.map((n) => load(url(n)))]);
   let css = ':root{';
   if (frame && blue && orange) {
     // panels: grey frame colourised + darkened; buttons: blue/orange slots, hue-rotated
@@ -55,9 +65,10 @@ export async function initUI() {
       gold: { hue: 42, sat: 0.4, light: 0.36 }, blue: { hue: 215, sat: 0.45, light: 0.38 }, ghost: { hue: 215, sat: 0.08, light: 0.22, alpha: 0.35 }, toast: { hue: 42, sat: 0.9, light: 1.2 } };
     for (const [k, o] of Object.entries(P)) css += `--px-${k}:${tint(frame, o)};`;
     css += `--px-btn:${tint(blue, {})};--px-go:${tint(blue, { rot: -75 })};--px-warn:${tint(orange, {})};`;
-    for (const r of ROOMMATES) css += `--px-${r.id}-on:${tint(orange, { rot: hueOf(r.color) - 36 })};--px-${r.id}-off:${tint(frame, { hue: hueOf(r.color), sat: 0.45, light: 0.3, alpha: 0.6 })};`;
+    for (const r of ROOMMATES) css += `--px-${r.id}-on:${tint(orange, { rot: hueOf(r.color) - 36 })};--px-${r.id}-off:${tint(frame, { hue: hueOf(r.color), sat: 0.45, light: 0.3, alpha: 0.6 })};--px-${r.id}-dk:${tint(frame, { hue: hueOf(r.color), sat: 0.4, light: 0.2 })};` + (ribbon ? `--px-rib-${r.id}:${tint(ribbon, { hue: hueOf(r.color), sat: 0.7, light: 0.95 })};` : '');
   }
   css += '}';
+  for (const [n, p] of [['heart', HEART_PAL.full], ['heartx', HEART_PAL.empty]]) css += `.ic.n-${n}{--w:7;--h:7;background-image:url(${art(HEART, p)})}`;
   icons.forEach((im, i) => {
     if (!im) return;
     const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);

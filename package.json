@@ -6,6 +6,6 @@
     "calendar": "node scripts/build-calendar.mjs",
     "serve": "python3 -m http.server 8080",
     "test": "node tests/run.mjs",
-    "check": "node --check js/app.js && node --check js/store.js && node --check js/schedule.js && node --check js/rooms.js && node --check js/sprites.js && node --check js/ui.js && node --check sw.js"
+    "check": "node --check js/app.js && node --check js/store.js && node --check js/schedule.js && node --check js/rooms.js && node --check js/sprites.js && node --check js/ui.js && node --check js/decor.js && node --check sw.js"
   }
 }

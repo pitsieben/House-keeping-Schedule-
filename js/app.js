@@ -5,6 +5,7 @@ import {
 } from './schedule.js';
 import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
+import { decorFor } from './decor.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
@@ -252,6 +253,7 @@ function partyScene(scores) {
     if (l.deco === 'clouds') deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
     if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
     if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
+    deco += decorFor(l.from, h);
     const grass = l.from === 0 ? '<i class="grass"></i>' : '';
     return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background:${l.color}">${grass}${deco}</div>`;
   }).join('');
@@ -284,7 +286,7 @@ function partyScene(scores) {
     const o = scores[r.id];
     const sign = o.points > 0 ? '+' : '';
     const head = compact ? `<div class="head"><b>${r.name}</b> ${sign}${o.points}</div>` : '';
-    return `<div class="member ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
+    return `<div class="member c-${r.id} ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
       <div class="figure">${head}${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
       ${compact ? '' : `<div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points}<small>pts</small></div>
       <div class="alt tiny">${o.points === 0 ? 'on earth' : (o.points > 0 ? '▲ ' : '▼ ') + fmtMeters(clampPts(o.points))}</div>
@@ -422,16 +424,21 @@ function ranksView(scores) {
   const medals = ['1st', '2nd', '3rd'];
   return `
   <h2>Leaderboard</h2>
-  ${ranked.map((o, i) => {
+  <div class="board">${ranked.map((o, i) => {
     const r = person(o.id);
-    return `<article class="rankrow" style="--c:${r.color}">
+    const stat = (ic, n, t) => `<span class="st" title="${t}">${ic}<b>${n}</b></span>`;
+    return `<article class="rank c-${o.id}" style="--c:${r.color}">
       <div class="medal">${medals[i]}</div>
-      ${hero(o.id, scores, { crown: i === 0 && o.points > 0, size: 'sm' })}
-      <div class="grow"><b>${r.name}</b> <span class="tiny muted">LV ${o.level} ${o.title}</span>
-        <div class="tiny">✅ ${o.done} on time · 🟠 ${o.late} late · ❌ ${o.missed} missed · 🔥 streak ${o.streak} (best ${o.best}) · ${hearts(o.recentStrikes)}</div>
-        <div class="tiny">${badgesFor(o).map(([e, t]) => `<span class="badge" title="${t}">${e} ${t}</span>`).join('') || '<span class="muted">No badges yet</span>'}</div></div>
+      <div class="fig">${hero(o.id, scores, { crown: i === 0 && o.points > 0, size: 'sm' })}</div>
+      <div class="info">
+        <div class="rib"><b>${r.name}</b></div>
+        <div class="lv">LV ${o.level} · ${o.title}</div>
+        <div class="stats">${stat('✅', o.done, 'on time')}${stat('🟠', o.late, 'late')}${stat('❌', o.missed, 'missed')}${stat('🔥', `${o.streak}/${o.best}`, 'streak / best')}</div>
+        <div class="hearts">${hearts(o.recentStrikes)}</div>
+        ${badgesFor(o).length ? `<div class="bdg">${badgesFor(o).map(([e, t]) => `<span title="${t}">${e}${t}</span>`).join('')}</div>` : ''}
+      </div>
       <div class="pts big">${o.points}<small>pts</small></div>
-    </article>`; }).join('')}
+    </article>`; }).join('')}</div>
   <h2>How points work</h2>
   <table class="tbl small"><tbody>
     <tr><td>🌅 Morning reset on time</td><td class="plus">+${POINTS.done.morning}</td></tr>
@@ -725,6 +732,8 @@ function checkReminders() {
 }
 
 // ---------- boot ----------
+['gesturestart', 'gesturechange', 'gestureend'].forEach((e) => document.addEventListener(e, (ev) => ev.preventDefault()));
+document.addEventListener('dblclick', (ev) => ev.preventDefault());
 // Invite link: https://site/#t=<token> → store the token, then wipe it from the address bar (fragments never leave the browser)
 const inviteToken = new URLSearchParams(location.hash.slice(1)).get('t');
 if (inviteToken) { store.token = inviteToken; history.replaceState(null, '', location.pathname + location.search); }
