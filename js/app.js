@@ -5,6 +5,7 @@ import {
 } from './schedule.js';
 import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
+import { skyFor, refreshWeather } from './sky.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
@@ -249,12 +250,17 @@ function partyScene(scores) {
     let deco = '';
     const h = bottom - top;
     if (l.deco === 'stars') deco = `<i class="stars"></i>`;
-    if (l.deco === 'clouds') deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
+    if (l.deco === 'clouds' && false) deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
     if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
     if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
-    const grass = l.from === 0 ? '<i class="grass"></i>' : '';
+    const grass = l.from === 0 ? `<i class="grass" style="background:${skyFor(getNow()).grass}"></i>` : '';
     return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background:${l.color}">${grass}${deco}</div>`;
   }).join('');
+
+  // sky picture (time of day + weather) over the sky layers, fading out towards space
+  const sky = skyFor(getNow()), skyTop = Math.max(0, yOf(94)), skyBot = Math.min(SCENE_H, yOf(0));
+  const skyHtml = skyBot - skyTop > 6 ? `<div class="sky" style="top:${skyTop.toFixed(1)}px;height:${(skyBot - skyTop).toFixed(1)}px">
+    <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
 
   const earthY = yOf(0);
   // ruler: plain tick lines, every 10 points (longer every 20 = each ×10 in meters); no labels, purely illustrative
@@ -294,6 +300,8 @@ function partyScene(scores) {
 
   return `<section class="scene" style="height:${SCENE_H}px">
     ${bandHtml}
+    ${skyHtml}
+    <i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wash}"></i>${sky.wet ? `<i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wet}"></i>` : ''}${sky.snow ? `<i class="snowcap" style="top:${(earthY - 2).toFixed(1)}px"></i>` : ''}
     <div class="earthline" style="top:${earthY.toFixed(1)}px"></div>
     <div class="world">${heroes}</div>
     <aside class="legend">${ruler.join('')}</aside>
@@ -761,6 +769,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 store.subscribe(() => render());
 render();
 initUI().then(render);
+refreshWeather(render);
+setInterval(() => refreshWeather(render), 10 * 60000);
 store.connect().then(render);
 setInterval(() => { if (!document.activeElement?.matches('input')) render(); checkReminders(); }, 30000);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});

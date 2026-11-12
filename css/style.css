@@ -249,3 +249,19 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .rank .pts small { display: block; font-size: 7px; margin: 3px 0 0; }
 @media (max-width: 400px) { .rank { grid-template-columns: 38px 44px 1fr auto; gap: 0 6px; } .rank .fig .sprite { width: 38px; } .rank .stats { gap: 8px; font-size: 13px; } .rank .pts.big { font-size: 12px; } }
 .tbl { background: none; border-radius: 0; } .tbl td, .tbl th { border-bottom: 2px dotted #3f4752; } .tbl tr.today td { background: #ffffff12; }
+
+/* Ascent sky: cloud-set picture by time of day / weather, faded into the space layers above */
+.scene .sky { position: absolute; left: 0; right: 16px; z-index: 0; overflow: hidden; }
+.scene .skyimg { position: absolute; inset: 0; background-size: cover; background-position: center bottom; background-repeat: no-repeat; image-rendering: pixelated;
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent); mask-image: linear-gradient(to top, #000 55%, transparent); }
+.scene .skytint { position: absolute; inset: 0; background: #2b3441; }
+.scene .fx { position: absolute; inset: 0; }
+.scene .fx.rain, .scene .fx.storm { background: repeating-linear-gradient(105deg, transparent 0 7px, #cfe3ff66 7px 8px, transparent 8px 15px); background-size: 40px 40px; animation: rainfall .5s linear infinite; }
+.scene .fx.storm { box-shadow: inset 0 0 0 999px #0000; animation: rainfall .4s linear infinite, flash 5s steps(1) infinite; }
+.scene .fx.snow { background: radial-gradient(2px 2px at 20% 30%, #fff 90%, transparent), radial-gradient(2px 2px at 70% 60%, #fff 90%, transparent), radial-gradient(2px 2px at 45% 85%, #fff 90%, transparent); background-size: 60px 60px; animation: snowfall 4s linear infinite; }
+@keyframes rainfall { to { background-position: -20px 40px; } }
+@keyframes snowfall { to { background-position: 14px 60px; } }
+@keyframes flash { 0%, 93%, 96%, 100% { background-color: transparent; } 94%, 97% { background-color: #ffffff66; } }
+@media (prefers-reduced-motion: reduce) { .scene .fx { animation: none; } }
+.scene .gtint { position: absolute; left: 0; right: 16px; bottom: 0; z-index: 1; pointer-events: none; }
+.scene .snowcap { position: absolute; left: 0; right: 16px; height: 12px; z-index: 1; background: #f4f8ff; box-shadow: 0 4px 0 #dbe6f5; image-rendering: pixelated; }

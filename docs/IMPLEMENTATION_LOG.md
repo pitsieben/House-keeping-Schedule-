@@ -116,3 +116,8 @@ Template (one entry per completed step, newest last):
 - Changed: deleted `js/decor.js` and its CSS; the Ascent scene is back to its original layers (stars, clouds, bones, flames) with no extra sprites.
 - Checked: `npm test` ALL CHECKS PASSED (22).
 - Not verified: visually in the live scene.
+
+### 2026-11-12 Ascent sky and ground follow time of day and weather
+- Changed: new `js/sky.js` + `img/sky/` (8 cloud sets from the Clouds pack). The set is chosen from the phase of day (night, dawn, morning, day, golden hour, dusk, twilight, relative to sunrise/sunset) and the weather (clear, partly, cloudy, fog, rain, snow, storm); grey weather uses the overcast set plus a tint, rain/snow/storm add animated overlays. The sky picture fades into the space layers. The ground gets a colour wash by phase, a wet tint in rain/fog, a snow cap, and a grass colour. Weather + sunrise/sunset come from Open-Meteo for Barcelona coordinates (no key, no personal data), cached 30 min in localStorage; offline falls back to clear with 07:30/18:00. Test with `?now=…&weather=rain|snow|storm|fog|cloudy|partly|clear`.
+- Checked: `npm test` passes; screenshots for dusk/clear, midday/rain and night/snow.
+- Not verified: real Open-Meteo response in the browser; sky layers high above the ground (needs positive scores); phone.
