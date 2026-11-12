@@ -3,7 +3,7 @@ import {
   person, ymd, parseYmd, addDays, startOfDay, captainFor, dutiesForDate, dutiesBetween,
   dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs,
 } from './schedule.js';
-import { SPRITES, SPRITE_KEYS, spriteURL } from './sprites.js';
+import { spriteURL } from './sprites.js';
 import { store } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
 
@@ -34,8 +34,11 @@ function countdown(ms) {
 }
 
 // ---------- sprites ----------
+// Each roommate always gets their own pixel hero
+const HEROES = { hrithik: 's1', paco: 's2', pit: 's3' };
+
 function hero(id, scores, { crown = false, size = 'md' } = {}) {
-  const key = store.state.avatars?.[id];
+  const key = HEROES[id];
   const sweat = (scores?.[id]?.recentStrikes || 0) > 0;
   return `<img class="sprite ${size}" alt="" src="${spriteURL(key, { crown, sweat })}">`;
 }
@@ -65,23 +68,6 @@ function tokenFormHtml() {
   if (store.canWrite) return `<p class="tiny muted">🔑 GitHub token saved on this device.</p><button class="btn ghost" data-act="copylink">Copy invite link for a roommate</button> <button class="btn ghost" data-act="rmtoken">Remove token</button>`;
   return `<form data-act="settoken"><label class="tiny">GitHub token (fine-grained, this repo only, <i>Contents: Read and write</i>) — see README</label>
     <input name="token" type="password" placeholder="github_pat_…" autocomplete="off" required><button class="btn">Save & sync ☁</button></form>`;
-}
-
-function heroPicker() {
-  const taken = new Set(Object.entries(store.state.avatars || {}).filter(([k]) => k !== ui.me).map(([, v]) => v));
-  return `
-  <main class="center">
-    <h1 class="logo small">CHOOSE YOUR<br>HERO</h1>
-    <p class="muted">Which pixel hero is you, ${person(ui.me).name}?</p>
-    <div class="party">
-      ${SPRITE_KEYS.map((k) => `
-        <button class="card pick" data-act="hero" data-key="${k}" ${taken.has(k) ? 'disabled' : ''}>
-          <img class="sprite lg" alt="" src="${spriteURL(k)}"><b>${SPRITES[k].label}</b>
-          ${taken.has(k) ? '<span class="tiny muted">taken</span>' : ''}
-        </button>`).join('')}
-    </div>
-    <button class="btn ghost" data-act="logout">← Not ${person(ui.me).name}</button>
-  </main>`;
 }
 
 function statusChip(st, duty, now) {
@@ -310,7 +296,7 @@ function rulesView() {
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
   <div class="card"><b>Account</b><p class="tiny muted">Playing as ${person(ui.me).name} · ${store.mode === 'cloud' ? (store.canWrite ? '☁ synced via GitHub' : '👀 read-only (no token)') : '💾 offline — changes are queued'}${store.pending.length ? ` · ${store.pending.length} waiting to upload` : ''}</p>
-  <button class="btn ghost" data-act="changehero">Change hero</button> <button class="btn ghost" data-act="logout">Switch player</button>${tokenFormHtml()}${store.error ? `<p class="tiny bad">Sync error: ${esc(store.error)}</p>` : ''}</div>`;
+  <button class="btn ghost" data-act="logout">Switch player</button>${tokenFormHtml()}${store.error ? `<p class="tiny bad">Sync error: ${esc(store.error)}</p>` : ''}</div>`;
 }
 
 function shell(inner) {
@@ -327,7 +313,6 @@ function shell(inner) {
 function render() {
   const now = getNow();
   if (!ui.me) { app.innerHTML = loginView(); return; }
-  if (!store.state.avatars?.[ui.me]) { app.innerHTML = heroPicker(); return; }
   const scores = computeScores(store.state, now);
   const views = {
     today: () => todayView(scores, now), week: () => weekView(now), ranks: () => ranksView(scores),
@@ -349,8 +334,6 @@ const actions = {
     try { await navigator.clipboard.writeText(link); toast('Invite link copied — send it privately'); } catch { prompt('Copy this link and send it privately:', link); }
   },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
-  hero: (el) => { store.setAvatar(ui.me, el.dataset.key); },
-  changehero: () => { store.setAvatar(ui.me, undefined); },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
     const now = getNow(), d = findDuty(el.dataset.id);
