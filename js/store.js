@@ -112,8 +112,8 @@ class Store {
     try {
       for (let attempt = 0; attempt < 5 && this.pending.length; attempt++) {
         const batch = this.pending.slice();
-        const r = await this.fetchRemote(false);
-        if (r.missing) await this.ensureBranch();
+        let r = await this.fetchRemote(false);
+        if (r.missing) { await this.ensureBranch(); r = await this.fetchRemote(false); }
         const next = JSON.parse(JSON.stringify(r.state));
         batch.forEach((p) => setPath(next, p.path, p.del ? undefined : p.value));
         const body = { message: 'House Quest: update progress', branch: BRANCH, content: b64encode(JSON.stringify(next, null, 1)) };
@@ -134,14 +134,19 @@ class Store {
     }
   }
 
+  /** Create the data branch if it doesn't exist yet: an orphan branch holding only state.json (no copy of the app code). */
   async ensureBranch() {
-    const repo = await (await fetch(API, { headers: this.headers() })).json();
-    const base = await (await fetch(`${API}/git/ref/heads/${repo.default_branch}`, { headers: this.headers() })).json();
-    const res = await fetch(`${API}/git/refs`, {
-      method: 'POST', headers: this.headers({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ ref: `refs/heads/${BRANCH}`, sha: base.object.sha }),
-    });
-    if (!res.ok && res.status !== 422) throw new Error(`Could not create data branch (${res.status})`);
+    const h = this.headers({ 'Content-Type': 'application/json' });
+    const exists = await fetch(`${API}/git/ref/heads/${BRANCH}`, { headers: this.headers(), cache: 'no-store' });
+    if (exists.ok) return; // branch is there, only state.json was missing
+    const post = async (path, body) => {
+      const res = await fetch(`${API}/git/${path}`, { method: 'POST', headers: h, body: JSON.stringify(body) });
+      if (!res.ok && !(path === 'refs' && res.status === 422)) throw new Error(`Could not create data branch (${res.status})`);
+      return res.json();
+    };
+    const tree = await post('trees', { tree: [{ path: FILE, mode: '100644', type: 'blob', content: JSON.stringify(empty(), null, 1) }] });
+    const commit = await post('commits', { message: 'House Quest: start data branch', tree: tree.sha, parents: [] });
+    await post('refs', { ref: `refs/heads/${BRANCH}`, sha: commit.sha });
   }
 
   /** Apply a change locally right away, queue it, and commit to GitHub in the background. */
