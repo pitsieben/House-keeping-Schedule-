@@ -230,7 +230,7 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .scene .deco { position: absolute; image-rendering: pixelated; z-index: 0; opacity: .95; pointer-events: none; }
 .scene .deco.sky { opacity: .55; } .scene .band { isolation: isolate; }
 .scene .ic.deco { margin: 0; vertical-align: 0; }
-@keyframes drift { 50% { transform: translateX(10px); } } .scene .deco.nat { image-rendering: pixelated; background-repeat: no-repeat; } .scene .deco:not(.sky):not(.ic):not(.nat) { animation: drift 6s steps(6) infinite; }
+@keyframes drift { 50% { transform: translateX(10px); } } .scene .deco:not(.sky):not(.ic) { animation: drift 6s steps(6) infinite; }
 @media (prefers-reduced-motion: reduce) { .scene .deco { animation: none !important; } }
 
 /* leaderboard: no boxes, just drawn pieces on a dotted rule */

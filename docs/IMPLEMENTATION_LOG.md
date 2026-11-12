@@ -111,8 +111,3 @@ Template (one entry per completed step, newest last):
 - Changed: `js/store.js` polls every 120 s without a token (20 s with one) via a self-scheduling timer; a 403/429 backs off 5 → 10 → 30 min and resets on the next success; tab-focus refresh and the update check in `js/app.js` are skipped while rate limited. Section G item 2 is done.
 - Checked: 5 new checks in `tests/run.mjs` (delays, back-off steps, cap, recovery); `npm test` ALL CHECKS PASSED (22).
 - Not verified: a real 1 h run against api.github.com; the same session wrote code and checks (no separate game-checker pass).
-
-### 2026-11-12 Ascent background uses house-pack nature art
-- Changed: `js/decor.js` now cuts trees, bushes, mushrooms, scarecrow, stumps, logs, rocks, boulders and crystals from `img/nature/exterior.png` (Craftpix house pack, credit file included). Ground level has an apple tree, mushrooms, bush, scarecrow and big tree; roots layer has stumps/log/worm; bones and bedrock have rocks and boulders; crust has crystals. The small pack icons (chest, gems, key…) are gone from the scene. Sky and space sprites unchanged.
-- Checked: `npm test` passes; every layer rendered in a test grid at 150 px band height.
-- Not verified: inside the live scene (needs positive scores for sky layers); on a phone.
