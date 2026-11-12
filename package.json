@@ -1,9 +1,0 @@
-{
-  "name": "house-quest",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "calendar": "node scripts/build-calendar.mjs",
-    "serve": "python3 -m http.server 8080"
-  }
-}
