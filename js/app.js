@@ -149,27 +149,103 @@ function banners(scores, now) {
 
 function hearts(n) { return '❤'.repeat(Math.max(0, 3 - n)) + '🖤'.repeat(Math.min(3, n)); }
 
-// Heaven (top) ↔ Earth (0 pts, middle) ↔ Hell (bottom). Points are squashed with tanh so nobody leaves the scene.
-const SCALE = 100;
-const heightOf = (points) => (1 - Math.tanh(points / SCALE)) / 2; // 0 = heaven, .5 = earth, 1 = hell
+// ---- The Ascent: points → altitude. 1 point ≈ a log step: meters = 10^(|pts|/20) − 1 (above the ground = up, below = digging down).
+// The camera zooms out to keep all three of you (and the ground) in view.
+const SCENE_H = 560, PAD_TOP = 175, PAD_BOTTOM = 90;
+const clampPts = (p) => Math.max(-130, Math.min(172, p)); // the Moon and the magma are the ends of the scale
+const meters = (p) => 10 ** (Math.abs(p) / 20) - 1;
+function fmtMeters(p) {
+  const m = meters(p);
+  if (m < 1) return '0 m';
+  if (m < 1000) return `${Math.round(m)} m`;
+  const km = m / 1000;
+  if (km < 1000) return `${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
+  return `${(km / 1000).toFixed(km < 1e4 ? 1 : 0)}k km`;
+}
+// ascending by points; each layer runs from its `from` up to the next layer's `from`
+const LAYERS = [
+  { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames' },
+  { from: -130, name: 'Lower mantle', color: '#b3331a' },
+  { from: -115, name: 'Upper mantle', color: '#8a2c16' },
+  { from: -91, name: "Earth's crust", color: '#5c4a44' },
+  { from: -60, name: 'Bedrock', color: '#55575c' },
+  { from: -34, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones' },
+  { from: -20, name: 'Roots & worms', color: '#5d3f25' },
+  { from: 0, name: 'Ground level', color: '#8fd3f7' },
+  { from: 20, name: 'Birds & rooftops', color: '#7cc4f5' },
+  { from: 40, name: 'Skyscrapers', color: '#62b2ec' },
+  { from: 60, name: 'Clouds', color: '#4b9ae0', deco: 'clouds' },
+  { from: 80, name: 'Airliners', color: '#3169ad' },
+  { from: 94, name: 'Edge of space', color: '#1f3b78' },
+  { from: 100, name: '🚀 SPACE', color: '#0a0e2c', deco: 'stars' },
+  { from: 112, name: 'Orbit (ISS)', color: '#070a20', deco: 'stars' },
+  { from: 150, name: 'Geostationary', color: '#05071a', deco: 'stars' },
+  { from: 172, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
+];
+
+function niceStep(span) {
+  return [5, 10, 20, 25, 50, 100].find((st) => span / st <= 9) || 200;
+}
 
 function partyScene(scores) {
-  const top = (() => {
+  const pts = ROOMMATES.map((r) => clampPts(scores[r.id].points));
+  const topId = (() => {
     const r = rankings(scores);
     return r[0].points > 0 && r[0].points > (r[1]?.points ?? -1e9) ? r[0].id : null;
   })();
-  const clouds = [[14, 6], [58, 12], [38, 3], [78, 5]].map(([x, y]) => `<i class="cloud" style="left:${x}%;top:${y}%"></i>`).join('');
-  const flames = [4, 18, 33, 47, 61, 76, 90].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
-  return `<section class="scene">
-    ${clouds}${flames}
-    <span class="zone z-heaven">☁ HEAVEN</span><span class="zone z-earth">🌍 EARTH · 0</span><span class="zone z-hell">🔥 HELL</span>
-    ${ROOMMATES.map((r, i) => {
-      const o = scores[r.id];
-      return `<div class="member ${r.id === ui.me ? 'you' : ''} ${r.id === top ? 'leader' : ''}" style="--c:${r.color};left:${i * 33.33 + 1}%;top:calc((100% - 190px) * ${heightOf(o.points).toFixed(3)})">
-        ${hero(r.id, scores, { crown: r.id === top, size: 'lg' })}
-        <div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points} <small>pts</small></div>
-        <div class="tiny hearts" title="Strikes in rolling 30 days">${hearts(o.recentStrikes)}</div></div>
-      </div>`; }).join('')}
+  // camera: fit everyone + the ground, never tighter than 70 points tall
+  let lo = Math.min(0, ...pts), hi = Math.max(0, ...pts);
+  const mid = (lo + hi) / 2, span = Math.max(70, (hi - lo) * 1.18);
+  lo = mid - span / 2; hi = mid + span / 2;
+  const yTop = PAD_TOP, yBot = SCENE_H - PAD_BOTTOM;
+  const yOf = (p) => yTop + ((hi - p) / (hi - lo)) * (yBot - yTop);
+  const yMin = yOf(hi), yMax = yOf(lo);          // pixel range that is "inside" the axis
+  const sceneTop = yTop - 0, sceneBot = yBot;
+
+  // layer bands (cover the whole scene, extending past the axis ends)
+  const bands = LAYERS.map((l, i) => {
+    const upper = LAYERS[i + 1]?.from ?? Infinity;
+    const y1 = upper === Infinity ? -9999 : yOf(upper);
+    const y0 = l.from === -Infinity ? SCENE_H + 9999 : yOf(l.from);
+    if (y0 < 0 || y1 > SCENE_H) return '';
+    return { l, top: Math.max(0, y1), bottom: Math.min(SCENE_H, y0), upper };
+  }).filter(Boolean);
+  const bandHtml = bands.map(({ l, top, bottom }) => {
+    let deco = '';
+    const h = bottom - top;
+    if (l.deco === 'stars') deco = `<i class="stars"></i>`;
+    if (l.deco === 'clouds') deco = [12, 52, 30].map((x, k) => `<i class="cloud" style="left:${x}%;top:${Math.min(h - 14, 8 + k * 40)}px"></i>`).join('');
+    if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
+    if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
+    const grass = l.from === 0 ? '<i class="grass"></i>' : '';
+    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background:${l.color}">${grass}${deco}</div>`;
+  }).join('');
+
+  const earthY = yOf(0), earthY0 = earthY;
+  // legend: ticks at layer boundaries + names (skipping ones that would collide)
+  const ticks = [], names = [];
+  let lastName = -99, lastTick = -99;
+  bands.slice().sort((a, b) => a.top - b.top).forEach(({ l, top, bottom }) => {
+    const c = (Math.max(top, 8) + Math.min(bottom, SCENE_H - 8)) / 2;
+    if (c - lastName >= 30 && bottom - top > 22) { names.push(`<span class="ln" style="top:${c.toFixed(1)}px">${l.name}</span>`); lastName = c; }
+    if (l.from !== -Infinity && l.from !== 0 && bottom <= SCENE_H - 6 && bottom >= 6 && Math.abs(bottom - lastTick) >= 14 && Math.abs(bottom - earthY0) >= 16) { lastTick = bottom; ticks.push(`<span class="tk" style="top:${bottom.toFixed(1)}px"><b>${l.from > 0 ? '▲' : '▼'} ${fmtMeters(l.from)}</b></span>`); }
+  });
+
+  const heroes = ROOMMATES.map((r, i) => {
+    const o = scores[r.id];
+    return `<div class="member ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
+      <div class="figure">${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
+      <div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points}<small>pts</small></div>
+      <div class="alt tiny">${o.points === 0 ? 'on earth' : (o.points > 0 ? '▲ ' : '▼ ') + fmtMeters(clampPts(o.points))}</div>
+      <div class="hearts">${hearts(o.recentStrikes)}</div></div>
+    </div>`;
+  }).join('');
+
+  return `<section class="scene" style="height:${SCENE_H}px">
+    ${bandHtml}
+    <div class="earthline" style="top:${earthY.toFixed(1)}px"></div>
+    <div class="world">${heroes}</div>
+    <aside class="legend">${ticks.join('')}${names.join('')}<span class="tk earth" style="top:${earthY.toFixed(1)}px"><b>🌍 EARTH 0 m</b></span></aside>
   </section>`;
 }
 
