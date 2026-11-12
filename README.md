@@ -1,5 +1,7 @@
 # 🏠 House Quest
 
+> 👋 **Roommates: start with the [tutorial](TUTORIAL.md).**
+
 A roommate chore game for Paco · Pit · Hrithik, built from the *House System* PDFs (10–23 Nov 2026 trial).
 
 - **House Captain rota** (morning + evening resets), **weekly cleaning boss** (rotates every week), **laundry priority** — all computed from the rules, matching the fridge calendar.
@@ -31,6 +33,14 @@ Progress is saved as `state.json` on a separate **`data`** branch of this repo (
 The token stays in that browser only (never in the repo). Edits are queued if you're offline and merged on top of others' changes, so nobody's ticks overwrite each other. The repo must be **public** for read-only viewers; the token is what limits writes.
 
 **Remembered player:** your name is stored in a 1-year cookie, so the next visit on that device skips the "who are you" screen (*Switch player* clears it).
+
+## Admin (Pit)
+The **🛡 Admin** tab only appears when you play as Pit (`ADMIN` in `js/schedule.js`). The first time you open it, you set a PIN (min. 6 characters). After that, each device needs the PIN once.
+- Review **🚩 flags** that roommates raise on suspicious ticks.
+- **🤥 Fake**: the duty counts as missed with a **2× penalty** + strike. For 24 h, anyone else can **🦹 steal** it (do it, take its points). Change this with `fakeMultiplier` / `stealWindowHours` in `POINTS`.
+- Also: undo a tick, mark done, excuse, clear a fake, or remove a steal. Every admin action is written to the activity feed.
+
+**Honest limits:** this is an honour-system lock. The PIN hash lives in `state.json`, and anyone with the GitHub token could edit that file directly on GitHub. It stops casual tampering in the app, not a determined roommate.
 
 ## 3. Apple Calendar + notifications
 Open the **Calendar** tab on each phone and tap **Subscribe** for your own feed (plus the whole-house feed if you like). Each turn has an alert (morning at 07:45, evening 21:30 & 22:00, weekly cleaning Sat 17:00 / Sun 17:00 / 19:00).

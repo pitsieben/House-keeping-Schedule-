@@ -1,6 +1,8 @@
 // House schedule engine. Pure functions, no DOM — used by the web app AND the calendar build script.
 // Source of truth: house_system_proposal_nov2026.pdf / fridge_calendar_nov10_23_2026.pdf
 
+export const ADMIN = 'pit'; // the only roommate who sees the admin dashboard
+
 export const ROOMMATES = [
   { id: 'paco', name: 'Paco', color: '#f59e0b' },
   { id: 'pit', name: 'Pit', color: '#38bdf8' },
@@ -27,6 +29,8 @@ export const CONFIG = {
 export const POINTS = {
   done: { morning: 10, evening: 10, clean: 30 },
   miss: { morning: -15, evening: -15, clean: -30 }, // late completion = half of this
+  fakeMultiplier: 2, // caught claiming a duty you didn't do = double the missed penalty
+  stealWindowHours: 24, // after a fake is caught, others can steal the duty for this long
   cleanSweep: 5,   // morning + evening both on time, same day
   perfectWeek: 25, // every duty of the Mon–Sun week on time
 };
@@ -115,6 +119,7 @@ export function assigneeOf(duty, state) {
 }
 
 export function statusOf(duty, state, now = new Date()) {
+  if (state?.fakes?.[duty.id]) return 'fake';
   const c = state?.completions?.[duty.id];
   if (c) return c.at <= duty.deadline.getTime() ? 'done' : 'late';
   if (state?.excused?.[duty.id]) return 'excused';
@@ -143,7 +148,7 @@ const mondayOf = (d) => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
 // Derive scoreboard from the shared state. Nothing is stored — penalties are computed from deadlines.
 export function computeScores(state, now = new Date()) {
   const out = Object.fromEntries(ROOMMATES.map((r) => [r.id, {
-    id: r.id, points: 0, xp: 0, done: 0, late: 0, missed: 0, excused: 0,
+    id: r.id, points: 0, xp: 0, done: 0, late: 0, missed: 0, excused: 0, fakes: 0, steals: 0,
     streak: 0, best: 0, sweeps: 0, perfectWeeks: 0, strikes: [], earlyBird: 0,
   }]));
   const penStart = parseYmd(CONFIG.penaltyStart);
@@ -173,6 +178,17 @@ export function computeScores(state, now = new Date()) {
       o.points += POINTS.miss[duty.kind]; o.missed++; o.streak = 0;
       o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind });
       w.total++;
+    } else if (st === 'fake') {
+      // claimed done but caught: double penalty + strike; whoever stole the duty gets its points
+      if (duty.deadline < penStart) continue;
+      o.points += POINTS.miss[duty.kind] * POINTS.fakeMultiplier; o.missed++; o.fakes++; o.streak = 0;
+      o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind, fake: true });
+      w.total++;
+      const thief = state.fakes[duty.id].stolenBy;
+      if (thief && out[thief]) {
+        const p = POINTS.done[duty.kind];
+        out[thief].points += p; out[thief].xp += p; out[thief].steals++;
+      }
     } else if (st === 'excused') {
       o.excused++; w.total++; w.ok++;
     }

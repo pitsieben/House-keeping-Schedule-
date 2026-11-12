@@ -1,5 +1,5 @@
 import {
-  ROOMMATES, CONFIG, POINTS, JOBS, CHECKLISTS, LAUNDRY, LEVELS,
+  ROOMMATES, ADMIN, CONFIG, POINTS, JOBS, CHECKLISTS, LAUNDRY, LEVELS,
   person, ymd, parseYmd, addDays, startOfDay, captainFor, dutiesForDate, dutiesBetween,
   dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs,
 } from './schedule.js';
@@ -78,6 +78,7 @@ function statusChip(st, duty, now) {
     done: ['✔ On time', 'ok'], late: ['✔ Late (strike)', 'warn'], missed: ['✖ Missed', 'bad'],
     excused: ['🛡 Excused', 'ok'], open: [`⏳ ${countdown(duty.deadline - now)} left`, 'open'],
     future: ['🔒 Not open yet', 'muted'], pregame: ['— pre-game', 'muted'],
+    fake: ['🤥 Fake — caught', 'bad'],
   };
   const [t, c] = map[st];
   return `<span class="chip ${c}">${t}</span>`;
@@ -96,12 +97,15 @@ function dutyCard(duty, now, { showDate = false } = {}) {
     ? `<p class="tiny">${duty.job.emoji} <b>${esc(duty.job.name)}</b> — ${esc(duty.job.desc)}</p>`
     : `<ul class="tiny checks">${CHECKLISTS[duty.kind].map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
   let actions = '';
-  if (mine && !done && st !== 'future' && st !== 'excused') {
+  if (mine && !done && st !== 'future' && st !== 'excused' && st !== 'fake') {
     const late = st === 'missed';
     actions += `<button class="btn ${late ? 'warn' : 'go'}" data-act="done" data-id="${duty.id}">${late ? 'Mark done (late)' : `✔ Done +${pts}`}</button>`;
     if (st === 'open' && !(sw && sw.status === 'pending')) actions += `<button class="btn ghost" data-act="swapopen" data-id="${duty.id}">⇄ Swap</button>`;
   }
   if (mine && done) actions += `<button class="btn ghost" data-act="undo" data-id="${duty.id}">Undo</button>`;
+  const flag = s.flags?.[duty.id], fake = s.fakes?.[duty.id];
+  if (!mine && done && !flag) actions += `<button class="btn ghost" data-act="flag" data-id="${duty.id}" title="Ask the admin to check">🚩 Not really done?</button>`;
+  if (fake && !fake.stolenBy && !mine && canSteal(fake, now)) actions += `<button class="btn go" data-act="steal" data-id="${duty.id}">🦹 Steal it: do it now, +${pts}</button>`;
   if (!mine && st === 'missed') actions += `<button class="btn ghost" data-act="excuse" data-id="${duty.id}" title="Genuine emergency">🛡 Excuse (emergency)</button>`;
   if (st === 'excused') actions += `<button class="btn ghost" data-act="unexcuse" data-id="${duty.id}">Remove excuse</button>`;
   if (ui.swapFor === duty.id) {
@@ -110,6 +114,8 @@ function dutyCard(duty, now, { showDate = false } = {}) {
       <button class="btn ghost" data-act="swapopen" data-id="">✕</button></div>`;
   }
   let swapNote = '';
+  if (flag && !fake) swapNote += `<p class="tiny note">🚩 ${person(flag.by).name} doubts this was done — the admin will check.</p>`;
+  if (fake) swapNote += `<p class="tiny note bad">🤥 Claimed done but wasn't: ${POINTS.fakeMultiplier}× penalty (${POINTS.miss[duty.kind] * POINTS.fakeMultiplier}).${fake.stolenBy ? ` 🦹 Stolen by ${person(fake.stolenBy).name} (+${pts}).` : canSteal(fake, now) ? ' Anyone else can steal it.' : ''}</p>`;
   if (sw && sw.status === 'pending') swapNote = `<p class="tiny note">⇄ ${person(sw.from).name} asked ${person(sw.to).name} to swap — not valid until accepted before the deadline.${sw.from === ui.me ? ` <button class="link" data-act="swapcancel" data-id="${duty.id}">cancel</button>` : ''}</p>`;
   if (sw && sw.status === 'accepted' && who === sw.to) swapNote = `<p class="tiny note">⇄ Swapped from ${person(sw.from).name}</p>`;
   const d = parseYmd(duty.date);
@@ -124,6 +130,8 @@ function dutyCard(duty, now, { showDate = false } = {}) {
     <div class="actions">${actions}</div>
   </article>`;
 }
+
+const canSteal = (fake, now) => now.getTime() - fake.at < POINTS.stealWindowHours * 3600e3;
 
 function pendingSwaps(now) {
   const out = [];
@@ -206,7 +214,7 @@ function partyScene(scores) {
   const zoom = Math.max(0.28, Math.min(1, 70 / span));
   const heroW = Math.round(HERO_W * zoom), heroH = heroW * 29 / 16;
   const compact = zoom < 0.6;
-  const yTop = heroH + (compact ? 30 : 20), yBot = SCENE_H - (compact ? 14 : 90);
+  const yTop = heroH + (compact ? 30 : 20), yBot = SCENE_H - (compact ? 14 : 112);
   const yOf = (p) => yTop + ((hi - p) / (hi - lo)) * (yBot - yTop);
   const yMin = yOf(hi), yMax = yOf(lo);          // pixel range that is "inside" the axis
   const sceneTop = yTop - 0, sceneBot = yBot;
@@ -289,6 +297,11 @@ function todayView(scores, now) {
   <h2>Today · ${fmtDayLong(today)}</h2>
   <p class="muted tiny">👑 House Captain today: <b>${cap.name}</b> &nbsp;·&nbsp; 🧺 Laundry: <b>${lp ? person(lp).name : 'open to all'}</b></p>
   ${duties.filter((d) => d.kind !== 'clean').map((d) => dutyCard(d, now)).join('')}
+  ${(() => {
+    const grabs = Object.entries(store.state.fakes || {}).filter(([, f]) => !f.stolenBy && canSteal(f, now))
+      .map(([id]) => findDuty(id)).filter((d) => d && !duties.some((x) => x.id === d.id));
+    return grabs.length ? `<h2>🦹 Up for grabs <small>faked duties — do one, take the points</small></h2>${grabs.map((d) => dutyCard(d, now, { showDate: true })).join('')}` : '';
+  })()}
   <h2>🐉 Weekly cleaning boss <small>due ${fmtDay(sunday)} 8 pm</small></h2>
   ${myWeekly ? dutyCard(myWeekly, now) : ''}
   <div class="grid3">${weekly.filter((d) => d !== myWeekly).map((d) => dutyCard(d, now)).join('')}</div>
@@ -361,6 +374,8 @@ function ranksView(scores) {
     <tr><td>🏆 Perfect Week (every duty on time)</td><td class="plus">+${POINTS.perfectWeek}</td></tr>
     <tr><td>❌ Missed reset / weekly cleaning</td><td class="minus">${POINTS.miss.morning} / ${POINTS.miss.clean} + strike</td></tr>
     <tr><td>🟠 Done late</td><td class="minus">half penalty + strike</td></tr>
+    <tr><td>🤥 Ticked but not really done (caught by the admin)</td><td class="minus">${POINTS.fakeMultiplier}× penalty + strike</td></tr>
+    <tr><td>🦹 Steal a faked duty (do it yourself within ${POINTS.stealWindowHours} h)</td><td class="plus">its points</td></tr>
     <tr><td>⇄ Swap accepted before the deadline</td><td>no penalty</td></tr>
     <tr><td>🛡 Genuine emergency (excused by a roommate)</td><td>no penalty</td></tr>
     <tr><td>🚨 3 strikes in 30 days</td><td class="minus">household review</td></tr>
@@ -404,8 +419,53 @@ function rulesView() {
   <button class="btn ghost" data-act="logout">Switch player</button>${tokenFormHtml()}${store.error ? `<p class="tiny bad">Sync error: ${esc(store.error)}</p>` : ''}</div>`;
 }
 
+// ---------- admin (Pit only, PIN-locked) ----------
+// Note: this is an honour-system lock. Anyone with the GitHub token could still edit state.json directly.
+const ADMIN_OK_KEY = 'house-quest-admin-ok';
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('house-quest-admin:' + text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+const adminUnlocked = () => !!store.state.admin?.pinHash && localStorage.getItem(ADMIN_OK_KEY) === store.state.admin.pinHash;
+
+function adminView(now) {
+  const hash = store.state.admin?.pinHash;
+  if (!hash) {
+    return `<h2>🛡 Admin</h2><form class="card" data-act="adminset"><b>Set your admin PIN</b>
+      <p class="tiny muted">Only you (${person(ADMIN).name}) see this tab. Pick a PIN of at least 6 characters — you'll need it on each device.</p>
+      <input name="pin" type="password" minlength="6" required placeholder="New admin PIN" autocomplete="new-password"> <button class="btn">Set PIN</button></form>`;
+  }
+  if (!adminUnlocked()) {
+    return `<h2>🛡 Admin</h2><form class="card" data-act="adminunlock"><b>Locked</b>
+      <input name="pin" type="password" required placeholder="Admin PIN" autocomplete="current-password"> <button class="btn">Unlock</button></form>`;
+  }
+  const s = store.state;
+  const flagged = Object.keys(s.flags || {}).filter((id) => !s.fakes?.[id]).map(findDuty).filter(Boolean);
+  const recent = dutiesBetween(addDays(startOfDay(now), -6), addDays(startOfDay(now), 1))
+    .filter((d) => d.opens <= now).sort((a, b) => b.deadline - a.deadline);
+  const row = (d) => {
+    const st = statusOf(d, s, now), who = assigneeOf(d, s), f = s.fakes?.[d.id];
+    const b = (act, label, cls = 'ghost') => `<button class="btn ${cls}" data-act="${act}" data-id="${d.id}">${label}</button>`;
+    let btns = '';
+    if (st === 'done' || st === 'late') btns += b('afake', `🤥 Fake (${POINTS.fakeMultiplier}× penalty)`, 'warn') + b('aundo', 'Undo done');
+    if (['missed', 'open', 'future'].includes(st)) btns += b('adone', '✔ Mark done') + b('aexcuse', '🛡 Excuse');
+    if (st === 'excused') btns += b('aunexcuse', 'Remove excuse');
+    if (f) btns += b('aunfake', 'Clear fake') + (f.stolenBy ? b('aunsteal', `Remove ${person(f.stolenBy).name}'s steal`) : '');
+    if (s.flags?.[d.id] && !f) btns += b('adismiss', 'Dismiss flag');
+    return `<div class="arow" style="--c:${person(who).color}"><div class="grow"><b>${person(who).name}</b> · ${kindLabel[d.kind]}
+      <div class="tiny muted">${fmtDay(parseYmd(d.date))} · by ${fmtTime(d.deadline)}${s.completions?.[d.id] ? ` · ticked ${fmtTime(new Date(s.completions[d.id].at))}` : ''}</div></div>
+      ${statusChip(st, d, now)}<div class="actions">${btns}</div></div>`;
+  };
+  return `<h2>🛡 Admin <small>only you see this</small></h2>
+    <div class="card"><b>🚩 Flags to review</b>${flagged.length ? flagged.map(row).join('') : '<p class="tiny muted">Nothing flagged. 👍</p>'}</div>
+    <div class="card"><b>Last 7 days</b><p class="tiny muted">Mark a ticked duty as fake when it wasn't really done: ${POINTS.fakeMultiplier}× penalty + strike, and for ${POINTS.stealWindowHours} h anyone else can steal it for the points.</p>
+      ${recent.map(row).join('')}</div>
+    <button class="btn ghost" data-act="alock">🔒 Lock admin</button>`;
+}
+
 function shell(inner) {
   const tabs = [['today', '🏠', 'Today'], ['week', '🗓', 'Schedule'], ['ranks', '🏆', 'Ranks'], ['cal', '📅', 'Calendar'], ['rules', '📜', 'Rules']];
+  if (ui.me === ADMIN) tabs.push(['admin', '🛡', 'Admin']);
   return `
   <header class="top"><h1 class="logo tiny">HOUSE QUEST</h1>
     <div class="me" style="--c:${person(ui.me).color}">${hero(ui.me, null, { size: 'xs' })}<span>${person(ui.me).name}</span>
@@ -421,7 +481,7 @@ function render() {
   const scores = computeScores(store.state, now);
   const views = {
     today: () => todayView(scores, now), week: () => weekView(now), ranks: () => ranksView(scores),
-    cal: calendarView, rules: rulesView,
+    cal: calendarView, rules: rulesView, admin: () => (ui.me === ADMIN ? adminView(now) : rulesView()),
   };
   app.innerHTML = shell(views[ui.tab]());
 }
@@ -445,6 +505,36 @@ const actions = {
     if (!tok) { toast('Clipboard has no token — copy the invite link first'); return; }
     await saveToken(tok);
   },
+  flag: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow();
+    store.patch(['flags', d.id], { by: ui.me, at: now.getTime() });
+    store.say(`🚩 ${person(ui.me).name} flagged ${person(assigneeOf(d, store.state)).name}'s ${dutyTitle(d).toLowerCase()} — admin will check`, now.getTime());
+  },
+  steal: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow(), f = store.state.fakes[d.id];
+    if (!confirm(`Do ${dutyTitle(d).toLowerCase()} now and take the +${POINTS.done[d.kind]} points?`)) return;
+    store.patch(['fakes', d.id], { ...f, stolenBy: ui.me, stolenAt: now.getTime() });
+    store.say(`🦹 ${person(ui.me).name} stole ${person(assigneeOf(d, store.state)).name}'s ${dutyTitle(d).toLowerCase()} (+${POINTS.done[d.kind]})`, now.getTime());
+  },
+  afake: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow(), who = assigneeOf(d, store.state);
+    if (!confirm(`Mark ${person(who).name}'s ${dutyTitle(d).toLowerCase()} as FAKE? ${POINTS.fakeMultiplier}× penalty (${POINTS.miss[d.kind] * POINTS.fakeMultiplier}) + strike.`)) return;
+    store.patch(['fakes', d.id], { by: ui.me, at: now.getTime() });
+    store.patch(['flags', d.id], undefined);
+    store.say(`🛡 Admin: ${person(who).name}'s ${dutyTitle(d).toLowerCase()} wasn't really done — ${POINTS.fakeMultiplier}× penalty. Anyone can steal it for ${POINTS.stealWindowHours} h!`, now.getTime());
+  },
+  aunfake: (el) => { const d = findDuty(el.dataset.id); store.patch(['fakes', d.id], undefined); store.say(`🛡 Admin cleared the fake on ${person(assigneeOf(d, store.state)).name}'s ${dutyTitle(d).toLowerCase()}`, getNow().getTime()); },
+  aunsteal: (el) => { const d = findDuty(el.dataset.id), f = store.state.fakes[d.id]; store.patch(['fakes', d.id], { by: f.by, at: f.at }); store.say(`🛡 Admin removed ${person(f.stolenBy).name}'s steal`, getNow().getTime()); },
+  aundo: (el) => { const d = findDuty(el.dataset.id); store.undo(d.id); store.say(`🛡 Admin un-ticked ${person(assigneeOf(d, store.state)).name}'s ${dutyTitle(d).toLowerCase()}`, getNow().getTime()); },
+  adone: (el) => {
+    const d = findDuty(el.dataset.id), who = assigneeOf(d, store.state);
+    store.patch(['completions', d.id], { by: who, at: Math.min(getNow().getTime(), d.deadline.getTime()), admin: true });
+    store.say(`🛡 Admin marked ${person(who).name}'s ${dutyTitle(d).toLowerCase()} as done`, getNow().getTime());
+  },
+  aexcuse: (el) => { const d = findDuty(el.dataset.id); store.excuse(d.id, ui.me, getNow().getTime()); store.say(`🛡 Admin excused ${person(assigneeOf(d, store.state)).name}'s ${dutyTitle(d).toLowerCase()}`, getNow().getTime()); },
+  aunexcuse: (el) => { store.unexcuse(el.dataset.id); },
+  adismiss: (el) => { store.patch(['flags', el.dataset.id], undefined); },
+  alock: () => { localStorage.removeItem(ADMIN_OK_KEY); },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
@@ -506,6 +596,19 @@ async function saveToken(tok) {
 }
 
 app.addEventListener('submit', async (e) => {
+  const af = e.target.closest('[data-act="adminset"],[data-act="adminunlock"]');
+  if (af) {
+    e.preventDefault();
+    if (ui.me !== ADMIN) return;
+    const h = await sha256(new FormData(af).get('pin'));
+    if (af.dataset.act === 'adminset') {
+      if (store.state.admin?.pinHash) return;
+      store.patch(['admin', 'pinHash'], h);
+      localStorage.setItem(ADMIN_OK_KEY, h); toast('🛡 Admin PIN set');
+    } else if (h === store.state.admin?.pinHash) { localStorage.setItem(ADMIN_OK_KEY, h); toast('🛡 Unlocked'); } else toast('Wrong PIN');
+    render();
+    return;
+  }
   const form = e.target.closest('[data-act="settoken"]');
   if (!form) return;
   e.preventDefault();
