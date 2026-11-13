@@ -78,5 +78,12 @@
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {}
+ "flags": {},
+ "messages": {
+  "1794563368854-pit": {
+   "from": "pit",
+   "text": "Hey Guys enable your in app notifications in the calendar tab",
+   "at": 1794563368854
+  }
+ }
 }
