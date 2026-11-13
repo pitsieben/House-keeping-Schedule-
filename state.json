@@ -73,12 +73,21 @@
   "1794557505073-egpx": {
    "t": 1794557505073,
    "text": "🚩 Pit flagged Paco's morning reset — admin will check"
+  },
+  "1794566367051-aq4b": {
+   "t": 1794566367051,
+   "text": "🚩 Hritik flagged Paco's morning reset — admin will check"
   }
  },
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {},
+ "flags": {
+  "2026-11-13:AM": {
+   "by": "hrithik",
+   "at": 1794566367051
+  }
+ },
  "messages": {
   "1794563368854-pit": {
    "from": "pit",
