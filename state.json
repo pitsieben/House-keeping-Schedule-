@@ -87,7 +87,10 @@
   "1794563368854-pit": {
    "from": "pit",
    "text": "Hey Guys enable your in app notifications in the calendar tab",
-   "at": 1794563368854
+   "at": 1794563368854,
+   "closed": {
+    "paco": 1794587164165
+   }
   },
   "1794587144080-paco": {
    "from": "paco",
