@@ -10,6 +10,7 @@ import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
+import { openJump } from './jump.js';
 
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -292,7 +293,7 @@ function partyScene(scores) {
     const sign = o.points > 0 ? '+' : '';
     const head = compact ? `<div class="head"><b>${r.name}</b> ${sign}${o.points}</div>` : '';
     return `<div class="member c-${r.id} ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
-      <div class="figure">${head}${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
+      <div class="figure" ${r.id === ui.me ? 'data-act="jump" title="?"' : ''}>${head}${hero(r.id, scores, { crown: r.id === topId, size: 'lg' })}</div>
       ${compact ? '' : `<div class="tag"><b class="nm">${r.name}</b><div class="pts">${o.points > 0 ? '+' : ''}${o.points}<small>pts</small></div>
       <div class="alt tiny">${o.points === 0 ? 'on earth' : (o.points > 0 ? '▲ ' : '▼ ') + fmtMeters(clampPts(o.points))}</div>
       <div class="hearts">${hearts(o.recentStrikes)}</div></div>`}
@@ -724,6 +725,20 @@ const actions = {
   outfit: (el) => { store.patch(['outfits', ui.me], el.dataset.outfit); },
   msgclose: (el) => { store.patch(['messages', el.dataset.id, 'closed', ui.me], getNow().getTime()); },
   msgcloseall: () => { const t = getNow().getTime(); openMessages().forEach(([id]) => store.patch(['messages', id, 'closed', ui.me], t)); },
+  // easter egg: tap your own hero on the leaderboard
+  jump: () => {
+    const bests = store.state.jump || {};
+    const localBest = +localStorage.getItem('house-quest-jump-best') || 0;
+    openJump({
+      heroKey: HEROES[ui.me], outfit: outfitOf(ui.me),
+      best: Math.max(bests[ui.me]?.best || 0, localBest),
+      board: ROOMMATES.map((r) => ({ name: r.name, color: r.color, me: r.id === ui.me, best: r.id === ui.me ? Math.max(bests[r.id]?.best || 0, localBest) : bests[r.id]?.best || 0 })).filter((r) => r.best > 0 || r.me),
+      onEnd: (best) => {
+        localStorage.setItem('house-quest-jump-best', String(best));
+        if (store.canWrite) store.patch(['jump', ui.me], { best, at: getNow().getTime() });
+      },
+    });
+  },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {

@@ -317,3 +317,9 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 /* same box as the scene's .world (inside the 4px frame, left of the 16px ruler) */
 .chatlayer { position: absolute; left: 4px; right: 20px; top: 4px; pointer-events: none; overflow: hidden; z-index: 3; }
 .chatlayer .bubble { pointer-events: auto; }
+
+/* easter egg: House Jump */
+.member.you .figure { cursor: pointer; }
+.jump { position: fixed; inset: 0; z-index: 1000; background: #05060a; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; }
+.jump canvas { image-rendering: pixelated; height: min(100vh, 100dvh, calc(100vw * 16 / 9)); width: auto; aspect-ratio: 9 / 16; box-shadow: 0 0 0 4px #101214, 0 0 0 6px #3f4752; }
+.jump .jx { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px; width: 40px; height: 40px; border: 3px solid #101214; background: #fdfdfb; color: #101214; font: 700 16px Inter, sans-serif; cursor: pointer; }
