@@ -92,7 +92,10 @@
   "1794587144080-paco": {
    "from": "paco",
    "text": "HRITIK you are a looser",
-   "at": 1794587144080
+   "at": 1794587144080,
+   "closed": {
+    "paco": 1794587162844
+   }
   }
  },
  "jump": {
