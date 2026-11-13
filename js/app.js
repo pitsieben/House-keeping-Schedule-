@@ -299,14 +299,74 @@ function partyScene(scores) {
     </div>`;
   }).join('');
 
-  return `<section class="scene" style="height:${SCENE_H}px">
+  // bubbles live in a separate layer on top, so the scene markup (and its images) stays untouched when they change
+  return `<div class="scenewrap"><section class="scene" style="height:${SCENE_H}px">
     ${bandHtml}
     ${skyHtml}
     <i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wash}"></i>${sky.wet ? `<i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wet}"></i>` : ''}${sky.snow ? `<i class="snowcap" style="top:${(earthY - 2).toFixed(1)}px"></i>` : ''}
     <div class="earthline" style="top:${earthY.toFixed(1)}px"></div>
     <div class="world">${heroes}</div>
     <aside class="legend">${ruler.join('')}</aside>
-  </section>`;
+  </section>
+  <div class="chatlayer" style="height:${SCENE_H - 8}px">${chatBubbles((r) => {
+    const i = ROOMMATES.findIndex((x) => x.id === r);
+    // sprite canvas has 5 empty rows (crown room) above the 24-row body; compact heroes carry a name chip above
+    const headY = yOf(clampPts(scores[r].points)) - (compact ? heroH + 22 : heroH * 24 / 29 + 2);
+    return { x: i * 33.33 + 16.67, col: i, headY };
+  })}</div></div>
+  ${sayBox()}`;
+}
+
+// ---------- chat bubbles ----------
+const MSG_MAX = 160, MSG_KEEP_DAYS = 14;
+function relTime(t) {
+  const now = getNow().getTime(), m = Math.round((now - t) / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m} min ago`;
+  const d = new Date(t);
+  return startOfDay(d).getTime() === startOfDay(getNow()).getTime() ? fmtTime(d) : `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${fmtTime(d)}`;
+}
+// messages this player hasn't closed yet, oldest first
+const openMessages = () => Object.entries(store.state.messages || {})
+  .filter(([, m]) => m && ROOMMATES.some((r) => r.id === m.from) && !m.closed?.[ui.me])
+  .sort((a, b) => a[1].at - b[1].at);
+
+function chatBubbles(posOf) {
+  if (!ui.me) return '';
+  const msgs = openMessages();
+  if (!msgs.length) return '';
+  const senders = [...new Set(msgs.map(([, m]) => m.from))];
+  const pos = Object.fromEntries(senders.map((w) => [w, posOf(w)]));
+  const shown = msgs.slice(-3), hidden = msgs.length - shown.length;
+  const lines = shown.map(([id, m]) => { const p = person(m.from); return `<li style="--c:${p.color}">
+    <div class="bmeta"><b>${p.name}</b><time>${relTime(m.at)}</time><button class="bx" data-act="msgclose" data-id="${id}" aria-label="Close">✕</button></div>
+    <p>${esc(m.text)}</p></li>`; }).join('');
+  // the bubble floats just above the highest sender's head; if there's no room, it pins to the top of the scene
+  // (tails run behind the bubble down to each sender's head, so they always connect)
+  const estH = 24 + shown.length * 48 + (hidden ? 16 : 0) + (msgs.length > 1 ? 30 : 0);
+  const anchor = Math.min(...senders.map((w) => pos[w].headY)) - 12;
+  const pinned = anchor - estH < 6;
+  const single = senders.length === 1;
+  const col = pos[senders[0]].col;
+  const hx = single ? ['left:1%', 'left:50%', 'right:1%'][col] : 'left:2%;right:2%';
+  const ty = `${single && col === 1 ? '-50%' : '0'},${pinned ? '0' : '-100%'}`;
+  const top = pinned ? 6 : anchor;
+  const tails = senders.map((w) => {
+    const h = Math.max(0, pos[w].headY - top);
+    return `<i class="btail" style="left:${pos[w].x}%;top:${top.toFixed(1)}px;height:${h.toFixed(1)}px;--c:${person(w).color}"></i>`;
+  }).join('');
+  return `${tails}<div class="bubble ${single ? 'single' : 'merged'}" style="top:${top.toFixed(1)}px;${hx};transform:translate(${ty})">
+    <ul>${lines}</ul>${hidden ? `<p class="bmore">+${hidden} earlier</p>` : ''}
+    ${msgs.length > 1 ? '<button class="bxall" data-act="msgcloseall">✕ close all</button>' : ''}</div>`;
+}
+
+function sayBox() {
+  if (!ui.me) return '';
+  if (!store.canWrite) return `<p class="tiny muted saynote">💬 Add your token in Rules → Account to send messages.</p>`;
+  const i = ROOMMATES.findIndex((r) => r.id === ui.me);
+  return `<form class="say" data-act="say" style="--c:${person(ui.me).color};--tail:${i * 33.33 + 16.67}%">
+    <input name="text" maxlength="${MSG_MAX}" autocomplete="off" placeholder="Say something to the house…" required>
+    <button class="btn">Send</button></form>`;
 }
 
 function todayView(scores, now) {
@@ -545,6 +605,7 @@ function adminView(now) {
 }
 
 function shell(inner) {
+  const unread = ui.me ? openMessages().filter(([, m]) => m.from !== ui.me).length : 0;
   const tabs = [['today', '🏠', 'Today'], ['week', '🗓', 'Week'], ['ranks', '🏆', 'Ranks'], ['room', '🛏', 'Rooms'], ['cal', '📅', 'Calendar'], ['rules', '📜', 'Rules']];
   if (ui.me === ADMIN) tabs.push(['admin', '🛡', 'Admin']);
   const navIcon = { admin: 'wrench', rules: 'scroll', ranks: 'gem', room: 'chest', cal: 'mail', week: 'notebook', today: 'house' };
@@ -553,7 +614,7 @@ function shell(inner) {
     <div class="me c-${ui.me}" style="--c:${person(ui.me).color}">${hero(ui.me, null, { size: 'xs' })}<span>${person(ui.me).name}</span>
     <span class="sync" title="${store.mode === 'cloud' ? 'Synced' : 'Offline'}">${store.mode === 'cloud' ? (store.pending.length ? '⏳' : '☁') : '💾'}</span></div></header>
   <main class="page">${inner}</main>
-  <nav class="tabs">${tabs.map(([k, i, l]) => `<button data-act="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}"><span class="orb"><i class="ic n-${navIcon[k]}"></i></span>${l}</button>`).join('')}</nav>
+  <nav class="tabs">${tabs.map(([k, i, l]) => `<button data-act="tab" data-tab="${k}" class="${ui.tab === k ? 'on' : ''}"><span class="orb"><i class="ic n-${navIcon[k]}"></i>${k === 'today' && unread ? `<em class="badge-n">${unread}</em>` : ''}</span>${l}</button>`).join('')}</nav>
   ${ui.toast ? `<div class="toast">${esc(ui.toast)}</div>` : ''}`;
 }
 
@@ -641,6 +702,8 @@ const actions = {
     store.patch(['rooms', ui.me, 'placed'], list);
   },
   outfit: (el) => { store.patch(['outfits', ui.me], el.dataset.outfit); },
+  msgclose: (el) => { store.patch(['messages', el.dataset.id, 'closed', ui.me], getNow().getTime()); },
+  msgcloseall: () => { const t = getNow().getTime(); openMessages().forEach(([id]) => store.patch(['messages', id, 'closed', ui.me], t)); },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
@@ -702,6 +765,20 @@ async function saveToken(tok) {
 }
 
 app.addEventListener('submit', async (e) => {
+  const sayForm = e.target.closest('[data-act="say"]');
+  if (sayForm) {
+    e.preventDefault();
+    const text = String(new FormData(sayForm).get('text') || '').trim().slice(0, MSG_MAX);
+    if (!text || !ui.me) return;
+    const now = getNow().getTime();
+    // tidy up: drop messages older than MSG_KEEP_DAYS or closed by everyone
+    for (const [id, m] of Object.entries(store.state.messages || {})) {
+      if (now - m.at > MSG_KEEP_DAYS * 864e5 || ROOMMATES.every((r) => m.closed?.[r.id])) store.patch(['messages', id], undefined);
+    }
+    store.patch(['messages', `${now}-${ui.me}`], { from: ui.me, text, at: now });
+    sayForm.reset();
+    return;
+  }
   const af = e.target.closest('[data-act="adminset"],[data-act="adminunlock"]');
   if (af) {
     e.preventDefault();
@@ -775,6 +852,23 @@ checkForUpdate();
 setInterval(checkForUpdate, 5 * 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(); });
 
+// notify about new messages from roommates (only ones that arrive after this device first saw the chat)
+const NOTIFIED_KEY = 'house-quest-msg-notified';
+function notifyMessages() {
+  if (!ui.me) return;
+  let seen = null;
+  try { seen = JSON.parse(localStorage.getItem(NOTIFIED_KEY)); } catch { /* ignore */ }
+  const first = !Array.isArray(seen);
+  const set = new Set(first ? [] : seen);
+  let changed = first;
+  for (const [id, m] of openMessages()) {
+    if (set.has(id)) continue;
+    set.add(id); changed = true;
+    if (!first && m.from !== ui.me) notify(`💬 ${person(m.from).name}`, m.text, `msg-${id}`);
+  }
+  if (changed) localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...set].slice(-200)));
+}
+store.subscribe(() => notifyMessages());
 store.subscribe(() => render());
 render();
 initUI().then(render);

@@ -267,3 +267,37 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .scene .snowcap { position: absolute; left: 0; right: 0; height: 12px; z-index: 1; background: #f4f8ff; box-shadow: 0 4px 0 #dbe6f5; image-rendering: pixelated; }
 .scene .band { image-rendering: pixelated; }
 .scene .grass { height: 16px; top: auto; bottom: 0; border-bottom: 0; image-rendering: pixelated; z-index: 1; }
+
+/* chat: speech bubbles above the heroes */
+.chatlayer .bubble { position: absolute; z-index: 5; max-width: 72%; min-width: 150px;
+  background: #fdfcf7; color: #15171a; border: 2px solid #101214; border-radius: 12px; box-shadow: 0 0 0 2px #fdfcf7, 0 6px 14px #0006; padding: 6px 8px 7px; }
+.chatlayer .bubble.merged { max-width: none; }
+.chatlayer .bubble ul { list-style: none; margin: 0; padding: 0; }
+.chatlayer .bubble li { padding: 4px 0 4px 8px; border-left: 3px solid var(--c); margin: 2px 0; }
+.chatlayer .bubble li + li { border-top: 1px dashed #0002; }
+.chatlayer .bubble .bmeta { display: flex; align-items: baseline; gap: 6px; }
+.chatlayer .bubble .bmeta b { font-family: var(--px); font-size: 8px; color: var(--c); text-shadow: 1px 1px 0 #0003; }
+.chatlayer .bubble .bmeta time { font: 600 10px Inter, sans-serif; color: #6b7280; }
+.chatlayer .bubble p { margin: 2px 0 0; font: 600 13px/1.3 Inter, sans-serif; overflow-wrap: anywhere; }
+.chatlayer .bubble .bx { margin-left: auto; border: 0; background: #0000000f; color: #374151; width: 20px; height: 20px; border-radius: 6px; font-size: 11px; line-height: 20px; padding: 0; cursor: pointer; }
+.chatlayer .bubble .bmore { font: 600 10px Inter, sans-serif; color: #6b7280; margin: 2px 0 0 8px; }
+.chatlayer .bubble .bxall { display: block; margin: 4px 0 0 auto; border: 2px solid #101214; background: #fff; color: #15171a; border-radius: 8px; font: 700 11px Inter, sans-serif; padding: 2px 8px; cursor: pointer; }
+/* tail: a stepped pixel triangle under the bubble + a dotted line down to the sender's head */
+.chatlayer .btail { position: absolute; z-index: 4; width: 0; transform: translateX(-50%); border-left: 2px dotted var(--c); }
+.chatlayer .btail::before { content: ''; position: absolute; left: -9px; top: 0; border: 8px solid transparent; border-top: 9px solid #101214; }
+.chatlayer .btail::after { content: ''; position: absolute; left: -5px; bottom: -2px; width: 8px; height: 8px; background: var(--c); border: 2px solid #101214; border-radius: 2px; }
+/* the "say" box: same bubble style, tail pointing up at your hero */
+.say { position: relative; display: flex; gap: 8px; align-items: center; margin: 14px 0 8px; padding: 8px; background: #fdfcf7; border: 2px solid #101214; border-radius: 12px; box-shadow: 0 0 0 2px #fdfcf7; }
+.say::before { content: ''; position: absolute; left: var(--tail); top: -12px; transform: translateX(-50%); border: 6px solid transparent; border-bottom-color: #101214; }
+.say::after { content: ''; position: absolute; left: var(--tail); top: -7px; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: #fdfcf7; }
+.say input { flex: 1; min-width: 0; border: 0; background: transparent; color: #15171a; font: 600 15px Inter, sans-serif; padding: 6px 4px; outline: none; }
+.say input::placeholder { color: #9ca3af; }
+.say .btn { background: var(--c); border-color: #101214; color: #101214; }
+.saynote { margin: 10px 2px; }
+.tabs .orb .badge-n { position: absolute; right: 2px; top: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #ef4444; color: #fff; font: 700 10px/16px Inter, sans-serif; font-style: normal; box-shadow: 0 0 0 2px #101214; }
+
+.scenewrap { position: relative; margin: 14px 0 6px; }
+.scenewrap > .scene { margin: 0; }
+/* same box as the scene's .world (inside the 4px frame, left of the 16px ruler) */
+.chatlayer { position: absolute; left: 4px; right: 20px; top: 4px; pointer-events: none; overflow: hidden; z-index: 3; }
+.chatlayer .bubble { pointer-events: auto; }
