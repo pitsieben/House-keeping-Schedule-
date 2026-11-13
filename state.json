@@ -78,10 +78,5 @@
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {
-  "2026-11-13:AM": {
-   "by": "pit",
-   "at": 1794557505073
-  }
- }
+ "flags": {}
 }
