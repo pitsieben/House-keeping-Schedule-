@@ -351,20 +351,39 @@ function chatBubbles(posOf) {
   const hx = single ? ['left:1%', 'left:50%', 'right:1%'][col] : 'left:2%;right:2%';
   const ty = `${single && col === 1 ? '-50%' : '0'},${pinned ? '0' : '-100%'}`;
   const top = pinned ? 6 : anchor;
-  const tails = senders.map((w) => {
-    const h = Math.max(0, pos[w].headY - top);
-    return `<i class="btail" style="left:${pos[w].x}%;top:${top.toFixed(1)}px;height:${h.toFixed(1)}px;--c:${person(w).color}"></i>`;
-  }).join('');
-  return `${tails}<div class="bubble ${single ? 'single' : 'merged'}" style="top:${top.toFixed(1)}px;${hx};transform:translate(${ty})">
+  // pixel tail(s) + a dotted line down to each sender's head; positioned after render by layoutChat()
+  const tails = senders.map((w) => `<i class="btip" data-x="${pos[w].x}" data-head="${pos[w].headY.toFixed(1)}" style="--c:${person(w).color}"></i><i class="bline" data-x="${pos[w].x}" data-head="${pos[w].headY.toFixed(1)}" style="--c:${person(w).color}"></i>`).join('');
+  return `${tails}<div class="bubble pxbox ${single ? 'single' : 'merged'}" style="top:${top.toFixed(1)}px;${hx};transform:translate(${ty})">
     <ul>${lines}</ul>${hidden ? `<p class="bmore">+${hidden} earlier</p>` : ''}
     ${msgs.length > 1 ? '<button class="bxall" data-act="msgcloseall">✕ close all</button>' : ''}</div>`;
 }
+
+// place each pixel tail right under the bubble's bottom edge and run the dotted line down to the sender's head
+const PX = 4; // one "pixel" of the bubble art
+function layoutChat() {
+  const layer = app.querySelector('.chatlayer'), bub = layer?.querySelector('.bubble');
+  if (!bub) return;
+  const lb = layer.getBoundingClientRect(), bb = bub.getBoundingClientRect();
+  const bottom = bb.bottom - lb.top + PX;          // the frame's bottom border row sits 1 px-unit below the box
+  for (const el of layer.querySelectorAll('.btip, .bline')) {
+    const x = (+el.dataset.x / 100) * lb.width, head = +el.dataset.head;
+    const inside = x > bb.left - lb.left + 3 * PX && x < bb.right - lb.left - 4 * PX;
+    if (el.classList.contains('btip')) {
+      Object.assign(el.style, { left: `${Math.round(x - 1.5 * PX)}px`, top: `${Math.round(bottom - PX)}px`, display: inside ? '' : 'none' });
+    } else {
+      const top = bottom + 3 * PX, h = head - top;
+      Object.assign(el.style, { left: `${Math.round(x - PX / 2)}px`, top: `${Math.round(top)}px`, height: `${Math.max(0, h)}px`, display: inside && h > 2 ? '' : 'none' });
+    }
+  }
+}
+document.fonts?.ready?.then(() => layoutChat());
 
 function sayBox() {
   if (!ui.me) return '';
   if (!store.canWrite) return `<p class="tiny muted saynote">💬 Add your token in Rules → Account to send messages.</p>`;
   const i = ROOMMATES.findIndex((r) => r.id === ui.me);
-  return `<form class="say" data-act="say" style="--c:${person(ui.me).color};--tail:${i * 33.33 + 16.67}%">
+  return `<form class="say pxbox" data-act="say" style="--c:${person(ui.me).color};--tail:${i * 33.33 + 16.67}%">
+    <i class="btip up"></i>
     <input name="text" maxlength="${MSG_MAX}" autocomplete="off" placeholder="Say something to the house…" required>
     <button class="btn">Send</button></form>`;
 }
@@ -636,6 +655,7 @@ function render() {
   iconize(app);
   const ns = app.querySelector('.scene');
   if (ns && oldScene) { iconize(oldScene); if (ns.outerHTML === oldScene.outerHTML || ns.outerHTML === oldSig) ns.replaceWith(oldScene); }
+  layoutChat();
 }
 
 function toast(t) { ui.toast = t; render(); setTimeout(() => { ui.toast = ''; render(); }, 2600); }
