@@ -1,5 +1,10 @@
 {
- "completions": {},
+ "completions": {
+  "2026-11-13:AM": {
+   "by": "paco",
+   "at": 1794557480340
+  }
+ },
  "swaps": {},
  "excused": {
   "2026-11-12:AM": {
@@ -60,6 +65,10 @@
   "1794555551092-3qas": {
    "t": 1794555551092,
    "text": "Pit completed weekly cleaning: living room / entrance / hallway (+30)"
+  },
+  "1794557480340-da7b": {
+   "t": 1794557480340,
+   "text": "Paco completed morning reset (+10)"
   }
  },
  "admin": {
