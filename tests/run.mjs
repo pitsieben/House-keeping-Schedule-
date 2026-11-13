@@ -66,6 +66,18 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   check('month-end achievements not given mid-month', !mid.pit.some((a) => ['spotless', 'boss', 'champ'].includes(a.type)));
 }
 
+// ---- House Jump easter egg: always beatable, altitude scale
+{
+  const J = await import('../js/jump.js');
+  const reach = J.jumpHeight();
+  let worst = 0;
+  for (let y = 0; y > -12000; y -= 7.3) for (const d of [0, 0.5, 1]) worst = Math.max(worst, J.platformGap(y, d));
+  check(`jump: every platform gap (max ${worst.toFixed(1)} px) is well below the jump height (${reach.toFixed(1)} px)`, worst <= reach - 12, `${worst} vs ${reach}`);
+  check(`jump: space (100 km) at ${J.SPACE_PX} px`, Math.abs(J.metersAt(J.SPACE_PX) / 1e5 - 1) < 0.01, J.metersAt(J.SPACE_PX));
+  check('jump: one screen (320 px) ≈ 8 m, so the counter moves right away', J.metersAt(320) > 5 && J.metersAt(320) < 12, J.metersAt(320));
+  check('jump: Moon target ≈ 384,400 km', Math.abs(J.metersAt(J.MOON_PX) / 1000 - 384400) / 384400 < 0.01, J.metersAt(J.MOON_PX));
+}
+
 // ---- store sync against a mocked GitHub API
 async function syncRun(mode) {
   for (const k of Object.keys(ls)) delete ls[k];
