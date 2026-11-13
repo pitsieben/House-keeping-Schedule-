@@ -557,16 +557,24 @@ function shell(inner) {
   ${ui.toast ? `<div class="toast">${esc(ui.toast)}</div>` : ''}`;
 }
 
+let lastHtml = '';
 function render() {
   const now = getNow();
-  if (!ui.me) { app.innerHTML = loginView(); iconize(app); return; }
+  if (!ui.me) { lastHtml = ''; app.innerHTML = loginView(); iconize(app); return; }
   const scores = computeScores(store.state, now);
   const views = {
     today: () => todayView(scores, now), week: () => weekView(now), ranks: () => ranksView(scores),
     room: () => roomsView(scores, now), cal: calendarView, rules: rulesView, admin: () => (ui.me === ADMIN ? adminView(now) : rulesView()),
   };
-  app.innerHTML = shell(views[ui.tab]());
+  const html = shell(views[ui.tab]());
+  if (html === lastHtml) return; // nothing changed (e.g. a poll with the same data): don't touch the DOM
+  lastHtml = html;
+  // keep the live scene node when its markup is unchanged, so the sky/ground images don't flash while they reload
+  const oldScene = app.querySelector('.scene'), oldSig = oldScene?.outerHTML;
+  app.innerHTML = html;
   iconize(app);
+  const ns = app.querySelector('.scene');
+  if (ns && oldScene) { iconize(oldScene); if (ns.outerHTML === oldScene.outerHTML || ns.outerHTML === oldSig) ns.replaceWith(oldScene); }
 }
 
 function toast(t) { ui.toast = t; render(); setTimeout(() => { ui.toast = ''; render(); }, 2600); }
