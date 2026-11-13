@@ -126,3 +126,8 @@ Template (one entry per completed step, newest last):
 - Changed: new `js/ground.js` draws 96×96 px tiles on a canvas (shown at 2x) for each underground layer: dirt with roots and pebbles, sandy bone layer with strata, cracked rock, crust with strata and gold flecks, mantle swirls, glowing magma. The grass edge is a drawn blade tile in the weather/time grass colour and now sits on the ground line. Time-of-day/weather washes still apply on top.
 - Checked: `npm test` passes; screenshot of the full scene at midday/clear.
 - Not verified: other times/weather with the new textures; phone.
+
+### 2026-11-13 Fix sky flicker on re-render
+- Changed: `render()` in `js/app.js` skips the DOM update when the markup is identical (polls with unchanged data), and when it does re-render it keeps the existing `.scene` node if its markup is unchanged, so the sky/ground images are not rebuilt and re-decoded (that was the brief flash every ~20-30 s).
+- Checked: with a log change forcing a re-render, the same scene node survived; mutation count over 40 s dropped from 22 to 2.
+- Not verified: on a phone over time.
