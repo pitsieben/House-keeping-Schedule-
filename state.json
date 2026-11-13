@@ -3,6 +3,10 @@
   "2026-11-13:AM": {
    "by": "paco",
    "at": 1794557480340
+  },
+  "2026-11-15:clean:pit": {
+   "by": "pit",
+   "at": 1794592910060
   }
  },
  "swaps": {},
@@ -77,6 +81,10 @@
   "1794566367051-aq4b": {
    "t": 1794566367051,
    "text": "🚩 Hritik flagged Paco's morning reset — admin will check"
+  },
+  "1794592910060-6qr5": {
+   "t": 1794592910060,
+   "text": "Pit completed weekly cleaning: living room / entrance / hallway (+30)"
   }
  },
  "admin": {
