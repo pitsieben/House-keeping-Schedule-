@@ -108,7 +108,18 @@ The **🛏 Rooms** tab shows everyone's pixel bedroom.
 
 ---
 
-## 7. Get reminders: Calendar
+## 7. Messages: speech bubbles
+
+Type in the **Say something to the house…** box under the leaderboard and tap **Send**. Your message pops up as a speech bubble above your character for everyone.
+
+- The bubble stays until **you** close it with ✕. Closing it only hides it for you; the others still see it until they close it too.
+- When several people have written, the bubbles merge into one, with a coloured line pointing to each sender and the time each message was sent ("3 min ago", "18:30"). **✕ close all** clears them in one go.
+- A red number on the **Today** tab shows how many messages from the others you haven't closed yet.
+- With notifications enabled (Calendar tab → **Enable notifications**), your phone shows new messages while the app is open or recently in the background. A phone can't get them when the app is fully closed. Messages are kept for 14 days.
+
+---
+
+## 8. Get reminders: Calendar
 
 Go to the **Calendar** tab and tap **Subscribe** on **your own** feed. Every turn then appears in your iPhone calendar with an alert, even when the app is closed.
 
@@ -116,7 +127,7 @@ Go to the **Calendar** tab and tap **Subscribe** on **your own** feed. Every tur
 
 ---
 
-## 8. Admin (Pit only)
+## 9. Admin (Pit only)
 
 Pit has a PIN-locked **🛡 Admin** tab for reviewing flags and correcting ticks: mark fake, undo, mark done, excuse. Every admin change shows up in the **Activity** feed on the Today tab, so everyone can see what was changed.
 
