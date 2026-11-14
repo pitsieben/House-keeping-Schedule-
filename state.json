@@ -99,6 +99,10 @@
   "1794657920043-swz0": {
    "t": 1794657920043,
    "text": "🛡 Admin marked Pit's morning reset as done"
+  },
+  "1794663886878-mfe6": {
+   "t": 1794663886878,
+   "text": "✈ Pit is on holiday Sat 14 Nov → Mon 16 Nov"
   }
  },
  "admin": {
@@ -159,5 +163,13 @@
    "best": 3462,
    "at": 1794587454540
   }
+ },
+ "holidays": {
+  "pit": [
+   {
+    "from": "2026-11-14",
+    "to": "2026-11-16"
+   }
+  ]
  }
 }
