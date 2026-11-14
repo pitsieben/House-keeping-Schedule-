@@ -3,6 +3,11 @@
   "2026-11-13:AM": {
    "by": "paco",
    "at": 1794557480340
+  },
+  "2026-11-12:PM": {
+   "by": "hrithik",
+   "at": 1794519000000,
+   "admin": true
   }
  },
  "swaps": {},
@@ -81,6 +86,10 @@
   "1794592953334-qxwv": {
    "t": 1794592953334,
    "text": "🚩 Pit flagged Paco's morning reset — admin will check"
+  },
+  "1794645142451-ai3p": {
+   "t": 1794645142451,
+   "text": "🛡 Admin marked Hritik's evening reset as done"
   }
  },
  "admin": {
