@@ -22,7 +22,14 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   st.completions[d.id] = { by: d.assignee, at: d.deadline - 3600e3 };
   check('on-time morning reset = +10', pts(st, '2026-11-13T13:00')[d.assignee] === 10, pts(st, '2026-11-13T13:00')[d.assignee]);
   check('one missed reset (morning, checked at 13:00) = -15', pts(empty(), '2026-11-13T13:00')[d.assignee] === -15, pts(empty(), '2026-11-13T13:00')[d.assignee]);
-  check('both resets missed (checked at 23:00) = -30', pts(empty(), '2026-11-13T23:00')[d.assignee] === -30, pts(empty(), '2026-11-13T23:00')[d.assignee]);
+  check('evening reset not missed yet at 23:00 (deadline midnight) = -15', pts(empty(), '2026-11-13T23:00')[d.assignee] === -15, pts(empty(), '2026-11-13T23:00')[d.assignee]);
+  check('both resets missed (checked 00:30 next day) = -30', pts(empty(), '2026-11-14T00:30')[d.assignee] === -30, pts(empty(), '2026-11-14T00:30')[d.assignee]);
+  const ev = S.dutiesForDate(S.parseYmd('2026-11-13')).find((x) => x.kind === 'evening');
+  check('evening deadline is midnight', ev.deadline.getTime() === new Date('2026-11-14T00:00').getTime(), ev.deadline);
+  const st2 = empty(); st2.completions[ev.id] = { by: ev.assignee, at: new Date('2026-11-13T23:45').getTime() };
+  check('evening reset ticked at 23:45 = on time', S.statusOf(ev, st2, new Date('2026-11-14T01:00')) === 'done');
+  const pre = S.dutiesForDate(S.parseYmd('2026-11-11')).find((x) => x.kind === 'evening');
+  check('pre-game evening (11 Nov, deadline 12 Nov 00:00) still has no penalty', S.statusOf(pre, empty(), new Date('2026-11-12T08:00')) === 'pregame');
 }
 // ---- duty ticked before its date (weekly cleaning done early) scores right away
 {
@@ -64,6 +71,20 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   check('dirt levels: 0 spotless, -1 unmade, -300 biohazard', R.dirtLevel(0) === 0 && R.dirtLevel(-1) === 1 && R.dirtLevel(-300) === 5);
   const mid = R.computeAchievements(st, new Date('2026-11-20T10:00'));
   check('month-end achievements not given mid-month', !mid.pit.some((a) => ['spotless', 'boss', 'champ'].includes(a.type)));
+}
+
+// ---- holidays: duties automatically excused, no points/penalty/strike
+{
+  const st = empty(); st.holidays = { paco: [{ from: '2026-11-15', to: '2026-11-18' }] };
+  const d = S.dutiesForDate(S.parseYmd('2026-11-16')).find((x) => x.kind === 'morning'); // Monday: Paco is captain
+  check('holiday: assignee on holiday → status holiday', d.assignee === 'paco' && S.statusOf(d, st, new Date('2026-11-17T10:00')) === 'holiday');
+  const sc = S.computeScores(st, new Date('2026-11-18T23:00'));
+  const base = S.computeScores({ ...empty(), holidays: { paco: [{ from: '2026-11-12', to: '2026-11-18' }] } }, new Date('2026-11-18T23:00'));
+  check('holiday: no penalty and no strikes while away', base.paco.points === 0 && base.paco.recentStrikes === 0, JSON.stringify({ p: base.paco.points, s: base.paco.recentStrikes }));
+  check('holiday: days outside the holiday still count', sc.paco.points < 0, sc.paco.points);
+  check('holiday: holidayOf includes both end days', !!S.holidayOf(st, 'paco', '2026-11-15') && !!S.holidayOf(st, 'paco', '2026-11-18') && !S.holidayOf(st, 'paco', '2026-11-19'));
+  const done = { ...st, completions: { [d.id]: { by: 'paco', at: d.deadline - 3600e3 } } };
+  check('holiday: a duty done anyway still scores', S.statusOf(d, done, new Date('2026-11-17T10:00')) === 'done');
 }
 
 // ---- House Jump easter egg: always beatable, altitude scale

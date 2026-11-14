@@ -1,9 +1,9 @@
 import {
   ROOMMATES, ADMIN, CONFIG, POINTS, JOBS, CHECKLISTS, LAUNDRY, LEVELS,
   person, ymd, parseYmd, addDays, startOfDay, captainFor, dutiesForDate, dutiesBetween,
-  dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs,
+  dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs, holidayOf,
 } from './schedule.js';
-import { spriteURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
+import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
 import { groundTexture, grassEdge } from './ground.js';
@@ -26,6 +26,8 @@ const ui = { tab: 'today', me: validMe(decodeURIComponent(getCookie('house-quest
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+// deadlines at 00:00 read as "midnight" (the evening reset is due at the end of its day)
+const fmtDue = (d) => (d.getHours() === 0 && d.getMinutes() === 0 ? 'midnight' : fmtTime(d));
 const fmtDay = (d) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 const fmtDayLong = (d) => d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 const kindLabel = { morning: '🌅 Morning reset', evening: '🌙 Evening reset', clean: '🧹 Weekly cleaning' };
@@ -99,7 +101,7 @@ function statusChip(st, duty, now) {
     done: ['✔ On time', 'ok'], late: ['✔ Late (strike)', 'warn'], missed: ['✖ Missed', 'bad'],
     excused: ['🛡 Excused', 'ok'], open: [`⏳ ${countdown(duty.deadline - now)} left`, 'open'],
     future: ['🔒 Not open yet', 'muted'], pregame: ['— pre-game', 'muted'],
-    fake: ['🤥 Fake — caught', 'bad'],
+    fake: ['🤥 Fake — caught', 'bad'], holiday: ['✈ On holiday', 'ok'],
   };
   const [t, c] = map[st];
   return `<span class="chip ${c}">${t}</span>`;
@@ -118,7 +120,7 @@ function dutyCard(duty, now, { showDate = false } = {}) {
     ? `<p class="tiny">${duty.job.emoji} <b>${esc(duty.job.name)}</b> — ${esc(duty.job.desc)}</p>`
     : `<ul class="tiny checks">${CHECKLISTS[duty.kind].map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
   let actions = '';
-  if (mine && !done && st !== 'future' && st !== 'excused' && st !== 'fake') {
+  if (mine && !done && !['future', 'excused', 'fake', 'holiday'].includes(st)) {
     const late = st === 'missed';
     actions += `<button class="btn ${late ? 'warn' : 'go'}" data-act="done" data-id="${duty.id}">${late ? 'Mark done (late)' : `✔ Done +${pts}`}</button>`;
     if (st === 'open' && !(sw && sw.status === 'pending')) actions += `<button class="btn ghost" data-act="swapopen" data-id="${duty.id}">⇄ Swap</button>`;
@@ -143,7 +145,7 @@ function dutyCard(duty, now, { showDate = false } = {}) {
   return `
   <article class="duty ${st} ${mine ? 'mine' : ''}" style="--c:${p.color}">
     <header>
-      <div class="who">${hero(who, null, { size: 'xs' })}<div><b>${p.name}</b><div class="tiny muted">${showDate ? fmtDay(d) + ' · ' : ''}${kindLabel[duty.kind]} · by ${fmtTime(duty.deadline)}</div></div></div>
+      <div class="who">${hero(who, null, { size: 'xs' })}<div><b>${p.name}</b><div class="tiny muted">${showDate ? fmtDay(d) + ' · ' : ''}${kindLabel[duty.kind]} · by ${fmtDue(duty.deadline)}</div></div></div>
       ${statusChip(st, duty, now)}
     </header>
     ${st === 'future' && !mine ? '' : lines}
@@ -170,6 +172,10 @@ function banners(scores, now) {
   for (const { id, sw, duty } of pendingSwaps(now)) {
     h += `<div class="banner swap">⇄ <b>${person(sw.from).name}</b> wants to swap: ${dutyTitle(duty)} on ${fmtDay(parseYmd(duty.date))}.
       <button class="btn go" data-act="swapyes" data-id="${id}">Accept</button><button class="btn ghost" data-act="swapno" data-id="${id}">Decline</button></div>`;
+  }
+  for (const r of ROOMMATES) {
+    const hol = holidayOf(store.state, r.id, ymd(now));
+    if (hol) h += `<div class="banner">✈ <b>${r.id === ui.me ? 'You are' : `${r.name} is`}</b> on holiday until ${fmtDay(parseYmd(hol.to))}: duties are excused automatically.</div>`;
   }
   for (const r of ROOMMATES) {
     if (scores[r.id].recentStrikes >= 3) h += `<div class="banner bad">🚨 ${r.name} has ${scores[r.id].recentStrikes} strikes in 30 days — household review + paid-replacement arrangement to agree.</div>`;
@@ -222,7 +228,10 @@ function niceStep(span) {
 }
 
 function partyScene(scores) {
-  const pts = ROOMMATES.map((r) => clampPts(scores[r.id].points));
+  const today = ymd(getNow());
+  const away = Object.fromEntries(ROOMMATES.map((r) => [r.id, holidayOf(store.state, r.id, today)]));
+  // roommates on holiday fly a little plane in the background and don't steer the camera
+  const pts = ROOMMATES.filter((r) => !away[r.id]).map((r) => clampPts(scores[r.id].points));
   const topId = (() => {
     const r = rankings(scores);
     return r[0].points > 0 && r[0].points > (r[1]?.points ?? -1e9) ? r[0].id : null;
@@ -290,6 +299,11 @@ function partyScene(scores) {
 
   const heroes = ROOMMATES.map((r, i) => {
     const o = scores[r.id];
+    if (away[r.id]) {
+      return `<div class="plane-wrap" style="--c:${r.color};top:${Math.round(14 + i * 34)}px;animation-delay:-${i * 13}s">
+        <img class="plane" alt="" src="${planeURL(HEROES[r.id], { outfit: outfitOf(r.id) })}">
+        <div class="head">✈ <b>${r.name}</b> ${o.points > 0 ? '+' : ''}${o.points} · back ${fmtDay(addDays(parseYmd(away[r.id].to), 1))}</div></div>`;
+    }
     const sign = o.points > 0 ? '+' : '';
     const head = compact ? `<div class="head"><b>${r.name}</b> ${sign}${o.points}</div>` : '';
     return `<div class="member c-${r.id} ${compact ? 'compact' : ''} ${r.id === ui.me ? 'you' : ''} ${r.id === topId ? 'leader' : ''}" style="--c:${r.color};--w:${heroW}px;left:${i * 33.33}%;top:${yOf(clampPts(o.points)).toFixed(1)}px">
@@ -311,6 +325,7 @@ function partyScene(scores) {
   </section>
   <div class="chatlayer" style="height:${SCENE_H - 8}px">${chatBubbles((r) => {
     const i = ROOMMATES.findIndex((x) => x.id === r);
+    if (away[r]) return { x: i * 33.33 + 16.67, col: i, headY: 30 + i * 34 }; // flying around up there
     // sprite canvas has 5 empty rows (crown room) above the 24-row body; compact heroes carry a name chip above
     const headY = yOf(clampPts(scores[r].points)) - (compact ? heroH + 22 : heroH * 24 / 29 + 2);
     return { x: i * 33.33 + 16.67, col: i, headY };
@@ -422,7 +437,7 @@ function weekView(now) {
   const days = Array.from({ length: 14 }, (_, i) => addDays(from, i));
   const cell = (duty) => {
     const st = statusOf(duty, store.state, now);
-    const ic = { done: '✅', late: '🟠', missed: '❌', excused: '🛡', open: '⏳', future: '·', pregame: '–' }[st];
+    const ic = { done: '✅', late: '🟠', missed: '❌', excused: '🛡', holiday: '✈', fake: '🤥', open: '⏳', future: '·', pregame: '–' }[st];
     return `<span title="${st}">${ic}</span>`;
   };
   const rows = days.map((d) => {
@@ -567,15 +582,38 @@ function calendarView() {
   <p class="tiny muted">iPhone: tap Share → "Add to Home Screen" first, then enable notifications from the installed app.</p></div>`;
 }
 
+// ---------- holidays ----------
+function holidayCard() {
+  const today = ymd(getNow());
+  const list = (who) => (store.state.holidays?.[who] || []).filter((h) => h.to >= today).sort((a, b) => a.from.localeCompare(b.from));
+  const fmtRange = (h) => `${fmtDay(parseYmd(h.from))} → ${fmtDay(parseYmd(h.to))}`;
+  const mine = list(ui.me).map((h, k) => {
+    const started = h.from <= today;
+    return `<li>✈ ${fmtRange(h)} ${started
+      ? `<button class="link" data-act="holback" data-from="${h.from}">I'm back early</button>`
+      : `<button class="link" data-act="holdel" data-from="${h.from}">remove</button>`}</li>`;
+  }).join('');
+  const others = ROOMMATES.filter((r) => r.id !== ui.me).flatMap((r) => list(r.id).map((h) => `<li>${r.name}: ${fmtRange(h)}</li>`)).join('');
+  return `<div class="card"><b>✈ Holidays</b>
+    <p class="tiny muted">While you're away, your duties (morning, evening and weekly cleaning) are excused automatically: no points, no penalty, no strike. Holidays can only start today or later.</p>
+    ${mine ? `<ul class="tiny hols">${mine}</ul>` : ''}
+    ${store.canWrite ? `<form class="holform" data-act="holiday">
+      <label class="tiny">From <input type="date" name="from" min="${today}" value="${today}" required></label>
+      <label class="tiny">To <input type="date" name="to" min="${today}" required></label>
+      <button class="btn">Add holiday</button></form>` : '<p class="tiny muted">Add your token in Account to plan a holiday.</p>'}
+    ${others ? `<p class="tiny muted">Others away:</p><ul class="tiny hols">${others}</ul>` : ''}</div>`;
+}
+
 function rulesView() {
   return `
   <h2>📜 The House System</h2>
-  <div class="card"><b>House Captain</b><p class="tiny">One roommate is captain each day and does the morning reset (before leaving, ~5–10 min) and the evening reset (by 10:30 pm, ~10–15 min). Mon–Tue Paco · Wed Pit · Thu Hritik · Fri rotates · Sat Pit · Sun Hritik.</p>
+  <div class="card"><b>House Captain</b><p class="tiny">One roommate is captain each day and does the morning reset (before leaving, ~5–10 min) and the evening reset (by midnight, ~10–15 min). Mon–Tue Paco · Wed Pit · Thu Hritik · Fri rotates · Sat Pit · Sun Hritik.</p>
   <p class="tiny muted">The captain isn't responsible for someone else's cooking mess or belongings.</p></div>
   <div class="card"><b>Weekly cleaning (Sun 8 pm)</b><p class="tiny">${JOBS.map((j) => `${j.emoji} <b>${esc(j.name)}</b>: ${esc(j.desc)}`).join('<br>')}</p><p class="tiny muted">Assignments rotate weekly. Bathrooms excluded.</p></div>
   <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hritik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
+  ${holidayCard()}
   <div class="card"><b>Account</b><p class="tiny muted">Playing as ${person(ui.me).name} · ${store.mode === 'cloud' ? (store.canWrite ? '☁ synced via GitHub' : '👀 read-only (no token)') : '💾 offline — changes are queued'}${store.pending.length ? ` · ${store.pending.length} waiting to upload` : ''}</p>
   <button class="btn ghost" data-act="logout">Switch player</button>${tokenFormHtml()}${store.error ? `<p class="tiny bad">Sync error: ${esc(store.error)}</p>` : ''}</div>`;
 }
@@ -614,7 +652,7 @@ function adminView(now) {
     if (f) btns += b('aunfake', 'Clear fake') + (f.stolenBy ? b('aunsteal', `Remove ${person(f.stolenBy).name}'s steal`) : '');
     if (s.flags?.[d.id] && !f) btns += b('adismiss', 'Dismiss flag');
     return `<div class="arow" style="--c:${person(who).color}"><div class="grow"><b>${person(who).name}</b> · ${kindLabel[d.kind]}
-      <div class="tiny muted">${fmtDay(parseYmd(d.date))} · by ${fmtTime(d.deadline)}${s.completions?.[d.id] ? ` · ticked ${fmtTime(new Date(s.completions[d.id].at))}` : ''}</div></div>
+      <div class="tiny muted">${fmtDay(parseYmd(d.date))} · by ${fmtDue(d.deadline)}${s.completions?.[d.id] ? ` · ticked ${fmtTime(new Date(s.completions[d.id].at))}` : ''}</div></div>
       ${statusChip(st, d, now)}<div class="actions">${btns}</div></div>`;
   };
   return `<h2>🛡 Admin <small>only you see this</small></h2>
@@ -739,6 +777,16 @@ const actions = {
       },
     });
   },
+  holdel: (el) => {
+    const list = (store.state.holidays?.[ui.me] || []).filter((h) => h.from !== el.dataset.from);
+    store.patch(['holidays', ui.me], list);
+  },
+  holback: (el) => { // end the current holiday yesterday: past days stay excused, today's duties count again
+    const y = ymd(addDays(startOfDay(getNow()), -1));
+    const list = (store.state.holidays?.[ui.me] || []).map((h) => (h.from === el.dataset.from ? { ...h, to: y } : h)).filter((h) => h.to >= h.from);
+    store.patch(['holidays', ui.me], list);
+    store.say(`✈ ${person(ui.me).name} is back from holiday`, getNow().getTime());
+  },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
   tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
@@ -800,6 +848,19 @@ async function saveToken(tok) {
 }
 
 app.addEventListener('submit', async (e) => {
+  const hf = e.target.closest('[data-act="holiday"]');
+  if (hf) {
+    e.preventDefault();
+    const fd = new FormData(hf), from = String(fd.get('from')), to = String(fd.get('to')), today = ymd(getNow());
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) return;
+    if (from < today) { toast("Holidays can't start in the past"); return; }
+    if (to < from) { toast('The end date is before the start'); return; }
+    const list = [...(store.state.holidays?.[ui.me] || []).filter((h) => h.to < from || h.from > to), { from, to }];
+    store.patch(['holidays', ui.me], list);
+    store.say(`✈ ${person(ui.me).name} is on holiday ${fmtDay(parseYmd(from))} → ${fmtDay(parseYmd(to))}`, getNow().getTime());
+    toast('✈ Holiday saved: duties excused');
+    return;
+  }
   const sayForm = e.target.closest('[data-act="say"]');
   if (sayForm) {
     e.preventDefault();
@@ -849,11 +910,11 @@ function checkReminders() {
   const duties = dutiesBetween(addDays(now, -1), addDays(now, 1));
   for (const d of duties) {
     if (assigneeOf(d, store.state) !== ui.me) continue;
-    if (['done', 'late', 'excused'].includes(statusOf(d, store.state, now)) || now > d.deadline) continue;
+    if (['done', 'late', 'excused', 'holiday'].includes(statusOf(d, store.state, now)) || now > d.deadline) continue;
     const [s] = CONFIG.windows[d.kind];
     const start = new Date(d.deadline.getFullYear(), d.deadline.getMonth(), d.deadline.getDate(), s[0], s[1]);
     const warn = new Date(d.deadline - 30 * 60000);
-    if (now >= start && now < warn && !sent[d.id + ':start']) { mark(d.id + ':start'); notify(`${kindLabel[d.kind]} — your turn!`, `Due by ${fmtTime(d.deadline)}. Check it off for points.`, d.id); }
+    if (now >= start && now < warn && !sent[d.id + ':start']) { mark(d.id + ':start'); notify(`${kindLabel[d.kind]} — your turn!`, `Due by ${fmtDue(d.deadline)}. Check it off for points.`, d.id); }
     else if (now >= warn && !sent[d.id + ':warn']) { mark(d.id + ':warn'); notify(`⏰ 30 min left: ${dutyTitle(d)}`, 'Miss it and you lose points.', d.id + 'w'); }
   }
 }

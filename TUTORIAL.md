@@ -34,7 +34,7 @@ The **Today** tab shows today's House Captain, the laundry priority and your dut
 <img src="docs/tutorial/5-your-duty.png" width="320" alt="Your duty card">
 
 - 🌅 **Morning reset**, by 12:00: dishwasher out, check counters, empty full bins.
-- 🌙 **Evening reset**, by 22:30: dishwasher on, wipe surfaces, bins again.
+- 🌙 **Evening reset**, by midnight: dishwasher on, wipe surfaces, bins again.
 - 🧹 **Weekly cleaning**, Sunday by 20:00: kitchen, living room or terrace. This rotates every week.
 
 Ticked something by mistake? Tap **Undo**.
@@ -105,6 +105,15 @@ The **🛏 Rooms** tab shows everyone's pixel bedroom.
 - Tap a collectible to put it on display or into storage. The shelf, wall and floor have limited space.
 - The more achievements you collect, the more **outfits** you unlock (Tracksuit, Barça Kit, Hawaiian, Tuxedo, Superhero, Golden Janitor). Your outfit shows everywhere in the app.
 - **Below 0 points, your room gets dirty:** unmade bed → clothes on the floor → cobwebs → flies → biohazard 🤢. Get back above 0 and it's clean again.
+
+---
+
+## ✈ Going away? Holidays
+
+Go to **Rules → ✈ Holidays**, pick the first and last day you're away, and tap **Add holiday**. On those days your duties (morning, evening and weekly cleaning) are **excused automatically**: no points, no penalty, no strike. You can't tick them; there's nothing to do.
+
+- Everyone sees a banner while you're away, and your character flies a little plane in the background of the leaderboard.
+- Holidays can only start today or later. Back early? Tap **I'm back early**: the days you were away stay excused.
 
 ---
 

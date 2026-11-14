@@ -33,7 +33,7 @@ function monthStats(state, key, now) {
   const duties = dutiesBetween(from, end).sort((a, b) => a.deadline - b.deadline);
   for (const d of duties) {
     const who = assigneeOf(d, state), st = statusOf(d, state, now), o = out[who];
-    if (!o || ['open', 'future', 'pregame'].includes(st)) continue;
+    if (!o || ['open', 'future', 'pregame', 'holiday'].includes(st)) continue;
     o.total++;
     if (d.kind === 'clean') o.cleans++;
     if (st === 'done') {

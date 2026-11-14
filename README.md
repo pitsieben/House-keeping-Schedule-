@@ -43,7 +43,7 @@ The **🛡 Admin** tab only appears when you play as Pit (`ADMIN` in `js/schedul
 **Honest limits:** this is an honour-system lock. The PIN hash lives in `state.json`, and anyone with the GitHub token could edit that file directly on GitHub. It stops casual tampering in the app, not a determined roommate.
 
 ## 3. Apple Calendar + notifications
-Open the **Calendar** tab on each phone and tap **Subscribe** for your own feed (plus the whole-house feed if you like). Each turn has an alert (morning at 07:45, evening 21:30 & 22:00, weekly cleaning Sat 17:00 / Sun 17:00 / 19:00).
+Open the **Calendar** tab on each phone and tap **Subscribe** for your own feed (plus the whole-house feed if you like). Each turn has an alert (morning at 07:45, evening 22:30 & 23:00 (due at midnight), weekly cleaning Sat 17:00 / Sun 17:00 / 19:00).
 Calendar feeds live in `calendar/*.ics`; regenerate with `npm run calendar` after changing the rotation or times in `js/schedule.js`.
 
 **Notes**
