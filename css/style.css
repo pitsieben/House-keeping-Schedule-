@@ -323,3 +323,14 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .jump { position: fixed; inset: 0; z-index: 1000; background: #05060a; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; }
 .jump canvas { image-rendering: pixelated; height: min(100vh, 100dvh, calc(100vw * 16 / 9)); width: auto; aspect-ratio: 9 / 16; box-shadow: 0 0 0 4px #101214, 0 0 0 6px #3f4752; }
 .jump .jx { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px; width: 40px; height: 40px; border: 3px solid #101214; background: #fdfdfb; color: #101214; font: 700 16px Inter, sans-serif; cursor: pointer; }
+
+/* holiday: little plane far in the background of the leaderboard */
+.plane-wrap { position: absolute; z-index: 1; left: -30%; width: 34%; text-align: center; animation: flyby 36s linear infinite; pointer-events: none; }
+.plane-wrap .plane { width: 64px; image-rendering: pixelated; display: block; margin: 0 auto; filter: saturate(.85) brightness(.95); animation: bob 1.4s steps(2) infinite; }
+.plane-wrap .head { display: inline-block; margin-top: 2px; padding: 1px 5px; background: #101214cc; border: 2px solid var(--c); font: 700 9px Inter, sans-serif; color: #fff; white-space: nowrap; }
+.plane-wrap .head b { color: var(--c); }
+@keyframes flyby { from { left: -36%; } to { left: 104%; } }
+@media (prefers-reduced-motion: reduce) { .plane-wrap { animation: none; left: 33%; } }
+.holform { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 8px; }
+.holform label { display: flex; flex-direction: column; gap: 2px; }
+.hols { margin: 6px 0; padding-left: 18px; }

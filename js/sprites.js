@@ -164,3 +164,43 @@ export function spriteURL(key, { crown = false, sweat = false, outfit = 'everyda
   cache.set(id, url);
   return url;
 }
+
+// ---- Holiday: the hero flying a little propeller plane (38×17 px), head poking out of the cockpit ----
+const PLANE = {
+  pal: { K: '#101214', W: '#f3f4f6', w: '#cbd5e1', R: '#ef4444', B: '#38bdf8', G: '#64748b', Y: '#fbbf24' },
+  rows: [
+    'KK....................................',
+    'KRK...................................',
+    'KRRK..................................',
+    'KRRWK.................................',
+    'KWWWWKKKKKKKKKKKKKKKKKKKKKKKKKKK....G.',
+    'KWWWWWWWWWWWWWWWWWWWWWWWWWWWBBBWK...G.',
+    'KRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRWKYKG.',
+    'KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWKYKG.',
+    '.KwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwKKK.G.',
+    '..KKKKKKKKKwwwwwwwwwwwwwwwKKKKKKK...G.',
+    '..........KKKKKKKKKKKKKKKK..........G.',
+    '..............K......K................',
+    '.............KKK....KKK...............',
+  ],
+};
+const planeCache = new Map();
+/** Data-URL of the hero in a plane (for roommates on holiday). */
+export function planeURL(key, { outfit = 'everyday' } = {}) {
+  const id = `${key}|${outfit}`;
+  if (planeCache.has(id)) return planeCache.get(id);
+  const c = document.createElement('canvas');
+  c.width = 38; c.height = 21;
+  const g = c.getContext('2d');
+  // pilot: only the head + collar (rows 0–11) sitting in the cockpit, behind the fuselage
+  const tmp = document.createElement('canvas'); tmp.width = 16; tmp.height = 24;
+  drawHero(tmp.getContext('2d'), key, 0, 0, { outfit });
+  g.drawImage(tmp, 0, 0, 16, 12, 14, 0, 16, 12);
+  PLANE.rows.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '.') return;
+    g.fillStyle = PLANE.pal[ch]; g.fillRect(x, y + 8, 1, 1);
+  }));
+  const url = c.toDataURL('image/png');
+  planeCache.set(id, url);
+  return url;
+}

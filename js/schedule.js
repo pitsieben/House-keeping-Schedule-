@@ -12,16 +12,17 @@ export const ROOMMATES = [
 export const CONFIG = {
   trialStart: '2026-11-10',
   trialEnd: '2026-11-23',
-  // No penalties for anything whose deadline is before this date (game starts fresh).
+  // No penalties for duties dated before this day (game starts fresh). Compared by duty date, not deadline,
+  // because the evening deadline is midnight (= the next day).
   penaltyStart: '2026-11-12',
   // [hour, minute] deadlines (local time)
   morningDeadline: [12, 0],   // "before leaving"
-  eveningDeadline: [22, 30],  // "by 10:30 pm"
+  eveningDeadline: [24, 0],   // midnight (= 00:00 at the start of the next day)
   weeklyDeadline: [20, 0],    // "Sunday at 8 pm"
   // Calendar event windows [start],[end]
   windows: {
     morning: [[7, 45], [8, 15]],
-    evening: [[21, 30], [22, 30]],
+    evening: [[22, 30], [24, 0]],   // calendar alerts at 22:30 and 23:00
     clean: [[17, 0], [20, 0]],
   },
 };
@@ -118,13 +119,19 @@ export function assigneeOf(duty, state) {
   return duty.assignee;
 }
 
+/** Holidays: state.holidays[who] = [{ from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' }] (both days included). */
+export function holidayOf(state, who, date) {
+  return (state?.holidays?.[who] || []).find((h) => h && h.from <= date && date <= h.to) || null;
+}
+
 export function statusOf(duty, state, now = new Date()) {
   if (state?.fakes?.[duty.id]) return 'fake';
   const c = state?.completions?.[duty.id];
   if (c) return c.at <= duty.deadline.getTime() ? 'done' : 'late';
+  if (holidayOf(state, assigneeOf(duty, state), duty.date)) return 'holiday'; // away: automatically excused
   if (state?.excused?.[duty.id]) return 'excused';
   if (now < duty.opens) return 'future';
-  if (now > duty.deadline) return duty.deadline < parseYmd(CONFIG.penaltyStart) ? 'pregame' : 'missed';
+  if (now > duty.deadline) return duty.date < CONFIG.penaltyStart ? 'pregame' : 'missed';
   return 'open';
 }
 
@@ -148,7 +155,7 @@ const mondayOf = (d) => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
 // Derive scoreboard from the shared state. Nothing is stored — penalties are computed from deadlines.
 export function computeScores(state, now = new Date()) {
   const out = Object.fromEntries(ROOMMATES.map((r) => [r.id, {
-    id: r.id, points: 0, xp: 0, done: 0, late: 0, missed: 0, excused: 0, fakes: 0, steals: 0,
+    id: r.id, points: 0, xp: 0, done: 0, late: 0, missed: 0, excused: 0, holiday: 0, fakes: 0, steals: 0,
     streak: 0, best: 0, sweeps: 0, perfectWeeks: 0, strikes: [], earlyBird: 0,
   }]));
   const penStart = parseYmd(CONFIG.penaltyStart);
@@ -172,7 +179,7 @@ export function computeScores(state, now = new Date()) {
       if (duty.kind === 'morning' && new Date(c.at).getHours() < 9) o.earlyBird++;
       if (duty.kind !== 'clean') ((perDay[duty.date] ||= {})[who] ||= []).push(duty.kind);
     } else if (st === 'late') {
-      if (duty.deadline < penStart) continue;
+      if (duty.date < CONFIG.penaltyStart) continue;
       o.points += Math.round(POINTS.miss[duty.kind] / 2); o.late++; o.streak = 0;
       o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind, late: true });
       w.total++;
@@ -182,7 +189,7 @@ export function computeScores(state, now = new Date()) {
       w.total++;
     } else if (st === 'fake') {
       // claimed done but caught: double penalty + strike; whoever stole the duty gets its points
-      if (duty.deadline < penStart) continue;
+      if (duty.date < CONFIG.penaltyStart) continue;
       o.points += POINTS.miss[duty.kind] * POINTS.fakeMultiplier; o.missed++; o.fakes++; o.streak = 0;
       o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind, fake: true });
       w.total++;
@@ -191,6 +198,8 @@ export function computeScores(state, now = new Date()) {
         const p = POINTS.done[duty.kind];
         out[thief].points += p; out[thief].xp += p; out[thief].steals++;
       }
+    } else if (st === 'holiday') {
+      o.holiday++;                 // away: no points, no penalty, doesn't count for the week either
     } else if (st === 'excused') {
       o.excused++; w.total++; w.ok++;
     }
