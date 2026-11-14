@@ -120,18 +120,25 @@
    "text": "Why am i on 0 i did both of my tasks bitches",
    "at": 1794599002405,
    "closed": {
-    "paco": 1794599106311
+    "paco": 1794599106311,
+    "pit": 1794648919753
    }
   },
   "1794645159562-pit": {
    "from": "pit",
    "text": "It’s fixed",
-   "at": 1794645159562
+   "at": 1794645159562,
+   "closed": {
+    "pit": 1794648919753
+   }
   },
   "1794645203033-pit": {
    "from": "pit",
    "text": "I will postpone the evening deadline to midnight",
-   "at": 1794645203033
+   "at": 1794645203033,
+   "closed": {
+    "pit": 1794648919753
+   }
   }
  },
  "jump": {
