@@ -107,6 +107,10 @@
   "1794663905219-wtrv": {
    "t": 1794663905219,
    "text": "✈ Pit is back from holiday"
+  },
+  "1794663911974-b63w": {
+   "t": 1794663911974,
+   "text": "✈ Pit is on holiday Sat 14 Nov → Sun 15 Nov"
   }
  },
  "admin": {
@@ -169,6 +173,11 @@
   }
  },
  "holidays": {
-  "pit": []
+  "pit": [
+   {
+    "from": "2026-11-14",
+    "to": "2026-11-15"
+   }
+  ]
  }
 }
