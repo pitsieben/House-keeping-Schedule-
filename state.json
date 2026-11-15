@@ -158,12 +158,18 @@
   "1794766417047-paco": {
    "from": "paco",
    "text": "Why I have minus five?? I didn’t activate Fridays night reset!! But I did it!!",
-   "at": 1794766417047
+   "at": 1794766417047,
+   "closed": {
+    "pit": 1794767076160
+   }
   },
   "1794766546622-pit": {
    "from": "pit",
    "text": "You just missed the deadline, but i fixed it!",
-   "at": 1794766546622
+   "at": 1794766546622,
+   "closed": {
+    "pit": 1794767076160
+   }
   }
  },
  "jump": {
