@@ -19,6 +19,10 @@
   "2026-11-12:AM": {
    "by": "pit",
    "at": 1794515907145
+  },
+  "2026-11-15:AM": {
+   "by": "pit",
+   "at": 1794749009159
   }
  },
  "avatars": {},
@@ -114,6 +118,10 @@
   "1794766393101-kve3": {
    "t": 1794766393101,
    "text": "Paco completed weekly cleaning: kitchen (+30)"
+  },
+  "1794749009159-73mn": {
+   "t": 1794749009159,
+   "text": "Pit excused Hritik's morning reset (emergency)"
   }
  },
  "admin": {
@@ -143,6 +151,11 @@
    "from": "paco",
    "text": "Why I have minus five?? I didn’t activate Fridays night reset!! But I did it!!",
    "at": 1794766417047
+  },
+  "1794766546622-pit": {
+   "from": "pit",
+   "text": "You just missed the deadline, but i fixed it!",
+   "at": 1794766546622
   }
  },
  "jump": {
