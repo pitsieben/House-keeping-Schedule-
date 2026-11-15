@@ -146,6 +146,10 @@
   "1794767637741-f512": {
    "t": 1794767637741,
    "text": "Hritik completed weekly cleaning: terrace / remaining floors (+30)"
+  },
+  "1794771553913-143j": {
+   "t": 1794771553913,
+   "text": "✈ Pit is on holiday Fri 20 Nov → Sat 28 Nov"
   }
  },
  "admin": {
@@ -174,6 +178,10 @@
    {
     "from": "2026-11-14",
     "to": "2026-11-15"
+   },
+   {
+    "from": "2026-11-20",
+    "to": "2026-11-28"
    }
   ]
  }
