@@ -16,6 +16,10 @@
   "2026-11-15:PM": {
    "by": "hrithik",
    "at": 1794767634168
+  },
+  "2026-11-15:clean:hrithik": {
+   "by": "hrithik",
+   "at": 1794767637741
   }
  },
  "swaps": {},
@@ -138,6 +142,10 @@
   "1794767634168-pal6": {
    "t": 1794767634168,
    "text": "Hritik completed evening reset (+10)"
+  },
+  "1794767637741-f512": {
+   "t": 1794767637741,
+   "text": "Hritik completed weekly cleaning: terrace / remaining floors (+30)"
   }
  },
  "admin": {
