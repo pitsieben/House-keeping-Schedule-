@@ -153,45 +153,10 @@
  },
  "flags": {},
  "messages": {
-  "1794645159562-pit": {
-   "from": "pit",
-   "text": "It’s fixed",
-   "at": 1794645159562,
-   "closed": {
-    "pit": 1794648919753,
-    "hrithik": 1794677892015,
-    "paco": 1794768057837
-   }
-  },
-  "1794645203033-pit": {
-   "from": "pit",
-   "text": "I will postpone the evening deadline to midnight",
-   "at": 1794645203033,
-   "closed": {
-    "pit": 1794648919753,
-    "hrithik": 1794677892015,
-    "paco": 1794768057410
-   }
-  },
-  "1794766417047-paco": {
+  "1794768893112-paco": {
    "from": "paco",
-   "text": "Why I have minus five?? I didn’t activate Fridays night reset!! But I did it!!",
-   "at": 1794766417047,
-   "closed": {
-    "pit": 1794767076160,
-    "hrithik": 1794767653628,
-    "paco": 1794768881757
-   }
-  },
-  "1794766546622-pit": {
-   "from": "pit",
-   "text": "You just missed the deadline, but i fixed it!",
-   "at": 1794766546622,
-   "closed": {
-    "pit": 1794767076160,
-    "hrithik": 1794767653628,
-    "paco": 1794768056373
-   }
+   "text": "Thank youuuuu",
+   "at": 1794768893112
   }
  },
  "jump": {
