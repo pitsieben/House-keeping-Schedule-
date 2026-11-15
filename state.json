@@ -121,36 +121,6 @@
  },
  "flags": {},
  "messages": {
-  "1794563368854-pit": {
-   "from": "pit",
-   "text": "Hey Guys enable your in app notifications in the calendar tab",
-   "at": 1794563368854,
-   "closed": {
-    "paco": 1794587164165,
-    "pit": 1794592898955,
-    "hrithik": 1794677892015
-   }
-  },
-  "1794587144080-paco": {
-   "from": "paco",
-   "text": "HRITIK you are a looser",
-   "at": 1794587144080,
-   "closed": {
-    "paco": 1794587162844,
-    "pit": 1794592898177,
-    "hrithik": 1794677892015
-   }
-  },
-  "1794599002405-hrithik": {
-   "from": "hrithik",
-   "text": "Why am i on 0 i did both of my tasks bitches",
-   "at": 1794599002405,
-   "closed": {
-    "paco": 1794599106311,
-    "pit": 1794648919753,
-    "hrithik": 1794677892015
-   }
-  },
   "1794645159562-pit": {
    "from": "pit",
    "text": "It’s fixed",
@@ -168,6 +138,11 @@
     "pit": 1794648919753,
     "hrithik": 1794677892015
    }
+  },
+  "1794766417047-paco": {
+   "from": "paco",
+   "text": "Why I have minus five?? I didn’t activate Fridays night reset!! But I did it!!",
+   "at": 1794766417047
   }
  },
  "jump": {
