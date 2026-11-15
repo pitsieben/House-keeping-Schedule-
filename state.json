@@ -23,6 +23,10 @@
   "2026-11-15:AM": {
    "by": "pit",
    "at": 1794749009159
+  },
+  "2026-11-13:PM": {
+   "by": "pit",
+   "at": 1794766558246
   }
  },
  "avatars": {},
@@ -122,6 +126,10 @@
   "1794749009159-73mn": {
    "t": 1794749009159,
    "text": "Pit excused Hritik's morning reset (emergency)"
+  },
+  "1794766558265-jpvj": {
+   "t": 1794766558265,
+   "text": "🛡 Admin excused Paco's evening reset"
   }
  },
  "admin": {
