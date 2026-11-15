@@ -8,6 +8,10 @@
    "by": "hrithik",
    "at": 1794519000000,
    "admin": true
+  },
+  "2026-11-15:clean:paco": {
+   "by": "paco",
+   "at": 1794766393101
   }
  },
  "swaps": {},
@@ -106,6 +110,10 @@
   "1794663911974-b63w": {
    "t": 1794663911974,
    "text": "✈ Pit is on holiday Sat 14 Nov → Sun 15 Nov"
+  },
+  "1794766393101-kve3": {
+   "t": 1794766393101,
+   "text": "Paco completed weekly cleaning: kitchen (+30)"
   }
  },
  "admin": {
