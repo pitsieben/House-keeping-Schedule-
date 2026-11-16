@@ -212,7 +212,9 @@
  },
  "rooms": {
   "hrithik": {
-   "placed": []
+   "placed": [
+    "rug"
+   ]
   }
  }
 }
