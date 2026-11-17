@@ -334,3 +334,16 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .holform { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 8px; }
 .holform label { display: flex; flex-direction: column; gap: 2px; }
 .hols { margin: 6px 0; padding-left: 18px; }
+
+/* "What's new" board: pinned paper notes on a cork board */
+.board { margin: 6px 0 18px; }
+.board .notes { padding: 14px 10px 6px; background: #8a5a32 radial-gradient(#0000001f 1px, transparent 1.5px) 0 0 / 7px 7px; border: 4px solid #4a2f17; box-shadow: 0 0 0 2px #2a1a0c; }
+.note { position: relative; margin: 0 0 14px; padding: 10px 12px 8px; background: #fdf6d8; color: #2b2418; transform: rotate(var(--tilt)); box-shadow: 3px 3px 0 #0005; border: 2px solid #2a1a0c; }
+.note.fresh { background: #fff7b0; }
+.note .pin { position: absolute; top: -7px; left: 50%; width: 10px; height: 10px; margin-left: -5px; background: #ef4444; border: 2px solid #2a1a0c; box-shadow: 1px 1px 0 #0006; }
+.note .nhead { display: flex; align-items: center; gap: 6px; }
+.note .nhead b { font-size: 13px; }
+.note .nhead em { margin-left: auto; font: 700 9px Inter, sans-serif; font-style: normal; background: #ef4444; color: #fff; padding: 1px 5px; border: 2px solid #2a1a0c; }
+.note p { margin: 4px 0 2px; font-size: 12.5px; line-height: 1.35; }
+.note time { font-size: 10.5px; color: #6b5b44; }
+.banner.news .btn { margin-left: 6px; }

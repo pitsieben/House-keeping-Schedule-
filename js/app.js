@@ -1,7 +1,7 @@
 import {
   ROOMMATES, ADMIN, CONFIG, POINTS, JOBS, CHECKLISTS, LAUNDRY, LEVELS,
   person, ymd, parseYmd, addDays, startOfDay, captainFor, dutiesForDate, dutiesBetween,
-  dutyTitle, assigneeOf, statusOf, computeScores, rankings, weekJobs, holidayOf,
+  BATHROOM, dutyTitle, assigneeOf, baseAssigneeOf, coverOf, statusOf, computeScores, rankings, weekJobs, holidayOf,
 } from './schedule.js';
 import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
@@ -11,6 +11,7 @@ import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, own
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
 import { openJump } from './jump.js';
+import { CHANGELOG, LATEST_NEWS } from './changelog.js';
 
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -101,7 +102,7 @@ function statusChip(st, duty, now) {
     done: ['✔ On time', 'ok'], late: ['✔ Late (strike)', 'warn'], missed: ['✖ Missed', 'bad'],
     excused: ['🛡 Excused', 'ok'], open: [`⏳ ${countdown(duty.deadline - now)} left`, 'open'],
     future: ['🔒 Not open yet', 'muted'], pregame: ['— pre-game', 'muted'],
-    fake: ['🤥 Fake — caught', 'bad'], holiday: ['✈ On holiday', 'ok'],
+    fake: ['🤥 Fake — caught', 'bad'], holiday: ['✈ On holiday', 'ok'], claimed: ['✋ Waiting for OK', 'open'],
   };
   const [t, c] = map[st];
   return `<span class="chip ${c}">${t}</span>`;
@@ -120,7 +121,7 @@ function dutyCard(duty, now, { showDate = false } = {}) {
     ? `<p class="tiny">${duty.job.emoji} <b>${esc(duty.job.name)}</b> — ${esc(duty.job.desc)}</p>`
     : `<ul class="tiny checks">${CHECKLISTS[duty.kind].map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
   let actions = '';
-  if (mine && !done && !['future', 'excused', 'fake', 'holiday'].includes(st)) {
+  if (mine && !done && !['future', 'excused', 'fake', 'holiday', 'claimed'].includes(st)) {
     const late = st === 'missed';
     actions += `<button class="btn ${late ? 'warn' : 'go'}" data-act="done" data-id="${duty.id}">${late ? 'Mark done (late)' : `✔ Done +${pts}`}</button>`;
     if (st === 'open' && !(sw && sw.status === 'pending')) actions += `<button class="btn ghost" data-act="swapopen" data-id="${duty.id}">⇄ Swap</button>`;
@@ -131,6 +132,15 @@ function dutyCard(duty, now, { showDate = false } = {}) {
   if (fake && !fake.stolenBy && !mine && canSteal(fake, now)) actions += `<button class="btn go" data-act="steal" data-id="${duty.id}">🦹 Steal it: do it now, +${pts}</button>`;
   if (!mine && st === 'missed') actions += `<button class="btn ghost" data-act="excuse" data-id="${duty.id}" title="Genuine emergency">🛡 Excuse (emergency)</button>`;
   if (st === 'excused') actions += `<button class="btn ghost" data-act="unexcuse" data-id="${duty.id}">Remove excuse</button>`;
+  // take-overs: "can't make it" → someone takes it; or "I did this one" → owner confirms
+  const cv = coverOf(s, duty), base = baseAssigneeOf(duty, s), beforeDue = now < duty.deadline;
+  const claimOpen = now.getTime() < duty.deadline.getTime() + POINTS.claimWindowHours * 3600e3;
+  if (!cv && base === ui.me && !done && ['open', 'future'].includes(st) && beforeDue) actions += `<button class="btn ghost" data-act="cantmake" data-id="${duty.id}">🙋 Can't make it</button>`;
+  if (cv?.status === 'requested' && base !== ui.me && beforeDue) actions += `<button class="btn go" data-act="takeover" data-id="${duty.id}">🙋 I'll take over (+${pts})</button>`;
+  if ((!cv || cv.status === 'requested') && base !== ui.me && !s.completions?.[duty.id] && ['open', 'missed'].includes(st) && claimOpen && ui.me)
+    actions += `<button class="btn ghost" data-act="didit" data-id="${duty.id}">✋ I did this one</button>`;
+  if (cv?.status === 'claimed' && st === 'claimed' && base === ui.me)
+    actions += `<button class="btn go" data-act="claimok" data-id="${duty.id}">✓ Yes, ${person(cv.by).name} did it</button><button class="btn ghost" data-act="claimno" data-id="${duty.id}">✕ Not true</button>`;
   if (ui.swapFor === duty.id) {
     actions += `<div class="swapbox tiny">Swap with: ${ROOMMATES.filter((r) => r.id !== who).map((r) =>
       `<button class="btn ghost" data-act="swapto" data-id="${duty.id}" data-to="${r.id}">${r.name}</button>`).join('')}
@@ -141,6 +151,10 @@ function dutyCard(duty, now, { showDate = false } = {}) {
   if (fake) swapNote += `<p class="tiny note bad">🤥 Claimed done but wasn't: ${POINTS.fakeMultiplier}× penalty (${POINTS.miss[duty.kind] * POINTS.fakeMultiplier}).${fake.stolenBy ? ` 🦹 Stolen by ${person(fake.stolenBy).name} (+${pts}).` : canSteal(fake, now) ? ' Anyone else can steal it.' : ''}</p>`;
   if (sw && sw.status === 'pending') swapNote = `<p class="tiny note">⇄ ${person(sw.from).name} asked ${person(sw.to).name} to swap — not valid until accepted before the deadline.${sw.from === ui.me ? ` <button class="link" data-act="swapcancel" data-id="${duty.id}">cancel</button>` : ''}</p>`;
   if (sw && sw.status === 'accepted' && who === sw.to) swapNote = `<p class="tiny note">⇄ Swapped from ${person(sw.from).name}</p>`;
+  if (cv?.status === 'requested') swapNote += `<p class="tiny note">🙋 ${person(cv.from).name} can't make it — ${beforeDue ? 'anyone can take over' : 'nobody took over'}.${cv.from === ui.me && beforeDue ? ` <button class="link" data-act="cantcancel" data-id="${duty.id}">cancel</button>` : ''}</p>`;
+  if (cv?.status === 'taken') swapNote += `<p class="tiny note">🙋 ${person(cv.by).name} took over from ${person(cv.from).name}.</p>`;
+  if (cv?.status === 'claimed') swapNote += `<p class="tiny note">✋ ${person(cv.by).name} did it for ${person(cv.from).name}${st === 'claimed' ? ` — waiting for ${person(cv.from).name} to confirm (counts automatically after ${POINTS.claimAutoConfirmHours} h).` : '.'}</p>`;
+  if (cv?.status === 'confirmed') swapNote += `<p class="tiny note">✋ Done by ${person(cv.by).name} for ${person(cv.from).name} ✓</p>`;
   const d = parseYmd(duty.date);
   return `
   <article class="duty ${st} ${mine ? 'mine' : ''}" style="--c:${p.color}">
@@ -168,10 +182,23 @@ function pendingSwaps(now) {
 }
 
 function banners(scores, now) {
-  let h = '';
+  let h = newsBanner();
   for (const { id, sw, duty } of pendingSwaps(now)) {
     h += `<div class="banner swap">⇄ <b>${person(sw.from).name}</b> wants to swap: ${dutyTitle(duty)} on ${fmtDay(parseYmd(duty.date))}.
       <button class="btn go" data-act="swapyes" data-id="${id}">Accept</button><button class="btn ghost" data-act="swapno" data-id="${id}">Decline</button></div>`;
+  }
+  // take-over requests from others (still before the deadline) and claims waiting for my OK
+  for (const [id, cv] of Object.entries(store.state.covers || {})) {
+    const d = findDuty(id);
+    if (!d || !cv) continue;
+    if (cv.status === 'requested' && cv.from !== ui.me && now < d.deadline) {
+      h += `<div class="banner swap">🙋 <b>${person(cv.from).name}</b> can't make the ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))}, by ${fmtDue(d.deadline)}).
+        <button class="btn go" data-act="takeover" data-id="${id}">I'll take over (+${POINTS.done[d.kind]})</button></div>`;
+    }
+    if (cv.status === 'claimed' && cv.from === ui.me && statusOf(d, store.state, now) === 'claimed') {
+      h += `<div class="banner swap">✋ <b>${person(cv.by).name}</b> says they did your ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))}). No penalty for you, +${POINTS.done[d.kind]} for them.
+        <button class="btn go" data-act="claimok" data-id="${id}">✓ Yes</button><button class="btn ghost" data-act="claimno" data-id="${id}">✕ Not true</button></div>`;
+    }
   }
   for (const r of ROOMMATES) {
     const hol = holidayOf(store.state, r.id, ymd(now));
@@ -419,6 +446,10 @@ function todayView(scores, now) {
   <h2>Today · ${fmtDayLong(today)}</h2>
   <p class="muted tiny">👑 House Captain today: <b>${cap.name}</b> &nbsp;·&nbsp; 🧺 Laundry: <b>${lp ? person(lp).name : 'open to all'}</b></p>
   ${duties.filter((d) => d.kind !== 'clean').map((d) => dutyCard(d, now)).join('')}
+  ${(() => { // yesterday's resets that weren't done (or wait for a confirmation): someone can still say "I did this one"
+    const y = dutiesForDate(addDays(today, -1)).filter((d) => d.kind !== 'clean' && ['missed', 'claimed'].includes(statusOf(d, store.state, now)));
+    return y.length ? `<h2>🕑 Yesterday</h2>${y.map((d) => dutyCard(d, now, { showDate: true })).join('')}` : '';
+  })()}
   ${(() => {
     const grabs = Object.entries(store.state.fakes || {}).filter(([, f]) => !f.stolenBy && canSteal(f, now))
       .map(([id]) => findDuty(id)).filter((d) => d && !duties.some((x) => x.id === d.id));
@@ -437,7 +468,7 @@ function weekView(now) {
   const days = Array.from({ length: 14 }, (_, i) => addDays(from, i));
   const cell = (duty) => {
     const st = statusOf(duty, store.state, now);
-    const ic = { done: '✅', late: '🟠', missed: '❌', excused: '🛡', holiday: '✈', fake: '🤥', open: '⏳', future: '·', pregame: '–' }[st];
+    const ic = { done: '✅', late: '🟠', missed: '❌', excused: '🛡', holiday: '✈', fake: '🤥', claimed: '✋', open: '⏳', future: '·', pregame: '–' }[st];
     return `<span title="${st}">${ic}</span>`;
   };
   const rows = days.map((d) => {
@@ -459,7 +490,7 @@ function weekView(now) {
   <div class="scroll"><table class="tbl"><thead><tr><th>Due</th>${ROOMMATES.map((r) => `<th>${r.name}</th>`).join('')}</tr></thead><tbody>
     ${sundays.map((s) => `<tr><td><b>${fmtDay(s)}</b></td>${weekJobs(s).map((j) => `<td>${j.job.emoji} ${esc(j.job.name.split(' /')[0])}</td>`).join('')}</tr>`).join('')}
   </tbody></table></div>
-  <p class="tiny muted">Friday's captain rotates Paco → Pit → Hritik. Bathrooms are excluded. Weekly deadline: Sunday 8 pm.</p>`;
+  <p class="tiny muted">Friday's captain rotates Paco → Pit → Hritik. Pit & Hritik also alternate the shared bathroom every week (from Sun 22 Nov). Weekly deadline: Sunday 8 pm.</p>`;
 }
 
 function badgesFor(o) {
@@ -604,13 +635,37 @@ function holidayCard() {
     ${others ? `<p class="tiny muted">Others away:</p><ul class="tiny hols">${others}</ul>` : ''}</div>`;
 }
 
+// ---------- "What's new" board ----------
+const NEWS_KEY = 'house-quest-news-seen';
+const newsSeen = () => +localStorage.getItem(NEWS_KEY) || 0;
+function newsBoard() {
+  const seen = ui.newsBase ?? newsSeen();
+  const list = ui.newsAll ? CHANGELOG : CHANGELOG.slice(0, 5);
+  return `<section class="board" id="board"><h2>📌 What's new</h2>
+    <div class="notes">${list.map((c, i) => `<article class="note ${c.id > seen ? 'fresh' : ''}" style="--tilt:${i % 2 ? 0.6 : -0.6}deg">
+      <i class="pin"></i><div class="nhead"><b>${esc(c.title)}</b>${c.id > seen ? '<em>NEW</em>' : ''}</div>
+      <p>${esc(c.text)}</p><time>${fmtDay(parseYmd(c.date))}</time></article>`).join('')}</div>
+    ${CHANGELOG.length > 5 ? `<button class="btn ghost" data-act="newsall">${ui.newsAll ? 'Show less' : `Show all ${CHANGELOG.length} updates`}</button>` : ''}</section>`;
+}
+function newsBanner() {
+  const seen = newsSeen();
+  const fresh = CHANGELOG.filter((c) => c.id > seen);
+  if (!fresh.length) return '';
+  const first = seen === 0 ? [CHANGELOG[0]] : fresh;
+  return `<div class="banner news">📌 <b>New:</b> ${esc(first[0].title)}${first.length > 1 ? ` + ${first.length - 1} more` : ''}
+    <button class="btn" data-act="newsopen">Read</button><button class="btn ghost" data-act="newsok">✕</button></div>`;
+}
+
 function rulesView() {
-  return `
+  // remember what was new when you opened this tab (so NEW tags stay while you read), then mark all as seen
+  if (ui.newsBase == null) { ui.newsBase = newsSeen(); localStorage.setItem(NEWS_KEY, String(LATEST_NEWS)); }
+  return `${newsBoard()}
   <h2>📜 The House System</h2>
   <div class="card"><b>House Captain</b><p class="tiny">One roommate is captain each day and does the morning reset (before leaving, ~5–10 min) and the evening reset (by midnight, ~10–15 min). Mon–Tue Paco · Wed Pit · Thu Hritik · Fri rotates · Sat Pit · Sun Hritik.</p>
   <p class="tiny muted">The captain isn't responsible for someone else's cooking mess or belongings.</p></div>
-  <div class="card"><b>Weekly cleaning (Sun 8 pm)</b><p class="tiny">${JOBS.map((j) => `${j.emoji} <b>${esc(j.name)}</b>: ${esc(j.desc)}`).join('<br>')}</p><p class="tiny muted">Assignments rotate weekly. Bathrooms excluded.</p></div>
+  <div class="card"><b>Weekly cleaning (Sun 8 pm)</b><p class="tiny">${JOBS.map((j) => `${j.emoji} <b>${esc(j.name)}</b>: ${esc(j.desc)}`).join('<br>')}</p><p class="tiny muted">Assignments rotate weekly.</p><p class="tiny">${BATHROOM.emoji} <b>${esc(BATHROOM.name)}</b>: ${esc(BATHROOM.desc)} Alternates Hritik → Pit every week, starting Sun 22 Nov.</p></div>
   <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hritik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
+  <div class="card"><b>Can't make it? Take-overs</b><p class="tiny">Tap <b>🙋 Can't make it</b> on your duty: anyone can tap <b>I'll take over</b> before the deadline, and then it's their duty (their points, their penalty if they skip it). Already did someone else's duty, e.g. cleared the kitchen after cooking? Tap <b>✋ I did this one</b> (up to ${POINTS.claimWindowHours} h after the deadline): once the owner confirms (or after ${POINTS.claimAutoConfirmHours} h without an answer) you get the points and they get no penalty.</p></div>
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
   ${holidayCard()}
@@ -651,6 +706,9 @@ function adminView(now) {
     if (st === 'excused') btns += b('aunexcuse', 'Remove excuse');
     if (f) btns += b('aunfake', 'Clear fake') + (f.stolenBy ? b('aunsteal', `Remove ${person(f.stolenBy).name}'s steal`) : '');
     if (s.flags?.[d.id] && !f) btns += b('adismiss', 'Dismiss flag');
+    const cv = s.covers?.[d.id];
+    if (cv?.status === 'claimed' && st === 'claimed') btns += b('claimok', `✓ Confirm ${person(cv.by).name} did it`);
+    if (cv) btns += b('acoverdel', 'Remove take-over');
     return `<div class="arow" style="--c:${person(who).color}"><div class="grow"><b>${person(who).name}</b> · ${kindLabel[d.kind]}
       <div class="tiny muted">${fmtDay(parseYmd(d.date))} · by ${fmtDue(d.deadline)}${s.completions?.[d.id] ? ` · ticked ${fmtTime(new Date(s.completions[d.id].at))}` : ''}</div></div>
       ${statusChip(st, d, now)}<div class="actions">${btns}</div></div>`;
@@ -787,8 +845,41 @@ const actions = {
     store.patch(['holidays', ui.me], list);
     store.say(`✈ ${person(ui.me).name} is back from holiday`, getNow().getTime());
   },
+  cantmake: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow();
+    store.patch(['covers', d.id], { status: 'requested', from: ui.me, at: now.getTime() });
+    store.say(`🙋 ${person(ui.me).name} can't make the ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))}) — who takes over?`, now.getTime());
+  },
+  cantcancel: (el) => { store.patch(['covers', el.dataset.id], undefined); },
+  takeover: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow(), cv = store.state.covers?.[d.id];
+    if (!cv || cv.status !== 'requested' || now > d.deadline) return;
+    store.patch(['covers', d.id], { ...cv, status: 'taken', by: ui.me, takenAt: now.getTime() });
+    store.say(`🙋 ${person(ui.me).name} takes over ${person(cv.from).name}'s ${dutyTitle(d).toLowerCase()}`, now.getTime());
+  },
+  didit: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow(), base = baseAssigneeOf(d, store.state);
+    if (!confirm(`You did ${person(base).name}'s ${dutyTitle(d).toLowerCase()}? ${person(base).name} gets no penalty, you get +${POINTS.done[d.kind]} once they confirm (or automatically after ${POINTS.claimAutoConfirmHours} h).`)) return;
+    store.patch(['covers', d.id], { status: 'claimed', from: base, by: ui.me, at: now.getTime() });
+    store.say(`✋ ${person(ui.me).name} did ${person(base).name}'s ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))})`, now.getTime());
+  },
+  claimok: (el) => {
+    const d = findDuty(el.dataset.id), now = getNow(), cv = store.state.covers?.[d.id];
+    store.patch(['covers', d.id], { ...cv, status: 'confirmed', confirmedAt: now.getTime() });
+    store.say(`✓ ${person(cv.from).name} confirmed: ${person(cv.by).name} did the ${dutyTitle(d).toLowerCase()} (+${POINTS.done[d.kind]})`, now.getTime());
+  },
+  claimno: (el) => {
+    const d = findDuty(el.dataset.id), cv = store.state.covers?.[d.id];
+    if (!confirm(`${person(cv.by).name} didn't do it? The duty goes back to you.`)) return;
+    store.patch(['covers', d.id], undefined);
+    store.say(`✕ ${person(cv.from).name} says ${person(cv.by).name} didn't do the ${dutyTitle(d).toLowerCase()}`, getNow().getTime());
+  },
+  acoverdel: (el) => { const d = findDuty(el.dataset.id); store.patch(['covers', d.id], undefined); store.say(`🛡 Admin removed the take-over on ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))})`, getNow().getTime()); },
+  newsall: () => { ui.newsAll = !ui.newsAll; },
+  newsok: () => { localStorage.setItem(NEWS_KEY, String(LATEST_NEWS)); },
+  newsopen: () => { ui.newsBase = null; ui.tab = 'rules'; setTimeout(() => document.getElementById('board')?.scrollIntoView({ behavior: 'smooth' }), 50); },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
-  tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
+  tab: (el) => { ui.newsBase = null; ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
     const now = getNow(), d = findDuty(el.dataset.id);
     store.complete(d.id, ui.me, now.getTime());
@@ -910,7 +1001,7 @@ function checkReminders() {
   const duties = dutiesBetween(addDays(now, -1), addDays(now, 1));
   for (const d of duties) {
     if (assigneeOf(d, store.state) !== ui.me) continue;
-    if (['done', 'late', 'excused', 'holiday'].includes(statusOf(d, store.state, now)) || now > d.deadline) continue;
+    if (['done', 'late', 'excused', 'holiday', 'claimed'].includes(statusOf(d, store.state, now)) || now > d.deadline) continue;
     const [s] = CONFIG.windows[d.kind];
     const start = new Date(d.deadline.getFullYear(), d.deadline.getMonth(), d.deadline.getDate(), s[0], s[1]);
     const warn = new Date(d.deadline - 30 * 60000);

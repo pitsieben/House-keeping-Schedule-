@@ -35,6 +35,7 @@ The **Today** tab shows today's House Captain, the laundry priority and your dut
 
 - 🌅 **Morning reset**, by 12:00: dishwasher out, check counters, empty full bins.
 - 🌙 **Evening reset**, by midnight: dishwasher on, wipe surfaces, bins again.
+- 🚿 **Shared bathroom** (Pit & Hritik), Sunday by 20:00: alternates every week, Hritik first on Sun 22 Nov.
 - 🧹 **Weekly cleaning**, Sunday by 20:00: kitchen, living room or terrace. This rotates every week.
 
 Ticked something by mistake? Tap **Undo**.
@@ -105,6 +106,13 @@ The **🛏 Rooms** tab shows everyone's pixel bedroom.
 - Tap a collectible to put it on display or into storage. The shelf, wall and floor have limited space.
 - The more achievements you collect, the more **outfits** you unlock (Tracksuit, Barça Kit, Hawaiian, Tuxedo, Superhero, Golden Janitor). Your outfit shows everywhere in the app.
 - **Below 0 points, your room gets dirty:** unmade bed → clothes on the floor → cobwebs → flies → biohazard 🤢. Get back above 0 and it's clean again.
+
+---
+
+## 🙋 Can't make it? Take-overs
+
+- **Before the deadline:** tap **🙋 Can't make it** on your duty. Everyone sees a banner and anyone can tap **I'll take over**. From then on it's *their* duty: they get the points, and the penalty if they skip it. You're off the hook.
+- **Already did someone else's duty?** (e.g. you cooked and then cleared the kitchen and wiped the surfaces.) Tap **✋ I did this one** on their duty, up to 24 h after the deadline (yesterday's missed duties are listed under **🕑 Yesterday** on the Today tab). The owner gets a banner to confirm with **✓ Yes**. Once confirmed (or after 48 h without an answer) you get the points and they get **no penalty**. If they tap **✕ Not true**, it goes back to them.
 
 ---
 
