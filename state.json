@@ -24,10 +24,6 @@
   "2026-11-16:AM": {
    "by": "paco",
    "at": 1794818677389
-  },
-  "2026-11-17:AM": {
-   "by": "paco",
-   "at": 1794874599063
   }
  },
  "swaps": {},
@@ -178,6 +174,10 @@
   "1794899377093-vzi9": {
    "t": 1794899377093,
    "text": "🛡 Admin excused Paco's evening reset"
+  },
+  "1794899381375-kq0t": {
+   "t": 1794899381375,
+   "text": "🛡 Admin un-ticked Paco's morning reset"
   }
  },
  "admin": {
