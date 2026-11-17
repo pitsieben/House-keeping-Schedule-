@@ -205,25 +205,10 @@
  },
  "flags": {},
  "messages": {
-  "1794866774482-hrithik": {
-   "from": "hrithik",
-   "text": "Chicos, lets try to follow laundry schedule.. dryer is full and i need to use it. 🥲",
-   "at": 1794866774482,
-   "closed": {
-    "paco": 1794874621353,
-    "pit": 1794897317034,
-    "hrithik": 1794906057137
-   }
-  },
-  "1794899938493-pit": {
+  "1794928767826-pit": {
    "from": "pit",
-   "text": "Those are common items from the living room, noones schedule, feel free to take them out and put them back in their place",
-   "at": 1794899938493,
-   "closed": {
-    "paco": 1794901377787,
-    "pit": 1794904579274,
-    "hrithik": 1794906057137
-   }
+   "text": "Hello familia",
+   "at": 1794928767826
   }
  },
  "jump": {
