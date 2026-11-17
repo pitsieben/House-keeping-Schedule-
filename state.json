@@ -43,6 +43,10 @@
   "2026-11-13:PM": {
    "by": "pit",
    "at": 1794766558246
+  },
+  "2026-11-17:PM": {
+   "by": "pit",
+   "at": 1794899351758
   }
  },
  "avatars": {},
@@ -166,6 +170,10 @@
   "1794874599063-iuu0": {
    "t": 1794874599063,
    "text": "Paco completed morning reset (+10)"
+  },
+  "1794899351775-1uux": {
+   "t": 1794899351775,
+   "text": "🛡 Admin excused Paco's evening reset"
   }
  },
  "admin": {
