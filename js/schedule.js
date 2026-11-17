@@ -32,8 +32,16 @@ export const POINTS = {
   miss: { morning: -15, evening: -15, clean: -30 }, // late completion = half of this
   fakeMultiplier: 2, // caught claiming a duty you didn't do = double the missed penalty
   stealWindowHours: 24, // after a fake is caught, others can steal the duty for this long
+  claimWindowHours: 24,  // "I did this one for you": can be claimed up to 24 h after the deadline
+  claimAutoConfirmHours: 48, // …and counts as confirmed if the original owner hasn't answered within 48 h
   cleanSweep: 5,   // morning + evening both on time, same day
   perfectWeek: 25, // every duty of the Mon–Sun week on time
+};
+
+// Shared bathroom of Pit & Hritik: weekly, alternating, starting with Hritik on Sun 22 Nov 2026.
+export const BATHROOM = {
+  id: 'bathroom', name: 'Shared bathroom (Pit & Hritik)', emoji: '🚿', start: '2026-11-22', people: ['hrithik', 'pit'],
+  desc: 'Toilet, sink, mirror, shower/tub and tiles; empty the bin; wash the floor; fresh towels if needed.',
 };
 
 export const JOBS = [
@@ -96,6 +104,10 @@ export function dutiesForDate(d) {
     for (const { person: p, job } of weekJobs(d)) {
       out.push({ id: `${day}:clean:${p}`, kind: 'clean', date: day, job, assignee: p, opens: addDays(startOfDay(d), -6), deadline: atTime(d, CONFIG.weeklyDeadline) });
     }
+    if (day >= BATHROOM.start) {
+      const who = BATHROOM.people[((weeksBetween(parseYmd(BATHROOM.start), d) % 2) + 2) % 2];
+      out.push({ id: `${day}:bath`, kind: 'clean', date: day, job: BATHROOM, assignee: who, opens: addDays(startOfDay(d), -6), deadline: atTime(d, CONFIG.weeklyDeadline) });
+    }
   }
   return out;
 }
@@ -112,11 +124,27 @@ export function dutyTitle(duty) {
   return `Weekly cleaning: ${duty.job.name}`;
 }
 
-// Who actually owns the duty, after a confirmed swap (must be accepted BEFORE the deadline).
-export function assigneeOf(duty, state) {
+// Owner after a confirmed swap (must be accepted BEFORE the deadline), ignoring take-overs.
+export function baseAssigneeOf(duty, state) {
   const sw = state?.swaps?.[duty.id];
   if (sw && sw.status === 'accepted' && sw.acceptedAt <= duty.deadline.getTime()) return sw.to;
   return duty.assignee;
+}
+
+/**
+ * Take-overs: state.covers[dutyId] =
+ *   { status: 'requested', from, at }                   owner said "can't make it", nobody took it yet
+ *   { status: 'taken', from, by, at, takenAt }          `by` took it over before the deadline → it's their duty now
+ *   { status: 'claimed', from, by, at }                 `by` says they already did it → waits for `from` to confirm
+ *   { status: 'confirmed', from, by, at, confirmedAt }  confirmed (or auto after claimAutoConfirmHours)
+ */
+export const coverOf = (state, duty) => state?.covers?.[duty.id] || null;
+const coverActive = (c, duty) => c && c.by && (c.status === 'claimed' || c.status === 'confirmed' || (c.status === 'taken' && c.takenAt <= duty.deadline.getTime()));
+
+// Who actually owns the duty: swaps first, then a take-over.
+export function assigneeOf(duty, state) {
+  const c = coverOf(state, duty);
+  return coverActive(c, duty) ? c.by : baseAssigneeOf(duty, state);
 }
 
 /** Holidays: state.holidays[who] = [{ from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' }] (both days included). */
@@ -126,6 +154,9 @@ export function holidayOf(state, who, date) {
 
 export function statusOf(duty, state, now = new Date()) {
   if (state?.fakes?.[duty.id]) return 'fake';
+  const cv = coverOf(state, duty);
+  if (cv?.by && cv.status === 'confirmed') return 'done';
+  if (cv?.by && cv.status === 'claimed') return now.getTime() - cv.at > POINTS.claimAutoConfirmHours * 3600e3 ? 'done' : 'claimed';
   const c = state?.completions?.[duty.id];
   if (c) return c.at <= duty.deadline.getTime() ? 'done' : 'late';
   if (holidayOf(state, assigneeOf(duty, state), duty.date)) return 'holiday'; // away: automatically excused
@@ -175,8 +206,8 @@ export function computeScores(state, now = new Date()) {
       const p = POINTS.done[duty.kind];
       o.points += p; o.xp += p; o.done++; o.streak++; o.best = Math.max(o.best, o.streak);
       w.total++; w.ok++;
-      const c = state.completions[duty.id];
-      if (duty.kind === 'morning' && new Date(c.at).getHours() < 9) o.earlyBird++;
+      const c = state.completions?.[duty.id] || coverOf(state, duty);
+      if (duty.kind === 'morning' && c && new Date(c.at).getHours() < 9) o.earlyBird++;
       if (duty.kind !== 'clean') ((perDay[duty.date] ||= {})[who] ||= []).push(duty.kind);
     } else if (st === 'late') {
       if (duty.date < CONFIG.penaltyStart) continue;

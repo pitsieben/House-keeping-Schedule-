@@ -87,6 +87,41 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   check('holiday: a duty done anyway still scores', S.statusOf(d, done, new Date('2026-11-17T10:00')) === 'done');
 }
 
+// ---- take-overs: "can't make it" / "I did this one"
+{
+  const ev = S.dutiesForDate(S.parseYmd('2026-11-16')).find((x) => x.kind === 'evening'); // Monday evening: Paco
+  const after = new Date('2026-11-17T14:00');
+  const base = S.computeScores(empty(), after);
+  // taken over before the deadline and done by Pit
+  const st1 = empty(); st1.covers = { [ev.id]: { status: 'taken', from: 'paco', by: 'pit', at: 1, takenAt: new Date('2026-11-16T19:00').getTime() } };
+  st1.completions[ev.id] = { by: 'pit', at: new Date('2026-11-16T22:00').getTime() };
+  const s1 = S.computeScores(st1, after);
+  check('take-over: duty belongs to the one who took it', S.assigneeOf(ev, st1) === 'pit' && S.baseAssigneeOf(ev, st1) === 'paco');
+  check('take-over: taker gets +10, owner no penalty', s1.pit.points - base.pit.points === 10 && s1.paco.points - base.paco.points === 15, JSON.stringify([s1.pit.points - base.pit.points, s1.paco.points - base.paco.points]));
+  const st1b = empty(); st1b.covers = { [ev.id]: { status: 'taken', from: 'paco', by: 'pit', at: 1, takenAt: new Date('2026-11-16T19:00').getTime() } };
+  const s1b = S.computeScores(st1b, after);
+  check('take-over: taker who then skips it gets the penalty, not the owner', s1b.pit.points - base.pit.points === -15 && s1b.paco.points === base.paco.points + 15);
+  // claimed after the fact ("I did this one")
+  const claim = { status: 'claimed', from: 'paco', by: 'pit', at: new Date('2026-11-17T09:00').getTime() };
+  const st2 = empty(); st2.covers = { [ev.id]: claim };
+  check('claim: pending = neutral status "claimed"', S.statusOf(ev, st2, after) === 'claimed');
+  const s2 = S.computeScores(st2, after);
+  check('claim pending: no penalty for owner, no points yet', s2.paco.points === base.paco.points + 15 && s2.pit.points === base.pit.points);
+  const st3 = empty(); st3.covers = { [ev.id]: { ...claim, status: 'confirmed', confirmedAt: after.getTime() } };
+  const s3 = S.computeScores(st3, after);
+  check('claim confirmed: helper +10, owner no penalty', s3.pit.points === base.pit.points + 10 && s3.paco.points === base.paco.points + 15);
+  check('claim auto-confirms after 48 h', S.statusOf(ev, st2, new Date('2026-11-19T10:00')) === 'done');
+  const s4 = S.computeScores(empty(), after); // declined = cover removed = back to normal
+  check('claim declined: owner back to missed (-15)', s4.paco.points === base.paco.points);
+}
+// ---- shared bathroom: Hritik on Sun 22 Nov, then alternating with Pit
+{
+  const bath = (day) => S.dutiesForDate(S.parseYmd(day)).find((x) => x.id.endsWith(':bath'));
+  check('bathroom: none before 22 Nov', !bath('2026-11-15'));
+  check('bathroom: Hritik 22 Nov, Pit 29 Nov, Hritik 6 Dec', bath('2026-11-22')?.assignee === 'hrithik' && bath('2026-11-29')?.assignee === 'pit' && bath('2026-12-06')?.assignee === 'hrithik');
+  check('bathroom: weekly cleaning points/deadline (Sun 20:00)', bath('2026-11-22').kind === 'clean' && bath('2026-11-22').deadline.getHours() === 20);
+}
+
 // ---- House Jump easter egg: always beatable, altitude scale
 {
   const J = await import('../js/jump.js');

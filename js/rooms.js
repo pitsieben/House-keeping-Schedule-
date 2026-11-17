@@ -33,13 +33,14 @@ function monthStats(state, key, now) {
   const duties = dutiesBetween(from, end).sort((a, b) => a.deadline - b.deadline);
   for (const d of duties) {
     const who = assigneeOf(d, state), st = statusOf(d, state, now), o = out[who];
-    if (!o || ['open', 'future', 'pregame', 'holiday'].includes(st)) continue;
+    if (!o || ['open', 'future', 'pregame', 'holiday', 'claimed'].includes(st)) continue;
     o.total++;
     if (d.kind === 'clean') o.cleans++;
     if (st === 'done') {
       o.done++; o.pts += POINTS.done[d.kind]; o.streak++; o.best = Math.max(o.best, o.streak);
       if (d.kind === 'clean') o.cleansOk++;
-      if (d.kind === 'morning' && new Date(state.completions[d.id].at).getHours() < 9) o.early++;
+      const c = state.completions?.[d.id] || state.covers?.[d.id];
+      if (d.kind === 'morning' && c && new Date(c.at).getHours() < 9) o.early++;
       if (d.kind !== 'clean') ((perDay[d.date] ||= {})[who] ||= []).push(d.kind);
       const sw = state.swaps?.[d.id];
       if (sw && sw.status === 'accepted' && sw.to === who) o.team++;
