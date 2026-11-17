@@ -161,3 +161,8 @@ Template (one entry per completed step, newest last):
 - Changed: new `js/changelog.js` (17 entries covering PRs #1–#17, newest first; the House Jump easter egg only as a hint); `js/app.js`: pinned-notes board at the top of the Rules tab (5 newest, "Show all"), NEW tags for entries newer than `localStorage['house-quest-news-seen']` (frozen while the tab is open), Today banner "New: … + N more" with Read / ✕; CSS cork board. CLAUDE.md: add a changelog entry for every user-facing change.
 - Checked: headless: banner shows 3 new since id 14 → Read opens the board with 3 NEW tags → banner gone afterwards; screenshot of the board; `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-17 Plants: weekly shared bonus task + Green Thumb
+- Changed: `js/schedule.js` `PLANTS`, Tuesday duty `<date>:plants` (`kind: 'plants'`, `assignee: null`, `anyone: true`, opens Monday, due Tue midnight), `POINTS.done.plants = 5` / `miss.plants = 0`, `statusOf` → `open` / `future` / `skipped` (never missed), `computeScores` credits `completions[id].by` (caught fake −10). `js/rooms.js` achievement `green` (≥ 3 waterings in a month) → new shelf collectible `cactus`. `js/app.js` `plantsCard` (Today on Mon/Tue, "Up for grabs"), `ownerOf()` for owner-less duties in actions/admin, Week table line, chip `skipped`. `js/ics.js` house feed only (Tue 18:00, no alarm). Changelog #18, TUTORIAL.
+- Checked: `npm test` ALL CHECKS PASSED (52, incl. 6 plants checks); headless with the live `state.json` on Tue 17 Nov: card shown, watering → Pit 0 → +5, Week/Admin/Rooms tabs render without page errors.
+- Not verified: on a real phone; the cactus sprite in a room (only checked that it's listed).

@@ -35,6 +35,7 @@ The **Today** tab shows today's House Captain, the laundry priority and your dut
 
 - 🌅 **Morning reset**, by 12:00: dishwasher out, check counters, empty full bins.
 - 🌙 **Evening reset**, by midnight: dishwasher on, wipe surfaces, bins again.
+- 🪴 **Water the plants**, Monday or Tuesday (by midnight): a bonus task for **anyone**. Whoever does it first gets **+5**; nobody is penalised if it's skipped. Water them 3 times in a month for the **🪴 Green Thumb** achievement (unlocks a cactus for your room).
 - 🚿 **Shared bathroom** (Pit & Hritik), Sunday by 20:00: alternates every week, Hritik first on Sun 22 Nov.
 - 🧹 **Weekly cleaning**, Sunday by 20:00: kitchen, living room or terrace. This rotates every week.
 

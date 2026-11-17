@@ -16,6 +16,7 @@ export const ACHIEVEMENTS = {
   spotless: { emoji: '🧼', name: 'Spotless Month', desc: 'At least 10 duties in a month, every one on time (excused is fine)', item: 'plant', monthEnd: true },
   boss: { emoji: '🐉', name: 'Boss Slayer', desc: 'Every weekly cleaning of the month on time', item: 'dragon', monthEnd: true },
   champ: { emoji: '👑', name: 'Monthly Champion', desc: 'Most points earned in the month', item: 'trophy', monthEnd: true },
+  green: { emoji: '🪴', name: 'Green Thumb', desc: 'Water the plants 3 times in one month', item: 'cactus' },
 };
 // Collectibles you get from levelling up (LV 2…6)
 export const LEVEL_ITEMS = { 2: 'rug', 3: 'poster', 4: 'guitar', 5: 'fishtank', 6: 'gaming' };
@@ -26,12 +27,17 @@ const nextMonth = (key) => { const d = monthStart(key); return new Date(d.getFul
 
 function monthStats(state, key, now) {
   const from = monthStart(key), to = addDays(nextMonth(key), -1);
-  const st0 = () => ({ total: 0, done: 0, late: 0, missed: 0, fakes: 0, excused: 0, steals: 0, early: 0, sweeps: 0, cleans: 0, cleansOk: 0, team: 0, streak: 0, best: 0, pts: 0 });
+  const st0 = () => ({ total: 0, done: 0, late: 0, missed: 0, fakes: 0, excused: 0, steals: 0, early: 0, sweeps: 0, cleans: 0, cleansOk: 0, team: 0, streak: 0, best: 0, pts: 0, plants: 0 });
   const out = Object.fromEntries(ROOMMATES.map((r) => [r.id, st0()]));
   const perDay = {};
   const end = new Date(Math.min(to.getTime(), addDays(now, 7).getTime()));
   const duties = dutiesBetween(from, end).sort((a, b) => a.deadline - b.deadline);
   for (const d of duties) {
+    if (d.anyone) { // plants: count for whoever watered them on time (not a caught fake)
+      const c = state.completions?.[d.id];
+      if (c && out[c.by] && c.at <= d.deadline.getTime() && !state.fakes?.[d.id]) { out[c.by].plants++; out[c.by].pts += POINTS.done[d.kind]; }
+      continue;
+    }
     const who = assigneeOf(d, state), st = statusOf(d, state, now), o = out[who];
     if (!o || ['open', 'future', 'pregame', 'holiday', 'claimed'].includes(st)) continue;
     o.total++;
@@ -72,6 +78,7 @@ export function computeAchievements(state, now = new Date()) {
       if (o.best >= 10) give(r.id, 'onfire');
       if (o.steals >= 1) give(r.id, 'thief');
       if (o.team >= 1) give(r.id, 'team');
+      if (o.plants >= 3) give(r.id, 'green');
       if (ended && o.total >= 10 && o.done + o.excused === o.total) give(r.id, 'spotless');
       if (ended && o.cleans >= 2 && o.cleansOk === o.cleans) give(r.id, 'boss');
     }
@@ -122,6 +129,8 @@ export const ITEMS = {
     rows: ['...g.g...', '..ggggg..', '.gGggGgg.', 'gggGggggg', '.ggggGgg.', '..ggggg..', '....g....', '..ppppp..', '..pPPPp..', '..ppppp..', '...ppp...'] },
   dragon: { name: 'Dragon Plushie', slot: 'shelf', pal: { g: '#22c55e', K: '#111111', Y: '#fde047' },
     rows: ['.......gg.', '......gKgg', '..g..ggggg', '.gggggggg.', 'ggYggggg..', '.gggggg...', '.g.g.g.g..'] },
+  cactus: { name: 'Happy Cactus', slot: 'shelf', pal: { G: '#22c55e', D: '#15803d', P: '#f472b6', K: '#101214', T: '#c2410c', t: '#9a3412' },
+    rows: ['...PP...', '...GG...', '.G.GG...', '.GDGG.G.', '.GGGGDG.', '..GGGG..', '...GD...', '.TTTTTT.', '..tTTt..', '..TTTT..'] },
   trophy: { name: 'Champion Trophy', slot: 'shelf', pal: { Y: '#fbbf24', O: '#fde68a', K: '#78350f' },
     rows: ['YYYYYYYY', 'YOYYYYOY', 'Y.YYYY.Y', '.YYYYYY.', '..YYYY..', '...YY...', '...YY...', '..YYYY..', '.KKKKKK.'] },
   rug: { name: 'Cosy Rug', slot: 'rug', pal: {}, rows: [] }, // drawn in the roommate's colour

@@ -122,6 +122,26 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   check('bathroom: weekly cleaning points/deadline (Sun 20:00)', bath('2026-11-22').kind === 'clean' && bath('2026-11-22').deadline.getHours() === 20);
 }
 
+// ---- plants: weekly, Mon–Tue, anyone, +5, no penalty; Green Thumb achievement
+{
+  const pl = (day) => S.dutiesForDate(S.parseYmd(day)).find((x) => x.kind === 'plants');
+  check('plants: one duty on Tuesdays (opens Monday, due Tue midnight)', !!pl('2026-11-17') && !pl('2026-11-16') && pl('2026-11-17').opens.getDate() === 16 && pl('2026-11-17').deadline.getTime() === new Date('2026-11-18T00:00').getTime());
+  const now = new Date('2026-11-19T10:00');
+  const base = S.computeScores(empty(), now);
+  const st = empty(); st.completions[pl('2026-11-17').id] = { by: 'hrithik', at: new Date('2026-11-16T19:00').getTime() };
+  const sc = S.computeScores(st, now);
+  check('plants: whoever waters them gets +5', sc.hrithik.points - base.hrithik.points === 5 && sc.pit.points === base.pit.points && sc.paco.points === base.paco.points);
+  check('plants: nobody watering = no penalty, status skipped', S.statusOf(pl('2026-11-17'), empty(), now) === 'skipped' && JSON.stringify(Object.values(S.computeScores(empty(), now)).map((o) => o.points)) === JSON.stringify(Object.values(base).map((o) => o.points)));
+  const fk = { ...st, fakes: { [pl('2026-11-17').id]: { by: 'pit', at: 1 } } };
+  check('plants: caught fake = -10 for the faker', S.computeScores(fk, now).hrithik.points - base.hrithik.points === -10);
+  const g = empty(); const dec = new Date('2026-12-31T12:00');
+  for (const day of ['2026-12-01', '2026-12-08', '2026-12-15']) g.completions[pl(day).id] = { by: 'paco', at: pl(day).deadline - 3600e3 };
+  const ach = R.computeAchievements(g, dec);
+  check('plants: 3 waterings in a month → Green Thumb (+ cactus)', ach.paco.some((a) => a.type === 'green' && a.month === '2026-12') && R.ownedItems(ach.paco, 0).includes('cactus'));
+  const g2 = empty(); for (const day of ['2026-12-01', '2026-12-08']) g2.completions[pl(day).id] = { by: 'paco', at: pl(day).deadline - 3600e3 };
+  check('plants: 2 waterings are not enough', !R.computeAchievements(g2, dec).paco.some((a) => a.type === 'green'));
+}
+
 // ---- House Jump easter egg: always beatable, altitude scale
 {
   const J = await import('../js/jump.js');
