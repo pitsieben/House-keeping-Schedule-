@@ -11,6 +11,7 @@ import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, own
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
 import { openJump } from './jump.js';
+import { CHANGELOG, LATEST_NEWS } from './changelog.js';
 
 const app = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -181,7 +182,7 @@ function pendingSwaps(now) {
 }
 
 function banners(scores, now) {
-  let h = '';
+  let h = newsBanner();
   for (const { id, sw, duty } of pendingSwaps(now)) {
     h += `<div class="banner swap">⇄ <b>${person(sw.from).name}</b> wants to swap: ${dutyTitle(duty)} on ${fmtDay(parseYmd(duty.date))}.
       <button class="btn go" data-act="swapyes" data-id="${id}">Accept</button><button class="btn ghost" data-act="swapno" data-id="${id}">Decline</button></div>`;
@@ -634,8 +635,31 @@ function holidayCard() {
     ${others ? `<p class="tiny muted">Others away:</p><ul class="tiny hols">${others}</ul>` : ''}</div>`;
 }
 
+// ---------- "What's new" board ----------
+const NEWS_KEY = 'house-quest-news-seen';
+const newsSeen = () => +localStorage.getItem(NEWS_KEY) || 0;
+function newsBoard() {
+  const seen = ui.newsBase ?? newsSeen();
+  const list = ui.newsAll ? CHANGELOG : CHANGELOG.slice(0, 5);
+  return `<section class="board" id="board"><h2>📌 What's new</h2>
+    <div class="notes">${list.map((c, i) => `<article class="note ${c.id > seen ? 'fresh' : ''}" style="--tilt:${i % 2 ? 0.6 : -0.6}deg">
+      <i class="pin"></i><div class="nhead"><b>${esc(c.title)}</b>${c.id > seen ? '<em>NEW</em>' : ''}</div>
+      <p>${esc(c.text)}</p><time>${fmtDay(parseYmd(c.date))}</time></article>`).join('')}</div>
+    ${CHANGELOG.length > 5 ? `<button class="btn ghost" data-act="newsall">${ui.newsAll ? 'Show less' : `Show all ${CHANGELOG.length} updates`}</button>` : ''}</section>`;
+}
+function newsBanner() {
+  const seen = newsSeen();
+  const fresh = CHANGELOG.filter((c) => c.id > seen);
+  if (!fresh.length) return '';
+  const first = seen === 0 ? [CHANGELOG[0]] : fresh;
+  return `<div class="banner news">📌 <b>New:</b> ${esc(first[0].title)}${first.length > 1 ? ` + ${first.length - 1} more` : ''}
+    <button class="btn" data-act="newsopen">Read</button><button class="btn ghost" data-act="newsok">✕</button></div>`;
+}
+
 function rulesView() {
-  return `
+  // remember what was new when you opened this tab (so NEW tags stay while you read), then mark all as seen
+  if (ui.newsBase == null) { ui.newsBase = newsSeen(); localStorage.setItem(NEWS_KEY, String(LATEST_NEWS)); }
+  return `${newsBoard()}
   <h2>📜 The House System</h2>
   <div class="card"><b>House Captain</b><p class="tiny">One roommate is captain each day and does the morning reset (before leaving, ~5–10 min) and the evening reset (by midnight, ~10–15 min). Mon–Tue Paco · Wed Pit · Thu Hritik · Fri rotates · Sat Pit · Sun Hritik.</p>
   <p class="tiny muted">The captain isn't responsible for someone else's cooking mess or belongings.</p></div>
@@ -851,8 +875,11 @@ const actions = {
     store.say(`✕ ${person(cv.from).name} says ${person(cv.by).name} didn't do the ${dutyTitle(d).toLowerCase()}`, getNow().getTime());
   },
   acoverdel: (el) => { const d = findDuty(el.dataset.id); store.patch(['covers', d.id], undefined); store.say(`🛡 Admin removed the take-over on ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))})`, getNow().getTime()); },
+  newsall: () => { ui.newsAll = !ui.newsAll; },
+  newsok: () => { localStorage.setItem(NEWS_KEY, String(LATEST_NEWS)); },
+  newsopen: () => { ui.newsBase = null; ui.tab = 'rules'; setTimeout(() => document.getElementById('board')?.scrollIntoView({ behavior: 'smooth' }), 50); },
   rmtoken: () => { store.token = ''; store.mode = 'local'; },
-  tab: (el) => { ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
+  tab: (el) => { ui.newsBase = null; ui.tab = el.dataset.tab; window.scrollTo(0, 0); },
   done: (el) => {
     const now = getNow(), d = findDuty(el.dataset.id);
     store.complete(d.id, ui.me, now.getTime());

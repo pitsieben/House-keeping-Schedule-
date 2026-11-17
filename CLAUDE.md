@@ -25,6 +25,7 @@ Static web app (GitHub Pages) that turns the house chores of Paco · Pit · Hrit
 - iOS Home Screen apps don't share storage with Safari; any per-device setting must be enterable inside the app.
 - Unauthenticated GitHub API = 60 req/h per IP; polling is 20 s, so watch request counts when adding calls.
 - Keep changes small, run `npm test` + a headless screenshot of the touched view before committing. Never claim a fix without checking it.
+- For every change roommates will notice, add a note at the top of `js/changelog.js` (next `id`, plain words): it shows on the in-app "What's new" board.
 - After each completed step, append a short entry to `docs/IMPLEMENTATION_LOG.md` section I (what changed, checked, not verified) without being asked.
 - Commits end with the attribution lines from the session reminder. No model names in commits, PRs or code.
 
