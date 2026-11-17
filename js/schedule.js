@@ -28,8 +28,8 @@ export const CONFIG = {
 };
 
 export const POINTS = {
-  done: { morning: 10, evening: 10, clean: 30 },
-  miss: { morning: -15, evening: -15, clean: -30 }, // late completion = half of this
+  done: { morning: 10, evening: 10, clean: 30, plants: 5 },
+  miss: { morning: -15, evening: -15, clean: -30, plants: 0 }, // plants: bonus task, nobody is penalised // late completion = half of this
   fakeMultiplier: 2, // caught claiming a duty you didn't do = double the missed penalty
   stealWindowHours: 24, // after a fake is caught, others can steal the duty for this long
   claimWindowHours: 24,  // "I did this one for you": can be claimed up to 24 h after the deadline
@@ -43,6 +43,9 @@ export const BATHROOM = {
   id: 'bathroom', name: 'Shared bathroom (Pit & Hritik)', emoji: '🚿', start: '2026-11-22', people: ['hrithik', 'pit'],
   desc: 'Toilet, sink, mirror, shower/tub and tiles; empty the bin; wash the floor; fresh towels if needed.',
 };
+
+// Plants: once a week, Monday or Tuesday (due Tuesday midnight). Anyone can do it; whoever does it gets the points.
+export const PLANTS = { start: '2026-11-16', emoji: '🪴', name: 'Water the plants', desc: 'Water all the plants in the flat. Monday or Tuesday, anyone.' };
 
 export const JOBS = [
   { id: 'kitchen', name: 'Kitchen', emoji: '🍳', desc: 'Clean hob, sink, counters, appliance exteriors, fronts and grease.' },
@@ -109,6 +112,9 @@ export function dutiesForDate(d) {
       out.push({ id: `${day}:bath`, kind: 'clean', date: day, job: BATHROOM, assignee: who, opens: addDays(startOfDay(d), -6), deadline: atTime(d, CONFIG.weeklyDeadline) });
     }
   }
+  if (d.getDay() === 2 && day >= PLANTS.start) { // Tuesday: one shared "water the plants" duty, open from Monday
+    out.push({ id: `${day}:plants`, kind: 'plants', date: day, assignee: null, anyone: true, opens: addDays(startOfDay(d), -1), deadline: atTime(d, CONFIG.eveningDeadline) });
+  }
   return out;
 }
 
@@ -121,6 +127,7 @@ export function dutiesBetween(from, to) {
 export function dutyTitle(duty) {
   if (duty.kind === 'morning') return 'Morning reset';
   if (duty.kind === 'evening') return 'Evening reset';
+  if (duty.kind === 'plants') return PLANTS.name;
   return `Weekly cleaning: ${duty.job.name}`;
 }
 
@@ -159,6 +166,7 @@ export function statusOf(duty, state, now = new Date()) {
   if (cv?.by && cv.status === 'claimed') return now.getTime() - cv.at > POINTS.claimAutoConfirmHours * 3600e3 ? 'done' : 'claimed';
   const c = state?.completions?.[duty.id];
   if (c) return c.at <= duty.deadline.getTime() ? 'done' : 'late';
+  if (duty.anyone) return now < duty.opens ? 'future' : now > duty.deadline ? 'skipped' : 'open'; // shared bonus task: no penalty
   if (holidayOf(state, assigneeOf(duty, state), duty.date)) return 'holiday'; // away: automatically excused
   if (state?.excused?.[duty.id]) return 'excused';
   if (now < duty.opens) return 'future';
@@ -186,7 +194,7 @@ const mondayOf = (d) => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
 // Derive scoreboard from the shared state. Nothing is stored — penalties are computed from deadlines.
 export function computeScores(state, now = new Date()) {
   const out = Object.fromEntries(ROOMMATES.map((r) => [r.id, {
-    id: r.id, points: 0, xp: 0, done: 0, late: 0, missed: 0, excused: 0, holiday: 0, fakes: 0, steals: 0,
+    id: r.id, points: 0, xp: 0, done: 0, late: 0, missed: 0, excused: 0, holiday: 0, fakes: 0, steals: 0, plants: 0,
     streak: 0, best: 0, sweeps: 0, perfectWeeks: 0, strikes: [], earlyBird: 0,
   }]));
   const penStart = parseYmd(CONFIG.penaltyStart);
@@ -197,6 +205,16 @@ export function computeScores(state, now = new Date()) {
   const perWeek = {};
 
   for (const duty of all) {
+    if (duty.anyone) { // plants: points for whoever did it on time; a caught fake costs them 2× the points
+      const c = state.completions?.[duty.id], o = c && out[c.by];
+      if (!o || c.at > duty.deadline.getTime()) continue;
+      const f = state.fakes?.[duty.id];
+      if (f) {
+        o.points -= POINTS.done[duty.kind] * POINTS.fakeMultiplier; o.fakes++;
+        if (out[f.stolenBy]) { out[f.stolenBy].points += POINTS.done[duty.kind]; out[f.stolenBy].xp += POINTS.done[duty.kind]; out[f.stolenBy].steals++; }
+      } else { o.points += POINTS.done[duty.kind]; o.xp += POINTS.done[duty.kind]; o.plants++; }
+      continue;
+    }
     const who = assigneeOf(duty, state);
     const st = statusOf(duty, state, now);
     const o = out[who];

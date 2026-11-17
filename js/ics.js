@@ -45,6 +45,13 @@ export function buildICS({ calName, from, to, who = null, state = {} }) {
 
   for (let d = startOfDay(from); d <= to; d = addDays(d, 1)) {
     for (const duty of dutiesForDate(d)) {
+      if (duty.anyone) { // shared task (plants): whole-house feed only, no alarm
+        if (who) continue;
+        const day = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 18, 0), end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 19, 0);
+        ev([`UID:${duty.id}@house-quest`, `DTSTAMP:${stamp}`, `DTSTART:${local(day)}`, `DTEND:${local(end)}`,
+          `SUMMARY:${esc('🪴 Water the plants (anyone, Mon–Tue)')}`, `DESCRIPTION:${esc('Whoever waters the plants on Monday or Tuesday gets +5. Tick it in House Quest.')}`]);
+        continue;
+      }
       const owner = assigneeOf(duty, state);
       if (who && owner !== who) continue;
       const [s, e] = CONFIG.windows[duty.kind];
