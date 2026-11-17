@@ -47,6 +47,10 @@
   "2026-11-13:PM": {
    "by": "pit",
    "at": 1794766558246
+  },
+  "2026-11-17:PM": {
+   "by": "pit",
+   "at": 1794904573671
   }
  },
  "avatars": {},
@@ -190,6 +194,10 @@
   "1794904405096-fk4s": {
    "t": 1794904405096,
    "text": "Paco completed morning reset (+10)"
+  },
+  "1794904573689-xtum": {
+   "t": 1794904573689,
+   "text": "🛡 Admin excused Paco's evening reset"
   }
  },
  "admin": {
