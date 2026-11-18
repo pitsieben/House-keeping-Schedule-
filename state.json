@@ -194,6 +194,10 @@
   "1794904573689-xtum": {
    "t": 1794904573689,
    "text": "🛡 Admin excused Paco's evening reset"
+  },
+  "1794983821686-7fjg": {
+   "t": 1794983821686,
+   "text": "✋ Pit did Paco's evening reset (Tue 17 Nov)"
   }
  },
  "admin": {
@@ -241,6 +245,14 @@
    "placed": [
     "rug"
    ]
+  }
+ },
+ "covers": {
+  "2026-11-17:PM": {
+   "status": "claimed",
+   "from": "paco",
+   "by": "pit",
+   "at": 1794983821686
   }
  }
 }
