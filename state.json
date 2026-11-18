@@ -206,6 +206,10 @@
   "1794986614089-65ud": {
    "t": 1794986614089,
    "text": "Pit completed morning reset (+10)"
+  },
+  "1794986636260-5aaz": {
+   "t": 1794986636260,
+   "text": "✓ Paco confirmed: Pit did the evening reset (+10)"
   }
  },
  "admin": {
@@ -257,10 +261,11 @@
  },
  "covers": {
   "2026-11-17:PM": {
-   "status": "claimed",
+   "status": "confirmed",
    "from": "paco",
    "by": "pit",
-   "at": 1794983821686
+   "at": 1794983821686,
+   "confirmedAt": 1794986636260
   }
  }
 }
