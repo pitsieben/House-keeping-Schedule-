@@ -166,3 +166,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/schedule.js` `PLANTS`, Tuesday duty `<date>:plants` (`kind: 'plants'`, `assignee: null`, `anyone: true`, opens Monday, due Tue midnight), `POINTS.done.plants = 5` / `miss.plants = 0`, `statusOf` → `open` / `future` / `skipped` (never missed), `computeScores` credits `completions[id].by` (caught fake −10). `js/rooms.js` achievement `green` (≥ 3 waterings in a month) → new shelf collectible `cactus`. `js/app.js` `plantsCard` (Today on Mon/Tue, "Up for grabs"), `ownerOf()` for owner-less duties in actions/admin, Week table line, chip `skipped`. `js/ics.js` house feed only (Tue 18:00, no alarm). Changelog #18, TUTORIAL.
 - Checked: `npm test` ALL CHECKS PASSED (52, incl. 6 plants checks); headless with the live `state.json` on Tue 17 Nov: card shown, watering → Pit 0 → +5, Week/Admin/Rooms tabs render without page errors.
 - Not verified: on a real phone; the cactus sprite in a room (only checked that it's listed).
+
+### 2026-11-18 "Can't make it" cutoff
+- Changed: `js/schedule.js` `cantMakeItUntil(duty)` (`CANT_MAKE_IT_HOURS = 4`: resets until deadline − 4 h, i.e. morning 08:00 / evening 20:00; weekly cleaning until the end of the day before); `js/app.js` button shows "(until …)", after the cutoff a hint instead of the button, action re-checks the cutoff; rules text, TUTORIAL, changelog #19.
+- Checked: `npm test` ALL CHECKS PASSED (55, incl. 3 cutoff checks); headless: morning 07:30 button / 09:00 hint, evening 19:30 button / 20:30 hint, bathroom Sat 23:00 button / Sun 09:00 hint.
+- Not verified: on a real phone. Requests made before this change stay valid.

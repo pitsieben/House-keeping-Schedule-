@@ -112,7 +112,7 @@ The **🛏 Rooms** tab shows everyone's pixel bedroom.
 
 ## 🙋 Can't make it? Take-overs
 
-- **Before the deadline:** tap **🙋 Can't make it** on your duty. Everyone sees a banner and anyone can tap **I'll take over**. From then on it's *their* duty: they get the points, and the penalty if they skip it. You're off the hook.
+- **In time:** tap **🙋 Can't make it** on your duty, at the latest **4 h before the deadline** (morning reset: 08:00, evening reset: 20:00) or, for weekly cleaning, **by the end of the day before** (Saturday). Everyone sees a banner and anyone can tap **I'll take over**. From then on it's *their* duty: they get the points, and the penalty if they skip it. You're off the hook.
 - **Already did someone else's duty?** (e.g. you cooked and then cleared the kitchen and wiped the surfaces.) Tap **✋ I did this one** on their duty, up to 24 h after the deadline (yesterday's missed duties are listed under **🕑 Yesterday** on the Today tab). The owner gets a banner to confirm with **✓ Yes**. Once confirmed (or after 48 h without an answer) you get the points and they get **no penalty**. If they tap **✕ Not true**, it goes back to them.
 
 ---
