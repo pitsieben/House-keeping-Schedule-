@@ -210,6 +210,10 @@
   "1794986636260-5aaz": {
    "t": 1794986636260,
    "text": "✓ Paco confirmed: Pit did the evening reset (+10)"
+  },
+  "1794986675637-fv8t": {
+   "t": 1794986675637,
+   "text": "🙋 Pit can't make the evening reset (Wed 18 Nov) — who takes over?"
   }
  },
  "admin": {
@@ -266,6 +270,11 @@
    "by": "pit",
    "at": 1794983821686,
    "confirmedAt": 1794986636260
+  },
+  "2026-11-18:PM": {
+   "status": "requested",
+   "from": "pit",
+   "at": 1794986675637
   }
  }
 }
