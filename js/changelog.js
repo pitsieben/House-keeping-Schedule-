@@ -1,6 +1,8 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
+  { id: 19, date: '2026-11-18', emoji: '⏰', title: "“Can't make it” needs notice",
+    text: "You can hand over a duty with “Can't make it” until 4 h before the deadline (morning reset: 08:00, evening reset: 20:00) and, for weekly cleaning, until the end of the day before. That leaves time for someone to take over." },
   { id: 18, date: '2026-11-17', emoji: '🪴', title: 'Water the plants',
     text: 'New weekly bonus task: water the plants on Monday or Tuesday. Anyone can do it, whoever does it gets +5 (no penalty if nobody does). Water them 3 times in a month for the 🪴 Green Thumb achievement and a cactus for your room.' },
   { id: 17, date: '2026-11-17', emoji: '🙋', title: "Can't make it? Take-overs",

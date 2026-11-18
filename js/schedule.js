@@ -146,6 +146,12 @@ export function baseAssigneeOf(duty, state) {
  *   { status: 'confirmed', from, by, at, confirmedAt }  confirmed (or auto after claimAutoConfirmHours)
  */
 export const coverOf = (state, duty) => state?.covers?.[duty.id] || null;
+// "Can't make it" must leave time for someone else: captain resets up to 4 h before the deadline,
+// weekly cleaning up to the end of the day before (Saturday midnight for Sunday).
+export const CANT_MAKE_IT_HOURS = 4;
+export function cantMakeItUntil(duty) {
+  return duty.kind === 'clean' ? startOfDay(duty.deadline) : new Date(duty.deadline.getTime() - CANT_MAKE_IT_HOURS * 3600e3);
+}
 const coverActive = (c, duty) => c && c.by && (c.status === 'claimed' || c.status === 'confirmed' || (c.status === 'taken' && c.takenAt <= duty.deadline.getTime()));
 
 // Who actually owns the duty: swaps first, then a take-over.

@@ -114,6 +114,14 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   const s4 = S.computeScores(empty(), after); // declined = cover removed = back to normal
   check('claim declined: owner back to missed (-15)', s4.paco.points === base.paco.points);
 }
+// ---- "can't make it" cutoff: 4 h before a reset, the day before for weekly cleaning
+{
+  const ds = S.dutiesForDate(S.parseYmd('2026-11-22')); // Sunday
+  const am = ds.find((x) => x.kind === 'morning'), pm = ds.find((x) => x.kind === 'evening'), cl = ds.find((x) => x.kind === 'clean');
+  check('cutoff: morning reset (due 12:00) → 08:00', S.cantMakeItUntil(am).getTime() === new Date('2026-11-22T08:00').getTime(), S.cantMakeItUntil(am));
+  check('cutoff: evening reset (due midnight) → 20:00', S.cantMakeItUntil(pm).getTime() === new Date('2026-11-22T20:00').getTime(), S.cantMakeItUntil(pm));
+  check('cutoff: Sunday cleaning → Saturday midnight', S.cantMakeItUntil(cl).getTime() === new Date('2026-11-22T00:00').getTime(), S.cantMakeItUntil(cl));
+}
 // ---- shared bathroom: Hritik on Sun 22 Nov, then alternating with Pit
 {
   const bath = (day) => S.dutiesForDate(S.parseYmd(day)).find((x) => x.id.endsWith(':bath'));

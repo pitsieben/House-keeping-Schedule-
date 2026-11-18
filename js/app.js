@@ -1,7 +1,7 @@
 import {
   ROOMMATES, ADMIN, CONFIG, POINTS, JOBS, CHECKLISTS, LAUNDRY, LEVELS,
   person, ymd, parseYmd, addDays, startOfDay, captainFor, dutiesForDate, dutiesBetween,
-  BATHROOM, PLANTS, dutyTitle, assigneeOf, baseAssigneeOf, coverOf, statusOf, computeScores, rankings, weekJobs, holidayOf,
+  BATHROOM, PLANTS, dutyTitle, assigneeOf, baseAssigneeOf, coverOf, cantMakeItUntil, statusOf, computeScores, rankings, weekJobs, holidayOf,
 } from './schedule.js';
 import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
@@ -137,7 +137,13 @@ function dutyCard(duty, now, opts = {}) {
   // take-overs: "can't make it" → someone takes it; or "I did this one" → owner confirms
   const cv = coverOf(s, duty), base = baseAssigneeOf(duty, s), beforeDue = now < duty.deadline;
   const claimOpen = now.getTime() < duty.deadline.getTime() + POINTS.claimWindowHours * 3600e3;
-  if (!cv && base === ui.me && !done && ['open', 'future'].includes(st) && beforeDue) actions += `<button class="btn ghost" data-act="cantmake" data-id="${duty.id}">🙋 Can't make it</button>`;
+  const askBy = cantMakeItUntil(duty);
+  const askByText = duty.kind === 'clean' ? `${fmtDay(addDays(askBy, -1))} midnight` : fmtTime(askBy);
+  if (!cv && base === ui.me && !done && ['open', 'future'].includes(st) && beforeDue) {
+    actions += now <= askBy
+      ? `<button class="btn ghost" data-act="cantmake" data-id="${duty.id}" title="Possible until ${askByText}">🙋 Can't make it <small>(until ${askByText})</small></button>`
+      : `<span class="tiny muted">🙋 Too late to hand it over (only until ${askByText}). Ask someone directly, or use ✋ "I did this one" afterwards.</span>`;
+  }
   if (cv?.status === 'requested' && base !== ui.me && beforeDue) actions += `<button class="btn go" data-act="takeover" data-id="${duty.id}">🙋 I'll take over (+${pts})</button>`;
   if ((!cv || cv.status === 'requested') && base !== ui.me && !s.completions?.[duty.id] && ['open', 'missed'].includes(st) && claimOpen && ui.me)
     actions += `<button class="btn ghost" data-act="didit" data-id="${duty.id}">✋ I did this one</button>`;
@@ -694,7 +700,7 @@ function rulesView() {
   <p class="tiny muted">The captain isn't responsible for someone else's cooking mess or belongings.</p></div>
   <div class="card"><b>Weekly cleaning (Sun 8 pm)</b><p class="tiny">${JOBS.map((j) => `${j.emoji} <b>${esc(j.name)}</b>: ${esc(j.desc)}`).join('<br>')}</p><p class="tiny muted">Assignments rotate weekly.</p><p class="tiny">${BATHROOM.emoji} <b>${esc(BATHROOM.name)}</b>: ${esc(BATHROOM.desc)} Alternates Hritik → Pit every week, starting Sun 22 Nov.</p></div>
   <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hritik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
-  <div class="card"><b>Can't make it? Take-overs</b><p class="tiny">Tap <b>🙋 Can't make it</b> on your duty: anyone can tap <b>I'll take over</b> before the deadline, and then it's their duty (their points, their penalty if they skip it). Already did someone else's duty, e.g. cleared the kitchen after cooking? Tap <b>✋ I did this one</b> (up to ${POINTS.claimWindowHours} h after the deadline): once the owner confirms (or after ${POINTS.claimAutoConfirmHours} h without an answer) you get the points and they get no penalty.</p></div>
+  <div class="card"><b>Can't make it? Take-overs</b><p class="tiny">Tap <b>🙋 Can't make it</b> on your duty, at the latest 4 h before the deadline (weekly cleaning: by the end of the day before), so someone has time to take over: anyone can tap <b>I'll take over</b> before the deadline, and then it's their duty (their points, their penalty if they skip it). Already did someone else's duty, e.g. cleared the kitchen after cooking? Tap <b>✋ I did this one</b> (up to ${POINTS.claimWindowHours} h after the deadline): once the owner confirms (or after ${POINTS.claimAutoConfirmHours} h without an answer) you get the points and they get no penalty.</p></div>
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
   ${holidayCard()}
@@ -879,6 +885,7 @@ const actions = {
   },
   cantmake: (el) => {
     const d = findDuty(el.dataset.id), now = getNow();
+    if (now > cantMakeItUntil(d)) { toast("Too late to hand it over: ask at least 4 h before (cleaning: the day before)"); return; }
     store.patch(['covers', d.id], { status: 'requested', from: ui.me, at: now.getTime() });
     store.say(`🙋 ${person(ui.me).name} can't make the ${dutyTitle(d).toLowerCase()} (${fmtDay(parseYmd(d.date))}) — who takes over?`, now.getTime());
   },
