@@ -257,7 +257,10 @@
   "1795166484031-paco": {
    "from": "paco",
    "text": "Why are you in holiday??",
-   "at": 1795166484031
+   "at": 1795166484031,
+   "closed": {
+    "paco": 1795176743029
+   }
   }
  },
  "jump": {
