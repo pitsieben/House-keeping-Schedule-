@@ -259,6 +259,10 @@
   "1795181565773-mih9": {
    "t": 1795181565773,
    "text": "🛡 Admin marked Pit's morning reset as done"
+  },
+  "1795199205624-z11b": {
+   "t": 1795199205624,
+   "text": "🙋 Pit can't make the evening reset (Fri 20 Nov) — who takes over?"
   }
  },
  "admin": {
@@ -326,6 +330,11 @@
    "by": "pit",
    "at": 1794983821686,
    "confirmedAt": 1794986636260
+  },
+  "2026-11-20:PM": {
+   "status": "requested",
+   "from": "pit",
+   "at": 1795199205624
   }
  }
 }
