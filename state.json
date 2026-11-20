@@ -53,6 +53,11 @@
    "by": "pit",
    "at": 1795181552975,
    "admin": true
+  },
+  "2026-11-20:AM": {
+   "by": "pit",
+   "at": 1795172400000,
+   "admin": true
   }
  },
  "swaps": {},
@@ -255,6 +260,10 @@
   "1795181552996-4w73": {
    "t": 1795181552996,
    "text": "🛡 Admin marked Pit's evening reset as done"
+  },
+  "1795181565773-mih9": {
+   "t": 1795181565773,
+   "text": "🛡 Admin marked Pit's morning reset as done"
   }
  },
  "admin": {
