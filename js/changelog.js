@@ -1,6 +1,12 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
+  { id: 23, date: '2026-11-21', emoji: '🏆', title: 'Perfect Week: stricter',
+    text: 'From this week on, a Perfect Week (+25) only counts if you did all your duties on time yourself: no excuses, holidays, swaps, take-overs or “can\'t make it”. Earlier weeks keep their bonus.' },
+  { id: 22, date: '2026-11-21', emoji: '🏠', title: 'Not home',
+    text: 'Rules → Holidays & not home: mark days you are not home. Unlike a holiday, your duties still need doing: anyone can do them and gets the points, and you get no penalty if nobody does.' },
+  { id: 21, date: '2026-11-21', emoji: '🙋', title: "“Can't make it”: monthly limit",
+    text: "Per month you can use “Can't make it” 3× for house-captain duties and 1× for weekly cleaning. The button shows how many you have left." },
   { id: 20, date: '2026-11-21', emoji: '🙋', title: "Nobody took over? No penalty",
     text: "If you tap “Can't make it” in time and nobody takes over, you don't get a penalty, you just get no points. If you still manage to do it yourself, you get the points as usual." },
   { id: 19, date: '2026-11-18', emoji: '⏰', title: "“Can't make it” needs notice",
