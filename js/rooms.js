@@ -39,7 +39,7 @@ function monthStats(state, key, now) {
       continue;
     }
     const who = assigneeOf(d, state), st = statusOf(d, state, now), o = out[who];
-    if (!o || ['open', 'future', 'pregame', 'holiday', 'claimed'].includes(st)) continue;
+    if (!o || ['open', 'future', 'pregame', 'holiday', 'claimed', 'released'].includes(st)) continue;
     o.total++;
     if (d.kind === 'clean') o.cleans++;
     if (st === 'done') {

@@ -102,7 +102,7 @@ function statusChip(st, duty, now) {
     done: ['✔ On time', 'ok'], late: ['✔ Late (strike)', 'warn'], missed: ['✖ Missed', 'bad'],
     excused: ['🛡 Excused', 'ok'], open: [`⏳ ${countdown(duty.deadline - now)} left`, 'open'],
     future: ['🔒 Not open yet', 'muted'], pregame: ['— pre-game', 'muted'],
-    fake: ['🤥 Fake — caught', 'bad'], holiday: ['✈ On holiday', 'ok'], claimed: ['✋ Waiting for OK', 'open'], skipped: ['🥀 Not watered', 'muted'],
+    fake: ['🤥 Fake — caught', 'bad'], holiday: ['✈ On holiday', 'ok'], claimed: ['✋ Waiting for OK', 'open'], skipped: ['🥀 Not watered', 'muted'], released: ['🙋 Nobody took it · 0 pts', 'muted'],
   };
   const [t, c] = map[st];
   return `<span class="chip ${c}">${t}</span>`;
@@ -145,7 +145,7 @@ function dutyCard(duty, now, opts = {}) {
       : `<span class="tiny muted">🙋 Too late to hand it over (only until ${askByText}). Ask someone directly, or use ✋ "I did this one" afterwards.</span>`;
   }
   if (cv?.status === 'requested' && base !== ui.me && beforeDue) actions += `<button class="btn go" data-act="takeover" data-id="${duty.id}">🙋 I'll take over (+${pts})</button>`;
-  if ((!cv || cv.status === 'requested') && base !== ui.me && !s.completions?.[duty.id] && ['open', 'missed'].includes(st) && claimOpen && ui.me)
+  if ((!cv || cv.status === 'requested') && base !== ui.me && !s.completions?.[duty.id] && ['open', 'missed', 'released'].includes(st) && claimOpen && ui.me)
     actions += `<button class="btn ghost" data-act="didit" data-id="${duty.id}">✋ I did this one</button>`;
   if (cv?.status === 'claimed' && st === 'claimed' && base === ui.me)
     actions += `<button class="btn go" data-act="claimok" data-id="${duty.id}">✓ Yes, ${person(cv.by).name} did it</button><button class="btn ghost" data-act="claimno" data-id="${duty.id}">✕ Not true</button>`;
@@ -159,7 +159,7 @@ function dutyCard(duty, now, opts = {}) {
   if (fake) swapNote += `<p class="tiny note bad">🤥 Claimed done but wasn't: ${POINTS.fakeMultiplier}× penalty (${POINTS.miss[duty.kind] * POINTS.fakeMultiplier}).${fake.stolenBy ? ` 🦹 Stolen by ${person(fake.stolenBy).name} (+${pts}).` : canSteal(fake, now) ? ' Anyone else can steal it.' : ''}</p>`;
   if (sw && sw.status === 'pending') swapNote = `<p class="tiny note">⇄ ${person(sw.from).name} asked ${person(sw.to).name} to swap — not valid until accepted before the deadline.${sw.from === ui.me ? ` <button class="link" data-act="swapcancel" data-id="${duty.id}">cancel</button>` : ''}</p>`;
   if (sw && sw.status === 'accepted' && who === sw.to) swapNote = `<p class="tiny note">⇄ Swapped from ${person(sw.from).name}</p>`;
-  if (cv?.status === 'requested') swapNote += `<p class="tiny note">🙋 ${person(cv.from).name} can't make it — ${beforeDue ? 'anyone can take over' : 'nobody took over'}.${cv.from === ui.me && beforeDue ? ` <button class="link" data-act="cantcancel" data-id="${duty.id}">cancel</button>` : ''}</p>`;
+  if (cv?.status === 'requested') swapNote += `<p class="tiny note">🙋 ${person(cv.from).name} can't make it — ${beforeDue ? `anyone can take over. If nobody does, ${person(cv.from).name} gets no penalty (and no points)` : st === 'released' ? 'nobody took over: no penalty, no points' : 'nobody took over'}.${cv.from === ui.me && beforeDue ? ` <button class="link" data-act="cantcancel" data-id="${duty.id}">cancel</button>` : ''}</p>`;
   if (cv?.status === 'taken') swapNote += `<p class="tiny note">🙋 ${person(cv.by).name} took over from ${person(cv.from).name}.</p>`;
   if (cv?.status === 'claimed') swapNote += `<p class="tiny note">✋ ${person(cv.by).name} did it for ${person(cv.from).name}${st === 'claimed' ? ` — waiting for ${person(cv.from).name} to confirm (counts automatically after ${POINTS.claimAutoConfirmHours} h).` : '.'}</p>`;
   if (cv?.status === 'confirmed') swapNote += `<p class="tiny note">✋ Done by ${person(cv.by).name} for ${person(cv.from).name} ✓</p>`;
@@ -503,7 +503,7 @@ function weekView(now) {
   const days = Array.from({ length: 14 }, (_, i) => addDays(from, i));
   const cell = (duty) => {
     const st = statusOf(duty, store.state, now);
-    const ic = { done: '✅', late: '🟠', missed: '❌', excused: '🛡', holiday: '✈', fake: '🤥', claimed: '✋', skipped: '🥀', open: '⏳', future: '·', pregame: '–' }[st];
+    const ic = { done: '✅', late: '🟠', missed: '❌', excused: '🛡', holiday: '✈', fake: '🤥', claimed: '✋', skipped: '🥀', released: '🙋', open: '⏳', future: '·', pregame: '–' }[st];
     return `<span title="${st}">${ic}</span>`;
   };
   const rows = days.map((d) => {
@@ -700,7 +700,7 @@ function rulesView() {
   <p class="tiny muted">The captain isn't responsible for someone else's cooking mess or belongings.</p></div>
   <div class="card"><b>Weekly cleaning (Sun 8 pm)</b><p class="tiny">${JOBS.map((j) => `${j.emoji} <b>${esc(j.name)}</b>: ${esc(j.desc)}`).join('<br>')}</p><p class="tiny muted">Assignments rotate weekly.</p><p class="tiny">${BATHROOM.emoji} <b>${esc(BATHROOM.name)}</b>: ${esc(BATHROOM.desc)} Alternates Hritik → Pit every week, starting Sun 22 Nov.</p></div>
   <div class="card"><b>Laundry priority</b><p class="tiny">Sun–Mon Hritik · Tue–Wed Paco · Thu open · Fri–Sat Pit. Priority, not obligation — swap directly by agreement; remove laundry promptly.</p></div>
-  <div class="card"><b>Can't make it? Take-overs</b><p class="tiny">Tap <b>🙋 Can't make it</b> on your duty, at the latest 4 h before the deadline (weekly cleaning: by the end of the day before), so someone has time to take over: anyone can tap <b>I'll take over</b> before the deadline, and then it's their duty (their points, their penalty if they skip it). Already did someone else's duty, e.g. cleared the kitchen after cooking? Tap <b>✋ I did this one</b> (up to ${POINTS.claimWindowHours} h after the deadline): once the owner confirms (or after ${POINTS.claimAutoConfirmHours} h without an answer) you get the points and they get no penalty.</p></div>
+  <div class="card"><b>Can't make it? Take-overs</b><p class="tiny">Tap <b>🙋 Can't make it</b> on your duty, at the latest 4 h before the deadline (weekly cleaning: by the end of the day before), so someone has time to take over: anyone can tap <b>I'll take over</b> before the deadline, and then it's their duty (their points, their penalty if they skip it). If nobody takes it, you get no penalty and no points (or do it yourself after all and still get the points). Already did someone else's duty, e.g. cleared the kitchen after cooking? Tap <b>✋ I did this one</b> (up to ${POINTS.claimWindowHours} h after the deadline): once the owner confirms (or after ${POINTS.claimAutoConfirmHours} h without an answer) you get the points and they get no penalty.</p></div>
   <div class="card"><b>Swaps & strikes</b><p class="tiny">Swaps must be confirmed (accepted) BEFORE the deadline — a notice without acceptance is not a swap. An unfinished duty without a confirmed swap is a strike; genuine emergencies are excused by a roommate. Max three pairs of shoes each at the entrance. Three strikes in a rolling 30 days → household review + agreed paid-replacement plan.</p>
   <p class="tiny muted">Compensation amounts need all three of you to agree. Trial review: 23 Nov · 30-day review: ~10 Dec. The goal is a clean home, not fines.</p></div>
   ${holidayCard()}
@@ -1040,7 +1040,7 @@ function checkReminders() {
   const duties = dutiesBetween(addDays(now, -1), addDays(now, 1));
   for (const d of duties) {
     if (assigneeOf(d, store.state) !== ui.me) continue;
-    if (['done', 'late', 'excused', 'holiday', 'claimed'].includes(statusOf(d, store.state, now)) || now > d.deadline) continue;
+    if (['done', 'late', 'excused', 'holiday', 'claimed', 'released'].includes(statusOf(d, store.state, now)) || now > d.deadline) continue;
     const [s] = CONFIG.windows[d.kind];
     const start = new Date(d.deadline.getFullYear(), d.deadline.getMonth(), d.deadline.getDate(), s[0], s[1]);
     const warn = new Date(d.deadline - 30 * 60000);
