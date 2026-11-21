@@ -53,6 +53,10 @@
    "by": "pit",
    "at": 1795172400000,
    "admin": true
+  },
+  "2026-11-21:AM": {
+   "by": "paco",
+   "at": 1795254590217
   }
  },
  "swaps": {
@@ -275,6 +279,10 @@
   "1795254570202-6u1l": {
    "t": 1795254570202,
    "text": "Paco accepted Pit's swap: morning reset on Sat 21 Nov"
+  },
+  "1795254590217-b3aw": {
+   "t": 1795254590217,
+   "text": "Paco completed morning reset (+10)"
   }
  },
  "admin": {
