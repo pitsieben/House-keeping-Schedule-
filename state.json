@@ -55,7 +55,14 @@
    "admin": true
   }
  },
- "swaps": {},
+ "swaps": {
+  "2026-11-21:AM": {
+   "from": "pit",
+   "to": "paco",
+   "status": "pending",
+   "at": 1795251838404
+  }
+ },
  "excused": {
   "2026-11-12:AM": {
    "by": "pit",
