@@ -122,6 +122,19 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   check('cutoff: evening reset (due midnight) → 20:00', S.cantMakeItUntil(pm).getTime() === new Date('2026-11-22T20:00').getTime(), S.cantMakeItUntil(pm));
   check('cutoff: Sunday cleaning → Saturday midnight', S.cantMakeItUntil(cl).getTime() === new Date('2026-11-22T00:00').getTime(), S.cantMakeItUntil(cl));
 }
+// ---- "can't make it" and nobody takes over: no penalty, no points
+{
+  const pm = S.dutiesForDate(S.parseYmd('2026-11-18')).find((x) => x.kind === 'evening'); // Wed: Pit
+  const after = new Date('2026-11-19T10:00'), base = S.computeScores(empty(), after);
+  const req = (h) => ({ ...empty(), covers: { [pm.id]: { status: 'requested', from: 'pit', at: new Date(`2026-11-18T${h}`).getTime() } } });
+  const s1 = S.computeScores(req('15:00'), after);
+  check('released: asked in time, nobody took it → no penalty, no points', S.statusOf(pm, req('15:00'), after) === 'released' && s1.pit.points === base.pit.points + 15 && s1.pit.recentStrikes === base.pit.recentStrikes - 1);
+  check('released: asked after the cutoff → still missed', S.statusOf(pm, req('21:00'), after) === 'missed');
+  const s2 = req('15:00'); s2.completions[pm.id] = { by: 'pit', at: new Date('2026-11-18T23:00').getTime() };
+  check('released: did it yourself after all → +10 as usual', S.statusOf(pm, s2, after) === 'done' && S.computeScores(s2, after).pit.points === base.pit.points + 25);
+  const s3 = req('15:00'); s3.completions[pm.id] = { by: 'pit', at: new Date('2026-11-19T01:00').getTime() };
+  check('released: did it late after asking in time → no penalty either', S.statusOf(pm, s3, after) === 'released');
+}
 // ---- shared bathroom: Hritik on Sun 22 Nov, then alternating with Pit
 {
   const bath = (day) => S.dutiesForDate(S.parseYmd(day)).find((x) => x.id.endsWith(':bath'));

@@ -171,12 +171,18 @@ export function statusOf(duty, state, now = new Date()) {
   if (cv?.by && cv.status === 'confirmed') return 'done';
   if (cv?.by && cv.status === 'claimed') return now.getTime() - cv.at > POINTS.claimAutoConfirmHours * 3600e3 ? 'done' : 'claimed';
   const c = state?.completions?.[duty.id];
-  if (c) return c.at <= duty.deadline.getTime() ? 'done' : 'late';
+  const releasedInTime = cv?.status === 'requested' && cv.at <= cantMakeItUntil(duty).getTime();
+  if (c) return c.at <= duty.deadline.getTime() ? 'done' : releasedInTime ? 'released' : 'late';
   if (duty.anyone) return now < duty.opens ? 'future' : now > duty.deadline ? 'skipped' : 'open'; // shared bonus task: no penalty
   if (holidayOf(state, assigneeOf(duty, state), duty.date)) return 'holiday'; // away: automatically excused
   if (state?.excused?.[duty.id]) return 'excused';
   if (now < duty.opens) return 'future';
-  if (now > duty.deadline) return duty.date < CONFIG.penaltyStart ? 'pregame' : 'missed';
+  if (now > duty.deadline) {
+    if (duty.date < CONFIG.penaltyStart) return 'pregame';
+    // asked for a take-over in time ("can't make it" before the cutoff) and nobody took it: no penalty, no points
+    if (releasedInTime) return 'released';
+    return 'missed';
+  }
   return 'open';
 }
 

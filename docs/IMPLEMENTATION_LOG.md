@@ -171,3 +171,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/schedule.js` `cantMakeItUntil(duty)` (`CANT_MAKE_IT_HOURS = 4`: resets until deadline − 4 h, i.e. morning 08:00 / evening 20:00; weekly cleaning until the end of the day before); `js/app.js` button shows "(until …)", after the cutoff a hint instead of the button, action re-checks the cutoff; rules text, TUTORIAL, changelog #19.
 - Checked: `npm test` ALL CHECKS PASSED (55, incl. 3 cutoff checks); headless: morning 07:30 button / 09:00 hint, evening 19:30 button / 20:30 hint, bathroom Sat 23:00 button / Sun 09:00 hint.
 - Not verified: on a real phone. Requests made before this change stay valid.
+
+### 2026-11-21 "Can't make it" + nobody takes over = no penalty
+- Changed: `js/schedule.js` `statusOf`: a `requested` cover made by the cutoff (`cantMakeItUntil`) and never taken → new neutral status `released` after the deadline (also when the owner ticks it late); doing it on time still scores. `js/rooms.js` ignores `released`; `js/app.js` chip "🙋 Nobody took it · 0 pts", Week icon, card note, rules text, "I did this one" still possible. Changelog #20, TUTORIAL.
+- Checked: `npm test` ALL CHECKS PASSED (59, incl. 4 released checks); live `state.json`: Pit's request for Fri 20 Nov evening (18:26, before the 20:00 cutoff) → was missed, now released: Pit 30 → 45, strikes 1 → 0, others unchanged; headless card note + Week icon, no page errors.
+- Not verified: on a real phone.
