@@ -54,7 +54,7 @@ Everyone starts **on earth (0 points)**. Points push you **up** through the clou
 | Morning / evening reset on time | **+10** |
 | Weekly cleaning on time | **+30** |
 | Both resets on the same day (Clean Sweep) | **+5** bonus |
-| Every duty of the week on time (Perfect Week) | **+25** bonus |
+| Every duty of the week on time, done by you (Perfect Week: no excuses, holidays, swaps or take-overs) | **+25** bonus |
 | Missed a reset | **−15** + strike |
 | Missed the weekly cleaning | **−30** + strike |
 | Done, but late | half penalty + strike |
@@ -112,16 +112,17 @@ The **🛏 Rooms** tab shows everyone's pixel bedroom.
 
 ## 🙋 Can't make it? Take-overs
 
-- **In time:** tap **🙋 Can't make it** on your duty, at the latest **4 h before the deadline** (morning reset: 08:00, evening reset: 20:00) or, for weekly cleaning, **by the end of the day before** (Saturday). Everyone sees a banner and anyone can tap **I'll take over**. From then on it's *their* duty: they get the points, and the penalty if they skip it. You're off the hook. If **nobody** takes it, you get **no penalty and no points** (do it yourself after all and you still get the points).
+- **In time:** tap **🙋 Can't make it** on your duty, at the latest **4 h before the deadline** (morning reset: 08:00, evening reset: 20:00) or, for weekly cleaning, **by the end of the day before** (Saturday). Everyone sees a banner and anyone can tap **I'll take over**. From then on it's *their* duty: they get the points, and the penalty if they skip it. You're off the hook (max **3× per month** for house-captain duties, **1×** for weekly cleaning). If **nobody** takes it, you get **no penalty and no points** (do it yourself after all and you still get the points).
 - **Already did someone else's duty?** (e.g. you cooked and then cleared the kitchen and wiped the surfaces.) Tap **✋ I did this one** on their duty, up to 24 h after the deadline (yesterday's missed duties are listed under **🕑 Yesterday** on the Today tab). The owner gets a banner to confirm with **✓ Yes**. Once confirmed (or after 48 h without an answer) you get the points and they get **no penalty**. If they tap **✕ Not true**, it goes back to them.
 
 ---
 
-## ✈ Going away? Holidays
+## ✈ Going away? Holidays & not home
 
 Go to **Rules → ✈ Holidays**, pick the first and last day you're away, and tap **Add holiday**. On those days your duties (morning, evening and weekly cleaning) are **excused automatically**: no points, no penalty, no strike. You can't tick them; there's nothing to do.
 
 - Everyone sees a banner while you're away, and your character flies a little plane in the background of the leaderboard.
+- **🏠 Not home** (same card, choose *Not home*): for days you're around but not at home (a few nights away, home very late). Your duties still need doing: **anyone can do them and gets the points**, and you get **no penalty** if nobody does.
 - Holidays can only start today or later. Back early? Tap **I'm back early**: the days you were away stay excused.
 
 ---

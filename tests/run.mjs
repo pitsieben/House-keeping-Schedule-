@@ -135,6 +135,52 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   const s3 = req('15:00'); s3.completions[pm.id] = { by: 'pit', at: new Date('2026-11-19T01:00').getTime() };
   check('released: did it late after asking in time → no penalty either', S.statusOf(pm, s3, after) === 'released');
 }
+// ---- monthly "can't make it" limits: 3× resets, 1× weekly cleaning
+{
+  const st = empty(); st.covers = {};
+  const resets = ['2026-12-02', '2026-12-03', '2026-12-04', '2026-12-05'].map((d) => S.dutiesForDate(S.parseYmd(d)).find((x) => x.kind === 'evening'));
+  resets.forEach((d, i) => { st.covers[d.id] = { status: 'requested', from: d.assignee, at: d.deadline - 6 * 3600e3 + i }; });
+  // make them all the same person's for the test
+  const who = 'pit'; for (const d of resets) st.covers[d.id].from = who;
+  const fake = (d) => ({ ...d, assignee: who });
+  const after = new Date('2026-12-06T10:00');
+  check("limit: 4th reset hand-over in a month isn't released", S.statusOf(fake(resets[2]), st, after) === 'released' && S.statusOf(fake(resets[3]), st, after) === 'missed');
+  check('limit: none left after the monthly requests are used', S.cantMakeItLeft(st, who, fake(S.dutiesForDate(S.parseYmd('2026-12-09')).find((x) => x.kind === 'morning'))) <= 0);
+  const st3 = { ...st, covers: Object.fromEntries(Object.entries(st.covers).slice(0, 3)) };
+  check('limit: exactly 3 used → 0 left', S.cantMakeItLeft(st3, who, fake(S.dutiesForDate(S.parseYmd('2026-12-09')).find((x) => x.kind === 'morning'))) === 0);
+  check('limit: new month starts fresh', S.cantMakeItLeft(st, who, fake(S.dutiesForDate(S.parseYmd('2027-01-04')).find((x) => x.kind === 'morning'))) === 3);
+  const cl = S.dutiesForDate(S.parseYmd('2026-12-06')).find((x) => x.id.endsWith(':clean:pit'));
+  check('limit: 1 weekly-cleaning hand-over per month', S.cantMakeItLeft(st, 'pit', cl) === 1);
+}
+// ---- not home: duties still need doing, anyone can do them, no penalty for the absentee
+{
+  const pm = S.dutiesForDate(S.parseYmd('2026-11-18')).find((x) => x.kind === 'evening'); // Wed: Pit
+  const after = new Date('2026-11-19T10:00'), base = S.computeScores(empty(), after);
+  const st = { ...empty(), away: { pit: [{ from: '2026-11-18', to: '2026-11-18' }] } };
+  const s1 = S.computeScores(st, after);
+  check('not home: nobody did it → released, no penalty for Pit', S.statusOf(pm, st, after) === 'released' && s1.pit.points === base.pit.points + 30, s1.pit.points - base.pit.points);
+  const st2 = { ...st, completions: { [pm.id]: { by: 'paco', at: new Date('2026-11-18T21:00').getTime() } } };
+  const s2 = S.computeScores(st2, after);
+  check('not home: Paco did it → Paco +10, duty is his', S.assigneeOf(pm, st2) === 'paco' && s2.paco.points === base.paco.points + 10);
+  const st3 = { ...st, holidays: { pit: [{ from: '2026-11-18', to: '2026-11-18' }] } };
+  check('not home + holiday the same day → holiday wins', S.statusOf(pm, st3, after) === 'holiday');
+}
+// ---- perfect week (from 16 Nov): all on time by you, nothing excused/swapped/handed over
+{
+  const wk = S.dutiesBetween(S.parseYmd('2026-11-23'), S.parseYmd('2026-11-29')).filter((d) => !d.anyone);
+  const allDone = () => { const st = empty(); for (const d of wk) st.completions[d.id] = { by: d.assignee, at: d.deadline - 3600e3 }; return st; };
+  const after = new Date('2026-11-30T12:00');
+  const pw = (st) => S.computeScores(st, after).paco.perfectWeeks;
+  check('perfect week: everything on time → yes', pw(allDone()) === 1);
+  const ex = allDone(); const pacoDuty = wk.find((d) => d.assignee === 'paco' && d.kind !== 'clean'); delete ex.completions[pacoDuty.id]; ex.excused[pacoDuty.id] = { by: 'pit', at: 1 };
+  check('perfect week: one excused duty → no', pw(ex) === 0);
+  const sw = allDone(); sw.swaps = { [pacoDuty.id]: { from: 'paco', to: 'hrithik', status: 'accepted', at: 1, acceptedAt: 1 } }; sw.completions[pacoDuty.id] = { by: 'hrithik', at: pacoDuty.deadline - 3600e3 };
+  check('perfect week: a swap → no (for both)', pw(sw) === 0 && S.computeScores(sw, after).hrithik.perfectWeeks === 0);
+  const old = empty(); const wk1 = S.dutiesBetween(S.parseYmd('2026-11-09'), S.parseYmd('2026-11-15')).filter((d) => !d.anyone);
+  for (const d of wk1) old.completions[d.id] = { by: d.assignee, at: d.deadline - 3600e3 };
+  const pd = wk1.find((d) => d.assignee === 'paco' && d.date >= '2026-11-12' && d.kind !== 'clean'); delete old.completions[pd.id]; old.excused[pd.id] = { by: 'pit', at: 1 };
+  check('perfect week: weeks before 16 Nov keep the old rule (excused ok)', S.computeScores(old, new Date('2026-11-16T12:00')).paco.perfectWeeks === 1);
+}
 // ---- shared bathroom: Hritik on Sun 22 Nov, then alternating with Pit
 {
   const bath = (day) => S.dutiesForDate(S.parseYmd(day)).find((x) => x.id.endsWith(':bath'));
