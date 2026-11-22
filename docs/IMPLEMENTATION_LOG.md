@@ -225,3 +225,8 @@ Template (one entry per completed step, newest last):
 ### 2026-11-22 Birds only above 100 m
 - Changed: `js/props.js` bird flocks moved from 8–70 m to 110 / 165 / 220 / 320 m (above the rooftops and the Sagrada Família).
 - Checked: headless: no flocks near the ground, 1 at the live scores (110 m), 4 when higher up.
+
+### 2026-11-22 Detailed, opaque Sagrada Família
+- Changed: `js/props.js` new `sagrada(night)` sprite (64×120 px ≈ 1 px/m, `SAGRADA_M` 110): evangelist towers + Virgin Mary star, central Tower of Jesus with cross, 4+4 bell towers with slits, bands and mosaic finials, nave with gables, buttresses, gothic windows, rose window, portals; night palette with lit windows. Removed from the 320-px skyline sprite. `js/app.js` draws it as its own image anchored at 34 %; skyline no longer semi-transparent (was opacity .72, so clouds showed through). Room window view shows it too. Changelog #32.
+- Checked: headless at night and by day with live-like scores (118/98/78) and zoomed in near 0; room window; `npm test` passes.
+- Not verified: on a real phone.

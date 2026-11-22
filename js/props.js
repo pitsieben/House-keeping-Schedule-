@@ -147,22 +147,63 @@ export function skyline(night) {
       for (let wy = H - h + 2; wy < H - 1; wy += 3) for (let wx = x + 1; wx < x + w - 1; wx += 2) r(rnd() > (night ? 0.55 : 0.2) ? P.win : P.winOff, wx, wy);
       x += w + (rnd() > 0.7 ? 1 : 0);
     }
-    // Sagrada Família: four facade towers on each side, tall central tower with its cross
-    const spire = (cx, top, w, col, sh) => {
-      for (let y = top; y < H; y++) { const ww = Math.max(1, Math.min(w, 1 + Math.floor((y - top) / 3))); r(col, cx - Math.floor(ww / 2), y, ww, 1); if (ww > 2) r(sh, cx + Math.ceil(ww / 2) - 1, y, 1, 1); }
-      r(col, cx - 1, top - 1, 3, 1); r(col, cx, top - 2, 1, 1);
-    };
-    const sx = Math.round(SAGRADA_X * 320);
-    r(P.stone2, sx - 15, H - 14, 30, 14); r(P.stone, sx - 14, H - 13, 28, 13);
-    for (const [dx, top] of [[-12, 15], [-9, 11], [-6, 12], [-3, 16], [3, 16], [6, 12], [9, 11], [12, 15]]) spire(sx + dx, top, 4, P.stone, P.stone2);
-    spire(sx, 3, 6, P.stone, P.stone2);                                                              // Tower of Jesus Christ
-    r(night ? '#fde68a' : '#f8fafc', sx - 1, 1, 3, 1); r(night ? '#fde68a' : '#f8fafc', sx, 0, 1, 3);   // cross
-    for (let y = H - 11; y < H - 2; y += 3) r(night ? P.win : P.stone2, sx - 1, y, 3, 1);
+    // (the Sagrada Família is its own detailed sprite, see sagrada())
     // Torre Glòries
     const gx = 188;
     for (let y = 14; y < H; y++) { const top = y - 14, ww = top < 3 ? 3 + top * 2 : 9; r(P.glass, gx - Math.floor(ww / 2), y, ww, 1); }
     for (let y = 18; y < H - 1; y += 2) for (let x = gx - 3; x < gx + 4; x += 2) r((x + y) % 3 ? P.win : P.glass, x, y);
     r(P.glass, gx, 12, 1, 2);
+  });
+}
+
+// ---------- Sagrada Família, detailed (64 × 120 px ≈ 1 px per meter at SAGRADA_M) ----------
+export const SAGRADA_M = 110;
+export function sagrada(night) {
+  return sprite(`sagrada${night ? 'n' : 'd'}`, 64, 120, (r) => {
+    const P = night
+      ? { s: '#4c4c66', m: '#41415a', d: '#34344b', dd: '#27273a', win: '#f6c55c', glass: '#e9a94a', red: '#a04545', yel: '#d9ad4e', wht: '#ece6d4', grn: '#3f6a52' }
+      : { s: '#dcc8a2', m: '#c6af88', d: '#9f8963', dd: '#6f5d43', win: '#3f342a', glass: '#5d7fab', red: '#c0392b', yel: '#e9b949', wht: '#f6f1e6', grn: '#4f8a4f' };
+    const H = 120;
+    // a tapering spire: light left side, shaded right edge, dark outline, slit windows
+    const tower = (cx, top, baseW, bottom, slits = true) => {
+      for (let y = top; y < bottom; y++) {
+        const t = (y - top) / (bottom - top), w = Math.max(2, Math.round(baseW * Math.sqrt(t) + 0.6));
+        const x0 = cx - Math.floor(w / 2);
+        r(P.s, x0, y, w, 1); r(P.m, x0 + w - 2, y, 2, 1); r(P.d, x0 - 1, y, 1, 1); r(P.d, x0 + w, y, 1, 1);
+        if (slits && w >= 4 && (y - top) % 5 < 3 && y > top + 8) r(P.win, cx, y, 1, 1);
+        if (w >= 5 && (y - top) % 9 === 0) r(P.d, x0, y, w, 1);  // bands
+      }
+    };
+    // mosaic pinnacle (Venetian-glass finials on top of the bell towers)
+    const finial = (cx, top) => {
+      r(P.yel, cx - 1, top - 4, 3, 1); r(P.red, cx - 2, top - 3, 5, 1); r(P.wht, cx - 1, top - 2, 3, 1); r(P.red, cx - 1, top - 1, 3, 1);
+      r(P.wht, cx, top - 6, 1, 2); r(P.wht, cx - 1, top - 5, 3, 1);   // little cross
+    };
+    // evangelist towers (behind), each with its symbol on top (simplified gold blob)
+    for (const [cx, top] of [[24, 16], [40, 17]]) { tower(cx, top, 7, 92); r(P.yel, cx - 1, top - 3, 3, 3); r(P.wht, cx, top - 4, 1, 1); }
+    // Tower of the Virgin Mary with its star
+    tower(27, 20, 6, 92); r(P.wht, 27, 15, 1, 5); r(P.wht, 25, 17, 5, 1); r(P.yel, 26, 16, 3, 3);
+    // central Tower of Jesus Christ with the cross
+    tower(32, 8, 11, 94);
+    r(P.wht, 31, 0, 3, 8); r(P.wht, 28, 3, 9, 3); r(P.yel, 32, 4, 1, 1);  // cross
+    // Nativity façade (left) and Passion façade (right): 4 bell towers each, inner ones taller
+    for (const [cx, top] of [[6, 30], [11, 22], [16, 20], [21, 28]]) { tower(cx, top, 5, 98); finial(cx, top); }
+    for (const [cx, top] of [[43, 29], [48, 21], [53, 23], [58, 31]]) { tower(cx, top, 5, 98); finial(cx, top); }
+    // body / nave with gables over the portals
+    r(P.s, 1, 96, 62, 24); r(P.m, 1, 117, 62, 3);
+    for (let i = 0; i < 9; i++) { r(P.s, 13 - i, 86 + i, 2 * i + 2, 1); r(P.s, 50 - i, 86 + i, 2 * i + 2, 1); } // gables
+    r(P.d, 3, 95, 21, 1); r(P.d, 40, 95, 21, 1);
+    for (let x = 1; x < 63; x += 6) r(P.m, x, 96, 1, 24);                      // buttresses
+    // pointed gothic windows
+    for (let x = 4; x < 60; x += 6) { if (x > 26 && x < 36) continue; r(P.glass, x + 1, 100, 2, 6); r(P.glass, x + 2, 99, 1, 1); r(P.dd, x, 106, 4, 1); }
+    // rose window
+    for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 10) r((x + y) % 2 ? P.glass : P.yel, 32 + x, 103 + y, 1, 1);
+    r(P.d, 32, 99, 1, 9); r(P.d, 28, 103, 9, 1);
+    // portals (three arches per façade), the Nativity one greenish (its cypress tree)
+    for (const px0 of [5, 11, 17, 41, 47, 53]) { r(P.dd, px0, 111, 4, 9); r(P.dd, px0 + 1, 110, 2, 1); }
+    r(P.grn, 12, 86, 2, 4); r(P.grn, 11, 88, 4, 2);
+    // ground line
+    r(P.dd, 0, 119, 64, 1);
   });
 }
 
