@@ -70,6 +70,10 @@
    "by": "hrithik",
    "at": 1795366501320,
    "admin": true
+  },
+  "2026-11-22:clean:pit": {
+   "by": "pit",
+   "at": 1795370449797
   }
  },
  "swaps": {
@@ -380,6 +384,10 @@
   "1795366517650-ifqx": {
    "t": 1795366517650,
    "text": "🦹 Pit stole Hritik's weekly cleaning: shared bathroom (pit & hritik) (+30)"
+  },
+  "1795370449797-mfrf": {
+   "t": 1795370449797,
+   "text": "Pit completed weekly cleaning: terrace / remaining floors (+30)"
   }
  },
  "admin": {
