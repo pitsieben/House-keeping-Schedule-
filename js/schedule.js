@@ -42,7 +42,7 @@ export const POINTS = {
 };
 
 // Shared bathroom of Pit & Hritik: weekly, alternating, starting with Hritik on Sun 22 Nov 2026.
-// Not shared with Paco, so to keep it fair: no points when done, but the usual penalty (−30 / late −15 + strike) if not.
+// Not shared with Paco and not a shared space: no points when done, and half the usual penalty if not (−15 / late −7 / fake −30, + strike).
 export const BATHROOM = {
   id: 'bathroom', name: 'Shared bathroom (Pit & Hritik)', emoji: '🚿', start: '2026-11-22', people: ['hrithik', 'pit'],
   desc: 'Toilet, sink, mirror, shower/tub and tiles; empty the bin; wash the floor; fresh towels if needed.',
@@ -51,6 +51,8 @@ export const BATHROOM = {
 // Plants: once a week, Monday or Tuesday (due Tuesday midnight). Anyone can do it; whoever does it gets the points.
 /** Points for doing a duty (0 for duties marked noPoints, e.g. the private bathroom). */
 export const donePoints = (duty) => (duty.noPoints ? 0 : POINTS.done[duty.kind]);
+/** Penalty for missing a duty (halved for halfPenalty duties, e.g. the private bathroom). Late = half of this, fake = ×fakeMultiplier. */
+export const missPoints = (duty) => (duty.halfPenalty ? Math.round(POINTS.miss[duty.kind] / 2) : POINTS.miss[duty.kind]);
 
 export const PLANTS = { start: '2026-11-16', emoji: '🪴', name: 'Water the plants', desc: 'Water all the plants in the flat. Monday or Tuesday, anyone.' };
 
@@ -116,7 +118,7 @@ export function dutiesForDate(d) {
     }
     if (day >= BATHROOM.start) {
       const who = BATHROOM.people[((weeksBetween(parseYmd(BATHROOM.start), d) % 2) + 2) % 2];
-      out.push({ id: `${day}:bath`, kind: 'clean', date: day, job: BATHROOM, assignee: who, noPoints: true, opens: addDays(startOfDay(d), -6), deadline: atTime(d, CONFIG.weeklyDeadline) });
+      out.push({ id: `${day}:bath`, kind: 'clean', date: day, job: BATHROOM, assignee: who, noPoints: true, halfPenalty: true, opens: addDays(startOfDay(d), -6), deadline: atTime(d, CONFIG.weeklyDeadline) });
     }
   }
   if (d.getDay() === 2 && day >= PLANTS.start) { // Tuesday: one shared "water the plants" duty, open from Monday
@@ -289,15 +291,15 @@ export function computeScores(state, now = new Date()) {
       if (duty.kind !== 'clean') ((perDay[duty.date] ||= {})[who] ||= []).push(duty.kind);
     } else if (st === 'late') {
       if (duty.date < CONFIG.penaltyStart) continue;
-      o.points += Math.round(POINTS.miss[duty.kind] / 2); o.late++; o.streak = 0;
+      o.points += Math.round(missPoints(duty) / 2); o.late++; o.streak = 0;
       o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind, late: true });
     } else if (st === 'missed') {
-      o.points += POINTS.miss[duty.kind]; o.missed++; o.streak = 0;
+      o.points += missPoints(duty); o.missed++; o.streak = 0;
       o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind });
     } else if (st === 'fake') {
       // claimed done but caught: double penalty + strike; whoever stole the duty gets its points
       if (duty.date < CONFIG.penaltyStart) continue;
-      o.points += POINTS.miss[duty.kind] * POINTS.fakeMultiplier; o.missed++; o.fakes++; o.streak = 0;
+      o.points += missPoints(duty) * POINTS.fakeMultiplier; o.missed++; o.fakes++; o.streak = 0;
       o.strikes.push({ id: duty.id, at: duty.deadline.getTime(), kind: duty.kind, fake: true });
       const thief = state.fakes[duty.id].stolenBy;
       if (thief && out[thief]) {

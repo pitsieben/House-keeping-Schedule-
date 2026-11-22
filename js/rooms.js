@@ -1,6 +1,6 @@
 // Personal rooms: monthly achievements → collectibles, level-ups → collectibles, negative points → dirt.
 import {
-  ROOMMATES, CONFIG, POINTS, donePoints, parseYmd, ymd, addDays, startOfDay, dutiesBetween, assigneeOf, statusOf, levelFor,
+  ROOMMATES, CONFIG, POINTS, donePoints, missPoints, parseYmd, ymd, addDays, startOfDay, dutiesBetween, assigneeOf, statusOf, levelFor,
 } from './schedule.js';
 import { drawHero } from './sprites.js';
 
@@ -50,10 +50,10 @@ function monthStats(state, key, now) {
       if (d.kind !== 'clean') ((perDay[d.date] ||= {})[who] ||= []).push(d.kind);
       const sw = state.swaps?.[d.id];
       if (sw && sw.status === 'accepted' && sw.to === who) o.team++;
-    } else if (st === 'late') { o.late++; o.pts += Math.round(POINTS.miss[d.kind] / 2); o.streak = 0; }
-    else if (st === 'missed') { o.missed++; o.pts += POINTS.miss[d.kind]; o.streak = 0; }
+    } else if (st === 'late') { o.late++; o.pts += Math.round(missPoints(d) / 2); o.streak = 0; }
+    else if (st === 'missed') { o.missed++; o.pts += missPoints(d); o.streak = 0; }
     else if (st === 'fake') {
-      o.fakes++; o.pts += POINTS.miss[d.kind] * POINTS.fakeMultiplier; o.streak = 0;
+      o.fakes++; o.pts += missPoints(d) * POINTS.fakeMultiplier; o.streak = 0;
       const thief = state.fakes[d.id].stolenBy;
       if (out[thief]) { out[thief].steals++; out[thief].pts += donePoints(d); }
     } else if (st === 'excused') { o.excused++; if (d.kind === 'clean') o.cleansOk++; }

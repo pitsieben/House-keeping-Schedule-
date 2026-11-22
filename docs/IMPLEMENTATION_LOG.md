@@ -186,3 +186,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/schedule.js` `donePoints(duty)` (0 for `noPoints` duties), bathroom duties get `noPoints: true`; all point awards (done, steals, plants, achievements' month points in `js/rooms.js`) go through `donePoints`; penalties unchanged (−30, late −15, strike, fake 2×). `js/app.js`: "Done (no points)", note on the card, no "+0" in buttons/banners/toasts/log, rules text. Changelog #24, TUTORIAL.
 - Checked: `npm test` ALL CHECKS PASSED (75, incl. 4 bathroom-points checks); live `state.json`: only change is Pit's steal of Hritik's faked 22 Nov bathroom, which now gives 0 instead of +30 (Pit 125 → 95; Paco 88 and Hritik 48 unchanged); headless bathroom card.
 - Not verified: on a real phone.
+
+### 2026-11-22 Bathroom: half penalty
+- Changed: `js/schedule.js` `missPoints(duty)` (halved for `halfPenalty` duties; bathroom has it): missed −15, late −7, caught fake −30, strike unchanged; `computeScores`, `js/rooms.js` and all penalty texts in `js/app.js` use it. Changelog #24 and TUTORIAL updated.
+- Checked: `npm test` ALL CHECKS PASSED (76); live `state.json` (main → this PR): Hritik 48 → 78 (22 Nov bathroom fake −60 → −30), Pit 125 → 95 (steal gives 0), Paco 88 unchanged.
+- Not verified: on a real phone.
