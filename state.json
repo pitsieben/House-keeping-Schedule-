@@ -397,6 +397,10 @@
   "1795377772699-rv2d": {
    "t": 1795377772699,
    "text": "🛡 Admin marked Paco's weekly cleaning: living room / entrance / hallway as done"
+  },
+  "1795390092616-f42y": {
+   "t": 1795390092616,
+   "text": "✋ Pit did Hritik's evening reset (Sun 22 Nov)"
   }
  },
  "admin": {
@@ -483,6 +487,12 @@
    "by": "pit",
    "at": 1795347900395,
    "confirmedAt": 1795347914104
+  },
+  "2026-11-22:PM": {
+   "status": "claimed",
+   "from": "hrithik",
+   "by": "pit",
+   "at": 1795390092616
   }
  },
  "fakes": {
