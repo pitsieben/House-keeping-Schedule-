@@ -368,12 +368,21 @@
   "1795366501339-5m66": {
    "t": 1795366501339,
    "text": "🛡 Admin marked Hritik's weekly cleaning: shared bathroom (pit & hritik) as done"
+  },
+  "1795366507375-17e2": {
+   "t": 1795366507375,
+   "text": "🚩 Pit flagged Hritik's weekly cleaning: shared bathroom (pit & hritik) — admin will check"
   }
  },
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {},
+ "flags": {
+  "2026-11-22:bath": {
+   "by": "pit",
+   "at": 1795366507375
+  }
+ },
  "messages": {
   "1794928767826-pit": {
    "from": "pit",
