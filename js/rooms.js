@@ -1,6 +1,6 @@
 // Personal rooms: monthly achievements → collectibles, level-ups → collectibles, negative points → dirt.
 import {
-  ROOMMATES, CONFIG, POINTS, parseYmd, ymd, addDays, startOfDay, dutiesBetween, assigneeOf, statusOf, levelFor,
+  ROOMMATES, CONFIG, POINTS, donePoints, missPoints, parseYmd, ymd, addDays, startOfDay, dutiesBetween, assigneeOf, statusOf, levelFor,
 } from './schedule.js';
 import { drawHero } from './sprites.js';
 
@@ -35,7 +35,7 @@ function monthStats(state, key, now) {
   for (const d of duties) {
     if (d.anyone) { // plants: count for whoever watered them on time (not a caught fake)
       const c = state.completions?.[d.id];
-      if (c && out[c.by] && c.at <= d.deadline.getTime() && !state.fakes?.[d.id]) { out[c.by].plants++; out[c.by].pts += POINTS.done[d.kind]; }
+      if (c && out[c.by] && c.at <= d.deadline.getTime() && !state.fakes?.[d.id]) { out[c.by].plants++; out[c.by].pts += donePoints(d); }
       continue;
     }
     const who = assigneeOf(d, state), st = statusOf(d, state, now), o = out[who];
@@ -43,19 +43,19 @@ function monthStats(state, key, now) {
     o.total++;
     if (d.kind === 'clean') o.cleans++;
     if (st === 'done') {
-      o.done++; o.pts += POINTS.done[d.kind]; o.streak++; o.best = Math.max(o.best, o.streak);
+      o.done++; o.pts += donePoints(d); o.streak++; o.best = Math.max(o.best, o.streak);
       if (d.kind === 'clean') o.cleansOk++;
       const c = state.completions?.[d.id] || state.covers?.[d.id];
       if (d.kind === 'morning' && c && new Date(c.at).getHours() < 9) o.early++;
       if (d.kind !== 'clean') ((perDay[d.date] ||= {})[who] ||= []).push(d.kind);
       const sw = state.swaps?.[d.id];
       if (sw && sw.status === 'accepted' && sw.to === who) o.team++;
-    } else if (st === 'late') { o.late++; o.pts += Math.round(POINTS.miss[d.kind] / 2); o.streak = 0; }
-    else if (st === 'missed') { o.missed++; o.pts += POINTS.miss[d.kind]; o.streak = 0; }
+    } else if (st === 'late') { o.late++; o.pts += Math.round(missPoints(d) / 2); o.streak = 0; }
+    else if (st === 'missed') { o.missed++; o.pts += missPoints(d); o.streak = 0; }
     else if (st === 'fake') {
-      o.fakes++; o.pts += POINTS.miss[d.kind] * POINTS.fakeMultiplier; o.streak = 0;
+      o.fakes++; o.pts += missPoints(d) * POINTS.fakeMultiplier; o.streak = 0;
       const thief = state.fakes[d.id].stolenBy;
-      if (out[thief]) { out[thief].steals++; out[thief].pts += POINTS.done[d.kind]; }
+      if (out[thief]) { out[thief].steals++; out[thief].pts += donePoints(d); }
     } else if (st === 'excused') { o.excused++; if (d.kind === 'clean') o.cleansOk++; }
   }
   for (const days of Object.values(perDay)) {

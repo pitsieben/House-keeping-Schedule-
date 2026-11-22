@@ -181,3 +181,13 @@ Template (one entry per completed step, newest last):
 - Changed: `js/schedule.js`: `CANT_MAKE_IT_LIMITS` (per calendar month: 3× resets, 1× weekly cleaning), `cantMakeItRequests` / `cantMakeItLeft`; a request over the limit is never `released`. `state.away[who]` + `awayOf()`: duty still due, anyone may tick it (`assigneeOf` → whoever did it), nobody → `released` (holiday wins over not home). Perfect week: from `CONFIG.strictPerfectWeekFrom` (2026-11-16) only if every duty of yours was done on time by you and no swap / take-over / hand-over / excuse / holiday touched your week; earlier weeks keep the old rule. `js/app.js`: "x left this month" on the button / "none left" hint, Holidays & not home card (type select, back early / remove per type), "I'll do it" for others + note + Today banner, no reminders while not home, points table, rules text. Changelog #21–23, TUTORIAL.
 - Checked: `npm test` ALL CHECKS PASSED (71, incl. 5 limit, 3 not-home, 4 perfect-week checks); live `state.json`: all scores unchanged (Paco 78, Pit 45, Hritik 78; the 9–15 Nov perfect weeks kept); headless: quota on the buttons (2 left / 1 left), not home saved, Hritik does Pit's duty on 25 Nov.
 - Not verified: on a real phone.
+
+### 2026-11-22 Bathroom: no points, still a penalty
+- Changed: `js/schedule.js` `donePoints(duty)` (0 for `noPoints` duties), bathroom duties get `noPoints: true`; all point awards (done, steals, plants, achievements' month points in `js/rooms.js`) go through `donePoints`; penalties unchanged (−30, late −15, strike, fake 2×). `js/app.js`: "Done (no points)", note on the card, no "+0" in buttons/banners/toasts/log, rules text. Changelog #24, TUTORIAL.
+- Checked: `npm test` ALL CHECKS PASSED (75, incl. 4 bathroom-points checks); live `state.json`: only change is Pit's steal of Hritik's faked 22 Nov bathroom, which now gives 0 instead of +30 (Pit 125 → 95; Paco 88 and Hritik 48 unchanged); headless bathroom card.
+- Not verified: on a real phone.
+
+### 2026-11-22 Bathroom: half penalty
+- Changed: `js/schedule.js` `missPoints(duty)` (halved for `halfPenalty` duties; bathroom has it): missed −15, late −7, caught fake −30, strike unchanged; `computeScores`, `js/rooms.js` and all penalty texts in `js/app.js` use it. Changelog #24 and TUTORIAL updated.
+- Checked: `npm test` ALL CHECKS PASSED (76); live `state.json` (main → this PR): Hritik 48 → 78 (22 Nov bathroom fake −60 → −30), Pit 125 → 95 (steal gives 0), Paco 88 unchanged.
+- Not verified: on a real phone.

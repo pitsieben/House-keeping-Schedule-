@@ -1,6 +1,8 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
+  { id: 24, date: '2026-11-22', emoji: '🚿', title: 'Bathroom: no points, half penalty',
+    text: "Pit & Hritik's bathroom isn't shared with Paco, so to keep it fair it gives no points when done, and half the usual penalty if it isn't: −15 (late −7, caught fake −30) plus a strike." },
   { id: 23, date: '2026-11-21', emoji: '🏆', title: 'Perfect Week: stricter',
     text: 'From this week on, a Perfect Week (+25) only counts if you did all your duties on time yourself: no excuses, holidays, swaps, take-overs or “can\'t make it”. Earlier weeks keep their bonus.' },
   { id: 22, date: '2026-11-21', emoji: '🏠', title: 'Not home',
