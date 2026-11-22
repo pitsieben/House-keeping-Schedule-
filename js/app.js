@@ -6,6 +6,7 @@ import {
 import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
+import { propsHtml } from './props.js';
 import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
@@ -264,6 +265,18 @@ const PTS_PER_DECADE = 50;
 const PTS_MIN = -325, PTS_MAX = 430;   // magma hell … the Moon: the ends of the scale
 const clampPts = (p) => Math.max(PTS_MIN, Math.min(PTS_MAX, p));
 const meters = (p) => 10 ** (Math.abs(p) / PTS_PER_DECADE) - 1;
+const ptsOf = (m) => Math.sign(m) * PTS_PER_DECADE * Math.log10(Math.abs(m) + 1); // meters (negative = depth) → points
+// one continuous sky from the ground to space: colour stops by height (m), the low part follows the time of day / weather
+function skyStops(phase, grey) {
+  const low = grey && phase !== 'night' ? ['#a3b1bf', '#7f92a7'] : {
+    day: ['#8fd3f7', '#5fb0ea'], morning: ['#a9dbf5', '#6cb6ea'], dawn: ['#f6b58e', '#9fb6e0'], golden: ['#f7b46a', '#d89aa8'],
+    dusk: ['#9d6fb0', '#5a5aa0'], twilight: ['#3a3a7a', '#232a62'], night: ['#0f163d', '#0b1234'],
+  }[phase] || ['#8fd3f7', '#5fb0ea'];
+  const high = phase === 'night' || phase === 'twilight'
+    ? [[1e4, '#080c28'], [3e4, '#060a20'], [8e4, '#04061a'], [4e5, '#03040f'], [4e8, '#020309']]
+    : [[1e4, '#2f6fb5'], [3e4, '#1d3a7a'], [8e4, '#0b1236'], [4e5, '#05071a'], [4e8, '#020309']];
+  return [[0, low[0]], [1000, low[1]], ...high];
+}
 function fmtMeters(p) {
   const m = meters(p);
   if (m < 1) return '0 m';
@@ -330,6 +343,7 @@ function partyScene(scores) {
     return { l, top: Math.max(0, y1), bottom: Math.min(SCENE_H, y0), upper };
   }).filter(Boolean);
   const bandHtml = bands.map(({ l, top, bottom }) => {
+    if (l.from > 0) return '';                       // above ground: drawn as one continuous gradient instead
     let deco = '';
     const h = bottom - top;
     if (l.deco === 'stars') deco = `<i class="stars"></i>`;
@@ -337,11 +351,17 @@ function partyScene(scores) {
     if (l.deco === 'bones') deco = [8, 40, 68].map((x, k) => `<i class="bone" style="left:${x}%;top:${Math.min(h - 10, 10 + k * 14)}px"></i>`).join('');
     if (l.deco === 'flames') deco = [3, 17, 31, 45, 59, 73].map((x) => `<i class="flame" style="left:${x}%"></i>`).join('');
     const grass = l.from === 0 ? `<i class="grass" style="background:${grassEdge(skyFor(getNow()).grass)} repeat-x bottom / 32px 16px"></i>` : '';
-    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background-color:${l.color}${l.tex ? `;background-image:${groundTexture(l.tex)};background-size:192px 192px` : ''}">${grass}${deco}</div>`;
+    return `<div class="band" style="top:${top.toFixed(1)}px;height:${(bottom - top).toFixed(1)}px;background-color:${l.from === 0 ? 'transparent' : l.color}${l.tex ? `;background-image:${groundTexture(l.tex)};background-size:192px 192px` : ''}">${grass}${deco}</div>`;
   }).join('');
 
   // sky picture (time of day + weather) over the sky layers, fading out towards space
-  const sky = skyFor(getNow()), skyTop = Math.max(0, yOf(94)), skyBot = Math.min(SCENE_H, yOf(0));
+  const sky = skyFor(getNow()), skyTop = Math.max(0, yOf(ptsOf(3000))), skyBot = Math.min(SCENE_H, yOf(0));
+  // continuous sky gradient (ground → space), stars fading in from ~25 km, and landmarks at their real heights
+  const earthY0 = yOf(0);
+  const grad = earthY0 > 0 ? `<i class="airgrad" style="height:${earthY0.toFixed(1)}px;background:linear-gradient(to top, ${skyStops(sky.phase, ['cloudy', 'fog', 'rain', 'snow', 'storm'].includes(sky.weather)).map(([m, c]) => `${c} ${(earthY0 - yOf(ptsOf(m))).toFixed(1)}px`).join(', ')})"></i>` : '';
+  const starBot = Math.min(earthY0, yOf(ptsOf(2.5e4)));
+  const stars = starBot > 0 ? `<i class="starfield" style="height:${starBot.toFixed(1)}px"></i>` : '';
+  const props = `<div class="props">${propsHtml(ptsOf, yOf, SCENE_H, { minPts: PTS_MIN, maxPts: PTS_MAX })}</div>`;
   const skyHtml = skyBot - skyTop > 6 ? `<div class="sky" style="top:${skyTop.toFixed(1)}px;height:${(skyBot - skyTop).toFixed(1)}px">
     <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
 
@@ -388,8 +408,10 @@ function partyScene(scores) {
 
   // bubbles live in a separate layer on top, so the scene markup (and its images) stays untouched when they change
   return `<div class="scenewrap"><section class="scene" style="height:${SCENE_H}px">
+    ${grad}${stars}
     ${bandHtml}
     ${skyHtml}
+    ${props}
     <i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wash}"></i>${sky.wet ? `<i class="gtint" style="top:${earthY.toFixed(1)}px;background:${sky.wet}"></i>` : ''}${sky.snow ? `<i class="snowcap" style="top:${(earthY - 2).toFixed(1)}px"></i>` : ''}
     <div class="earthline" style="top:${earthY.toFixed(1)}px"></div>
     <div class="world">${heroes}</div>
