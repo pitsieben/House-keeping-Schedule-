@@ -6,7 +6,7 @@ import {
 import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
-import { propsHtml } from './props.js';
+import { propsHtml, skyline } from './props.js';
 import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
 import { store, REPO } from './store.js';
@@ -361,7 +361,10 @@ function partyScene(scores) {
   const grad = earthY0 > 0 ? `<i class="airgrad" style="height:${earthY0.toFixed(1)}px;background:linear-gradient(to top, ${skyStops(sky.phase, ['cloudy', 'fog', 'rain', 'snow', 'storm'].includes(sky.weather)).map(([m, c]) => `${c} ${(earthY0 - yOf(ptsOf(m))).toFixed(1)}px`).join(', ')})"></i>` : '';
   const starBot = Math.min(earthY0, yOf(ptsOf(2.5e4)));
   const stars = starBot > 0 ? `<i class="starfield" style="height:${starBot.toFixed(1)}px"></i>` : '';
-  const props = `<div class="props">${propsHtml(ptsOf, yOf, SCENE_H, { minPts: PTS_MIN, maxPts: PTS_MAX })}</div>`;
+  // Barcelona skyline standing on the grass (dark with lit windows at night)
+  const night = ['night', 'twilight', 'dusk'].includes(sky.phase), sk = skyline(night);
+  const city = earthY0 > -10 && earthY0 < SCENE_H + 140 ? `<img class="skyline" alt="" src="${sk.url}" style="top:${(earthY0 - 8).toFixed(1)}px">` : '';
+  const props = `<div class="props">${city}${propsHtml(ptsOf, yOf, SCENE_H, { minPts: PTS_MIN, maxPts: PTS_MAX })}</div>`;
   const skyHtml = skyBot - skyTop > 6 ? `<div class="sky" style="top:${skyTop.toFixed(1)}px;height:${(skyBot - skyTop).toFixed(1)}px">
     <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
 

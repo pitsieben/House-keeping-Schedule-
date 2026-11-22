@@ -201,3 +201,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/app.js` scene: above-ground layer bands replaced by one continuous gradient (`skyStops(phase, grey)`: low colours follow time of day/weather, then deep blue → black space), starfield fading in from ~25 km, the cloud picture now spans ground → 3 km (was stuck at the old-scale `yOf(94)`) and fades out at its top (CSS mask); `ptsOf(m)` helper. New `js/props.js`: pixel landmarks at real heights (birds 8–70 m, balloons, a house on balloons ~950 m, small plane 2.6 km, airliners 9–11.5 km, weather balloon 31 km, space junk 260 km–24,000 km, ISS 408 km, satellites, geostationary 35,800 km, Moon; below: ammonite, dinosaur skeletons, chests, nuclear waste ~600 m, mines 1.6/3.5 km, Kola borehole 12.3 km), animated (fly / drift / bob, reduced-motion respected), only rendered when in view. Changelog #27.
 - Checked: headless screenshots at 7 heights (ground, clouds, planes, space, Moon, dinosaurs, deep) by day and 2 at night; no page errors; `npm test` passes.
 - Not verified: on a real phone (animation smoothness).
+
+### 2026-11-22 Barcelona skyline at ground level
+- Changed: `js/props.js` `skyline(night)` (160×44 pixel sprite: Tibidabo hill + church, Montjuïc, Eixample blocks with windows, Sagrada Família with 8 facade spires and the central tower with its cross, Torre Glòries; night palette with lit windows), placed in `js/app.js` on the grass behind the heroes (`.skyline`, full scene width), night for dusk/twilight/night. Sagrada Família sits between the 1st and 2nd hero, Torre Glòries between the 2nd and 3rd, so they stay visible. Changelog #28.
+- Checked: headless screenshots by day, golden hour and night; no page errors; `npm test` passes.
+- Not verified: on a real phone.
