@@ -74,6 +74,11 @@
   "2026-11-22:clean:pit": {
    "by": "pit",
    "at": 1795370449797
+  },
+  "2026-11-22:clean:paco": {
+   "by": "paco",
+   "at": 1795374000000,
+   "admin": true
   }
  },
  "swaps": {
@@ -388,6 +393,10 @@
   "1795370449797-mfrf": {
    "t": 1795370449797,
    "text": "Pit completed weekly cleaning: terrace / remaining floors (+30)"
+  },
+  "1795377772699-rv2d": {
+   "t": 1795377772699,
+   "text": "🛡 Admin marked Paco's weekly cleaning: living room / entrance / hallway as done"
   }
  },
  "admin": {
