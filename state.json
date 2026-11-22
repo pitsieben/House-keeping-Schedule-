@@ -65,6 +65,11 @@
   "2026-11-22:clean:hrithik": {
    "by": "hrithik",
    "at": 1795352378219
+  },
+  "2026-11-22:bath": {
+   "by": "hrithik",
+   "at": 1795366501320,
+   "admin": true
   }
  },
  "swaps": {
@@ -359,6 +364,10 @@
   "1795366479390-zzjq": {
    "t": 1795366479390,
    "text": "🚩 Pit flagged Hritik's weekly cleaning: kitchen — admin will check"
+  },
+  "1795366501339-5m66": {
+   "t": 1795366501339,
+   "text": "🛡 Admin marked Hritik's weekly cleaning: shared bathroom (pit & hritik) as done"
   }
  },
  "admin": {
