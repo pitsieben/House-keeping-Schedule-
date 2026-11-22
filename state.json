@@ -307,6 +307,10 @@
   "1795347900395-7ui8": {
    "t": 1795347900395,
    "text": "✋ Pit did Hritik's morning reset (Sun 22 Nov)"
+  },
+  "1795347914104-b4s6": {
+   "t": 1795347914104,
+   "text": "✓ Hritik confirmed: Pit did the morning reset (+10)"
   }
  },
  "admin": {
@@ -388,10 +392,11 @@
    "at": 1795199205624
   },
   "2026-11-22:AM": {
-   "status": "claimed",
+   "status": "confirmed",
    "from": "hrithik",
    "by": "pit",
-   "at": 1795347900395
+   "at": 1795347900395,
+   "confirmedAt": 1795347914104
   }
  }
 }
