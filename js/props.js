@@ -106,7 +106,8 @@ const borehole = () => sprite('drill', 7, 30, (r) => {
 
 // height (m; negative = depth), x (% of the width), sprite, optional animation
 const PROPS = [
-  { m: 8, x: 14, s: flock, anim: 'fly', dur: 26 }, { m: 18, x: 62, s: flock, anim: 'fly', dur: 34 }, { m: 35, x: 30, s: flock, anim: 'flyl', dur: 30 }, { m: 70, x: 78, s: flock, anim: 'fly', dur: 40 },
+  // birds only above 100 m (above the rooftops and the Sagrada Família)
+  { m: 110, x: 14, s: flock, anim: 'fly', dur: 26 }, { m: 165, x: 62, s: flock, anim: 'fly', dur: 34 }, { m: 220, x: 30, s: flock, anim: 'flyl', dur: 30 }, { m: 320, x: 78, s: flock, anim: 'fly', dur: 40 },
   { m: 130, x: 72, s: () => balloon('#ef4444'), anim: 'bob' }, { m: 260, x: 20, s: () => balloon('#3b82f6'), anim: 'bob' }, { m: 480, x: 58, s: () => balloon('#facc15'), anim: 'bob' },
   { m: 950, x: 32, s: upHouse, anim: 'bob' },
   { m: 2600, x: 70, s: smallPlane, anim: 'fly', dur: 22 },

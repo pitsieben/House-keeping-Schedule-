@@ -221,3 +221,7 @@ Template (one entry per completed step, newest last):
 - Changed: `js/app.js` `meters(p) = |p|`, `ptsOf(m) = m`, clamp −3,000 km … 400,000 km; `LAYERS` in real meters (roots −15, bones −60, bedrock −1 km, crust −35 km, mantles, core); ruler: tick every `niceStep(span)` (1-2-5 × 10ⁿ m) over the whole visible height, labels every tick or every other; Barcelona skyline scaled so its 44 rows = `SKYLINE_M` 110 m and anchored with the Sagrada Família at 34 % of the width (`SAGRADA_X`), slight haze. `js/props.js` skyline sprite widened to 320 px (more Eixample/hills); room window view re-anchored. Changelog #31.
 - Checked: headless with live scores (88/95/78 → around the Sagrada's top), near 0, underground (−45 with dinosaur), far (+600 with balloons); `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-22 Birds only above 100 m
+- Changed: `js/props.js` bird flocks moved from 8–70 m to 110 / 165 / 220 / 320 m (above the rooftops and the Sagrada Família).
+- Checked: headless: no flocks near the ground, 1 at the live scores (110 m), 4 when higher up.
