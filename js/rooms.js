@@ -171,38 +171,70 @@ const rect = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
 // tiny deterministic "random" so the mess doesn't jump around on every redraw
 const rnd = (seed) => { let s = seed; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; };
 
-export function drawRoom(canvas, { who, color, items = [], dirt = 0, outfit = 'everyday', heroKey }) {
+// window glass (transparent in the canvas, the live sky shows through it): x 50–77, y 8–31
+export const ROOM_WINDOW = { x: 50, y: 8, w: 28, h: 24 };
+const shade = (hex, f) => { // f < 0 darker, > 0 lighter
+  const n = parseInt(hex.slice(1), 16), ch = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f));
+  return `#${ch.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+};
+
+export function drawRoom(canvas, { who, color, items = [], dirt = 0, outfit = 'everyday', heroKey, phase = 'day', grey = false }) {
   canvas.width = ROOM_W; canvas.height = ROOM_H;
   const g = canvas.getContext('2d');
   g.imageSmoothingEnabled = false;
   const r = rnd(who.length * 97 + 13);
-  // wall + floor
-  rect(g, WALLS[who] || '#e5e7eb', 0, 0, ROOM_W, 56);
-  rect(g, '#00000010', 0, 50, ROOM_W, 6);
-  rect(g, '#f7efe0', 0, 54, ROOM_W, 2);
-  rect(g, '#9c6b3f', 0, 56, ROOM_W, 24);
-  for (let y = 60; y < ROOM_H; y += 5) rect(g, '#8a5d35', 0, y, ROOM_W, 1);
-  for (let y = 56, o = 0; y < ROOM_H; y += 5, o += 13) for (let x = o % 24; x < ROOM_W; x += 24) rect(g, '#8a5d35', x, y, 1, 5);
-  // window with a Barcelona view
-  rect(g, '#f7f1e6', 48, 6, 32, 28);
-  rect(g, dirt >= 5 ? '#8b9a8a' : '#8fd0f5', 50, 8, 28, 24);
-  [[54, 20, 2], [57, 15, 2], [60, 11, 3], [64, 14, 2], [67, 19, 2]].forEach(([x, y, w]) => rect(g, '#b59a68', x, y, w, 32 - y));
-  rect(g, '#8a7a5a', 53, 27, 17, 5);
-  rect(g, '#f7f1e6', 63, 8, 1, 24); rect(g, '#f7f1e6', 50, 19, 28, 1);
-  rect(g, '#3f8a52', 45, 6, 3, 28); rect(g, '#3f8a52', 80, 6, 3, 28);
-  // shelf
-  rect(g, '#7c4a1e', 86, 26, 39, 2); rect(g, '#5b3716', 89, 28, 2, 3); rect(g, '#5b3716', 120, 28, 2, 3);
-  // bed
+  const fx = rnd(31);                       // decor randomness, same every time
+  const W = WALLS[who] || '#e5e7eb';
+  // ---- wall: striped wallpaper with a small pattern, crown moulding, soft shadow at the ceiling and corners
+  rect(g, W, 0, 0, ROOM_W, 56);
+  for (let x = 2; x < ROOM_W; x += 8) rect(g, shade(W, 0.12), x, 3, 3, 47);
+  for (let y = 8; y < 48; y += 7) for (let x = (y % 14 ? 6 : 2); x < ROOM_W; x += 8) { rect(g, shade(W, -0.07), x, y, 1, 1); rect(g, shade(W, -0.07), x - 1, y + 1, 3, 1); rect(g, shade(W, -0.07), x, y + 2, 1, 1); }
+  rect(g, shade(W, 0.35), 0, 0, ROOM_W, 2); rect(g, shade(W, -0.18), 0, 2, ROOM_W, 1);
+  for (let i = 0; i < 6; i++) { rect(g, `rgba(0,0,0,${0.06 - i * 0.01})`, 0, 3 + i, ROOM_W, 1); rect(g, `rgba(0,0,0,${0.07 - i * 0.01})`, i, 0, 1, 56); rect(g, `rgba(0,0,0,${0.07 - i * 0.01})`, ROOM_W - 1 - i, 0, 1, 56); }
+  // baseboard
+  rect(g, '#efe6d4', 0, 50, ROOM_W, 6); rect(g, '#fffaf0', 0, 50, ROOM_W, 1); rect(g, '#d8ccb4', 0, 54, ROOM_W, 1); rect(g, '#b9ab90', 0, 55, ROOM_W, 1);
+  // ---- floor: planks with varied tones, highlights, seams and knots
+  const tones = ['#a3713f', '#9c6b3f', '#94643a', '#a8784a', '#99683c'];
+  for (let y = 56; y < ROOM_H; y += 5) {
+    for (let x = -Math.floor(fx() * 20); x < ROOM_W;) {
+      const len = 14 + Math.floor(fx() * 14), t = tones[Math.floor(fx() * tones.length)];
+      rect(g, t, x, y, len, 5); rect(g, shade(t, 0.12), x, y, len, 1); rect(g, shade(t, -0.25), x + len - 1, y, 1, 5);
+      if (fx() > 0.6) rect(g, shade(t, -0.3), x + 3 + Math.floor(fx() * (len - 6)), y + 2, 2, 1);
+      x += len;
+    }
+    rect(g, '#6b4423', 0, y + 4, ROOM_W, 1);
+  }
+  rect(g, 'rgba(0,0,0,.18)', 0, 56, ROOM_W, 2);
+  // ---- window: green Barcelona shutters with slats, white frame, sill with a little flower pot
+  for (const sx of [40, 83]) {
+    rect(g, '#2f6b40', sx, 5, 6, 30); rect(g, '#3f8a52', sx + 1, 6, 4, 28);
+    for (let y = 7; y < 34; y += 2) rect(g, '#2f6b40', sx + 1, y, 4, 1);
+    rect(g, '#cbd5e1', sx === 40 ? sx + 5 : sx, 18, 1, 2);
+  }
+  rect(g, '#f7f1e6', 46, 5, 36, 30); rect(g, '#d9d2c2', 47, 6, 34, 28); rect(g, '#fffdf7', 46, 5, 36, 1);
+  rect(g, '#efe6d4', 44, 33, 40, 3); rect(g, '#fffaf0', 44, 33, 40, 1); rect(g, 'rgba(0,0,0,.18)', 45, 36, 38, 2); // sill + shadow
+  // ---- shelf with brackets and its shadow
+  rect(g, '#8a5a2b', 91, 26, 35, 2); rect(g, '#a8763f', 91, 26, 35, 1); rect(g, 'rgba(0,0,0,.18)', 92, 28, 34, 2);
+  rect(g, '#5b3716', 94, 28, 2, 4); rect(g, '#5b3716', 121, 28, 2, 4);
+  // ---- wall lamp above the bed
+  rect(g, '#6b7280', 23, 26, 1, 4); rect(g, '#fde68a', 20, 22, 7, 4); rect(g, '#fbbf24', 20, 25, 7, 1); rect(g, '#fff7cc', 21, 22, 5, 1);
+  // ---- bed: wooden headboard with grain, pillow, quilted blanket in the roommate's colour, shadow on the floor
   const sheet = dirt >= 1 ? '#c9c2b0' : '#f8fafc';
-  rect(g, '#6b4423', 2, 36, 4, 36);                 // headboard
-  rect(g, sheet, 6, 52, 36, 10);                     // mattress / sheet
-  rect(g, color, 16, 50, 26, 12);                    // blanket
-  rect(g, '#00000022', 16, 58, 26, 1);
-  rect(g, dirt >= 1 ? '#bdb6a2' : '#ffffff', 7, 47, 9, 6);   // pillow
-  rect(g, '#6b4423', 6, 62, 36, 6); rect(g, '#4a2f17', 7, 68, 2, 4); rect(g, '#4a2f17', 39, 68, 2, 4);
+  rect(g, 'rgba(0,0,0,.22)', 4, 70, 40, 3);
+  rect(g, '#6b4423', 2, 36, 5, 36); rect(g, '#7c5230', 3, 37, 3, 34); for (let y = 40; y < 70; y += 6) rect(g, '#5b3716', 4, y, 1, 3);
+  rect(g, '#8a5a2b', 2, 35, 5, 1);
+  rect(g, sheet, 7, 52, 35, 10); rect(g, shade(sheet, -0.08), 7, 60, 35, 2);
+  rect(g, dirt >= 1 ? '#bdb6a2' : '#ffffff', 8, 46, 10, 7); rect(g, dirt >= 1 ? '#a8a08a' : '#e2e8f0', 8, 51, 10, 2); rect(g, '#ffffff', 9, 46, 6, 1);
+  const c2 = shade(color, -0.18), c3 = shade(color, 0.25);
+  rect(g, color, 17, 50, 25, 12); rect(g, c3, 17, 50, 25, 2);                       // blanket + folded edge
+  for (let x = 17; x < 42; x += 6) rect(g, c2, x, 52, 1, 10); for (let y = 55; y < 62; y += 4) rect(g, c2, 17, y, 25, 1);
+  rect(g, c2, 17, 61, 25, 1);
+  rect(g, '#6b4423', 7, 62, 35, 6); rect(g, '#7c5230', 7, 62, 35, 1); rect(g, '#4a2f17', 8, 68, 2, 4); rect(g, '#4a2f17', 39, 68, 2, 4);
+  // hero shadow
+  rect(g, 'rgba(0,0,0,.25)', 88, 77, 12, 2);
 
   // collectibles
-  const at = { shelf: [[92, 26], [104, 26], [116, 26]], wall: [[96, 31], [114, 31]], floor: [[50, 77], [68, 77], [118, 77]] };
+  const at = { shelf: [[97, 26], [108, 26], [119, 26]], wall: [[100, 32], [116, 32]], floor: [[50, 77], [68, 77], [118, 77]] };
   const used = { shelf: 0, wall: 0, floor: 0 };
   // rug first so floor items stand on it
   for (const k of [...items].sort((a, b) => (ITEMS[b].slot === 'rug') - (ITEMS[a].slot === 'rug'))) {
@@ -243,4 +275,29 @@ export function drawRoom(canvas, { who, color, items = [], dirt = 0, outfit = 'e
   }
   // the roommate, in their outfit
   drawHero(g, heroKey, 86, 54, { outfit });
+
+  // ---- light: follows the time of day (like the leaderboard sky)
+  const sunny = !grey && ['day', 'morning', 'golden', 'dawn'].includes(phase);
+  if (sunny) { // sunbeam from the window across the floor
+    g.fillStyle = phase === 'golden' || phase === 'dawn' ? 'rgba(255,190,110,.20)' : 'rgba(255,246,200,.20)';
+    g.beginPath(); g.moveTo(50, 34); g.lineTo(78, 34); g.lineTo(100, 80); g.lineTo(64, 80); g.closePath(); g.fill();
+  }
+  const tint = grey && phase !== 'night' ? 'rgba(60,70,85,.14)' : { morning: 'rgba(255,240,210,.05)', golden: 'rgba(255,160,80,.13)', dawn: 'rgba(255,160,120,.10)',
+    dusk: 'rgba(90,60,140,.24)', twilight: 'rgba(20,25,70,.40)', night: 'rgba(8,12,35,.56)' }[phase];
+  if (tint) rect(g, tint, 0, 0, ROOM_W, ROOM_H);
+  if (['night', 'twilight', 'dusk'].includes(phase)) { // the lamp is on
+    g.globalCompositeOperation = 'lighter';
+    for (let rad = 26; rad > 2; rad -= 4) { g.fillStyle = `rgba(255,200,110,${0.035})`; g.beginPath(); g.arc(23, 25, rad, 0, Math.PI * 2); g.fill(); }
+    g.globalCompositeOperation = 'source-over';
+    rect(g, '#fff3b0', 20, 22, 7, 4);
+  }
+  // ---- cut out the glass: the live sky (HTML layer behind the canvas) shows through; mullions + a faint reflection on top
+  const { x: wx, y: wy, w: ww, h: wh } = ROOM_WINDOW;
+  g.clearRect(wx, wy, ww, wh);
+  if (dirt >= 5) rect(g, 'rgba(110,120,100,.55)', wx, wy, ww, wh);
+  rect(g, 'rgba(255,255,255,.18)', wx + 3, wy + 2, 1, 6); rect(g, 'rgba(255,255,255,.18)', wx + 4, wy + 1, 1, 4); rect(g, 'rgba(255,255,255,.12)', wx + 17, wy + 13, 1, 5);
+  rect(g, '#f7f1e6', 63, wy, 1, wh); rect(g, '#f7f1e6', wx, 19, ww, 1); rect(g, '#d9d2c2', 64, wy, 1, wh); rect(g, '#d9d2c2', wx, 20, ww, 1);
+  // flower pot on the sill, in front of the glass (dimmed like the room at night)
+  rect(g, '#b45309', 71, 29, 6, 4); rect(g, '#92400e', 71, 32, 6, 1); rect(g, '#22c55e', 72, 26, 4, 3); rect(g, '#16a34a', 73, 25, 2, 1); rect(g, '#f472b6', 74, 24, 1, 1);
+  if (tint) rect(g, tint, 70, 23, 8, 10);
 }

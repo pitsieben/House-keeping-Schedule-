@@ -206,3 +206,22 @@ Template (one entry per completed step, newest last):
 - Changed: `js/props.js` `skyline(night)` (160×44 pixel sprite: Tibidabo hill + church, Montjuïc, Eixample blocks with windows, Sagrada Família with 8 facade spires and the central tower with its cross, Torre Glòries; night palette with lit windows), placed in `js/app.js` on the grass behind the heroes (`.skyline`, full scene width), night for dusk/twilight/night. Sagrada Família sits between the 1st and 2nd hero, Torre Glòries between the 2nd and 3rd, so they stay visible. Changelog #28.
 - Checked: headless screenshots by day, golden hour and night; no page errors; `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-22 Plants status bubble + notification
+- Changed: `js/app.js` `weekPlants(now)` (this week's Tuesday plants duty), `plantsPill(now)` under the captain/laundry line on Today all week (yellow open "not watered yet · until Tue midnight · +5", green "watered by X · day time", red "nobody watered" / fake), `notifyPlants()` (once per week when someone else waters them; first run on a phone only seeds `house-quest-plants-notified`); CSS `.plantpill`. Changelog #29.
+- Checked: headless Mon open / Tue + Thu watered / Thu skipped; notification fired on Hritik's phone when Paco watered after load; `npm test` passes.
+- Not verified: on a real phone.
+
+### 2026-11-22 More detailed rooms with a live window view
+- Changed: `js/rooms.js` `drawRoom` base redrawn (still 128×80): striped/patterned wallpaper with moulding and corner shading, baseboard, varied wooden planks with seams/knots, green shutters with slats, framed window + sill + flower pot, shelf with shadow (moved right, item slots shifted), wall lamp, quilted blanket in the roommate's colour, shadows under bed and hero; lighting by `phase`/`grey` (sunbeam by day, warm at golden hour, purple at dusk, dark at night with the lamp glowing); the glass (`ROOM_WINDOW`) is cut out of the canvas. `js/app.js` `roomsView`: `.roomsky` layer behind the canvas with the same live sky images/tint as the leaderboard and the pixel Barcelona skyline (`skyline(night)`). Changelog #30.
+- Checked: headless screenshots of Pit's room at 13:00, 16:50 and 23:00 and Paco's messy room; no page errors; `npm test` passes.
+- Not verified: on a real phone.
+
+### 2026-11-22 Linear leaderboard scale (1 pt = 1 m), skyline to scale
+- Changed: `js/app.js` `meters(p) = |p|`, `ptsOf(m) = m`, clamp −3,000 km … 400,000 km; `LAYERS` in real meters (roots −15, bones −60, bedrock −1 km, crust −35 km, mantles, core); ruler: tick every `niceStep(span)` (1-2-5 × 10ⁿ m) over the whole visible height, labels every tick or every other; Barcelona skyline scaled so its 44 rows = `SKYLINE_M` 110 m and anchored with the Sagrada Família at 34 % of the width (`SAGRADA_X`), slight haze. `js/props.js` skyline sprite widened to 320 px (more Eixample/hills); room window view re-anchored. Changelog #31.
+- Checked: headless with live scores (88/95/78 → around the Sagrada's top), near 0, underground (−45 with dinosaur), far (+600 with balloons); `npm test` passes.
+- Not verified: on a real phone.
+
+### 2026-11-22 Birds only above 100 m
+- Changed: `js/props.js` bird flocks moved from 8–70 m to 110 / 165 / 220 / 320 m (above the rooftops and the Sagrada Família).
+- Checked: headless: no flocks near the ground, 1 at the live scores (110 m), 4 when higher up.
