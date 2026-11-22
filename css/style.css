@@ -347,3 +347,22 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .note p { margin: 4px 0 2px; font-size: 12.5px; line-height: 1.35; }
 .note time { font-size: 10.5px; color: #6b5b44; }
 .banner.news .btn { margin-left: 6px; }
+
+/* continuous sky + landmarks (Ascent scene) */
+.scene .airgrad { position: absolute; left: 0; right: 0; top: 0; z-index: 0; }
+.scene .starfield { position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(1px 1px at 12% 18%, #fff 60%, transparent), radial-gradient(1px 1px at 37% 64%, #fff 60%, transparent), radial-gradient(1.5px 1.5px at 58% 28%, #fff 60%, transparent),
+    radial-gradient(1px 1px at 81% 77%, #fff 60%, transparent), radial-gradient(1px 1px at 24% 46%, #fffc 60%, transparent), radial-gradient(1.5px 1.5px at 70% 52%, #fff 60%, transparent),
+    radial-gradient(1px 1px at 92% 12%, #fff 60%, transparent), radial-gradient(1px 1px at 5% 88%, #fffb 60%, transparent);
+  background-size: 140px 120px; -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent); }
+.scene .sky { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 38%); mask-image: linear-gradient(to bottom, transparent 0, #000 38%); }
+.scene .props { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.scene .prop { position: absolute; transform: translate(-50%, -50%); image-rendering: pixelated; }
+.scene .prop.fly { animation: propfly var(--d, 30s) linear infinite; }
+.scene .prop.flyl { animation: propflyl var(--d, 30s) linear infinite; transform: translate(-50%, -50%) scaleX(-1); }
+.scene .prop.drift { animation: propfly var(--d, 80s) linear infinite; }
+.scene .prop.bob { animation: propbob 3.2s ease-in-out infinite; }
+@keyframes propfly { from { left: -12%; } to { left: 112%; } }
+@keyframes propflyl { from { left: 112%; } to { left: -12%; } }
+@keyframes propbob { 50% { margin-top: -5px; } }
+@media (prefers-reduced-motion: reduce) { .scene .prop { animation: none !important; } }
