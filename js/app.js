@@ -189,6 +189,24 @@ function dutyCard(duty, now, opts = {}) {
 
 const canSteal = (fake, now) => now.getTime() - fake.at < POINTS.stealWindowHours * 3600e3;
 
+// little status bubble (all week): have this week's plants been watered, and by whom?
+function weekPlants(now) {
+  const monday = addDays(startOfDay(now), -((now.getDay() + 6) % 7));
+  return dutiesForDate(addDays(monday, 1)).find((d) => d.anyone) || null;
+}
+function plantsPill(now) {
+  const d = weekPlants(now);
+  if (!d) return '';
+  const c = store.state.completions?.[d.id], st = statusOf(d, store.state, now), f = store.state.fakes?.[d.id];
+  let cls = 'todo', text;
+  if (c && !f) { cls = 'ok'; text = `💧 Plants watered by <b>${person(c.by).name}</b> · ${fmtDay(new Date(c.at))} ${fmtTime(new Date(c.at))} ✓`; }
+  else if (c && f) { cls = 'bad'; text = `🤥 Plants: ${person(c.by).name}'s watering was fake${f.stolenBy ? ` — watered by <b>${person(f.stolenBy).name}</b> ✓` : ''}`; }
+  else if (st === 'open') text = `🪴 Plants not watered yet · until Tue midnight · anyone <b>+${donePoints(d)}</b>`;
+  else if (st === 'skipped') { cls = 'bad'; text = '🥀 Nobody watered the plants this week'; }
+  else return '';
+  return `<div class="plantpill ${cls}">${text}</div>`;
+}
+
 // shared weekly task: anyone can do it, first one gets the points
 function plantsCard(duty, now) {
   const s = store.state, st = statusOf(duty, s, now), c = s.completions?.[duty.id], f = s.fakes?.[duty.id], flag = s.flags?.[duty.id];
@@ -515,6 +533,7 @@ function todayView(scores, now) {
   ${partyScene(scores)}
   <h2>Today · ${fmtDayLong(today)}</h2>
   <p class="muted tiny">👑 House Captain today: <b>${cap.name}</b> &nbsp;·&nbsp; 🧺 Laundry: <b>${lp ? person(lp).name : 'open to all'}</b></p>
+  ${plantsPill(now)}
   ${duties.filter((d) => d.kind === 'morning' || d.kind === 'evening').map((d) => dutyCard(d, now)).join('')}
   ${(() => { // plants: Monday and Tuesday
     const tue = today.getDay() === 1 ? addDays(today, 1) : today.getDay() === 2 ? today : null;
@@ -1142,7 +1161,19 @@ function notifyMessages() {
   }
   if (changed) localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...set].slice(-200)));
 }
+// notify when someone else waters the plants (once per week; not on the first load)
+const PLANTS_KEY = 'house-quest-plants-notified';
+function notifyPlants() {
+  if (!ui.me) return;
+  const d = weekPlants(getNow()), c = d && store.state.completions?.[d.id];
+  const seen = localStorage.getItem(PLANTS_KEY);
+  if (seen === null) { localStorage.setItem(PLANTS_KEY, c ? d.id : ''); return; } // first run on this phone: don't notify old news
+  if (!c || seen === d.id) return;
+  localStorage.setItem(PLANTS_KEY, d.id);
+  if (c.by !== ui.me) notify('🪴 Plants watered', `${person(c.by).name} watered the plants (+${donePoints(d)})`, `plants-${d.id}`);
+}
 store.subscribe(() => notifyMessages());
+store.subscribe(() => notifyPlants());
 store.subscribe(() => render());
 render();
 initUI().then(render);

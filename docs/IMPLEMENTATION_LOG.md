@@ -206,3 +206,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/props.js` `skyline(night)` (160×44 pixel sprite: Tibidabo hill + church, Montjuïc, Eixample blocks with windows, Sagrada Família with 8 facade spires and the central tower with its cross, Torre Glòries; night palette with lit windows), placed in `js/app.js` on the grass behind the heroes (`.skyline`, full scene width), night for dusk/twilight/night. Sagrada Família sits between the 1st and 2nd hero, Torre Glòries between the 2nd and 3rd, so they stay visible. Changelog #28.
 - Checked: headless screenshots by day, golden hour and night; no page errors; `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-22 Plants status bubble + notification
+- Changed: `js/app.js` `weekPlants(now)` (this week's Tuesday plants duty), `plantsPill(now)` under the captain/laundry line on Today all week (yellow open "not watered yet · until Tue midnight · +5", green "watered by X · day time", red "nobody watered" / fake), `notifyPlants()` (once per week when someone else waters them; first run on a phone only seeds `house-quest-plants-notified`); CSS `.plantpill`. Changelog #29.
+- Checked: headless Mon open / Tue + Thu watered / Thu skipped; notification fired on Hritik's phone when Paco watered after load; `npm test` passes.
+- Not verified: on a real phone.
