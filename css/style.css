@@ -379,7 +379,6 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .room .roomsky .skytint { position: absolute; inset: 0; background: #2b3441; }
 .room .roomsky .cityview { position: absolute; bottom: 0; left: -116%; width: 380%; max-width: none; image-rendering: pixelated; }
 .room .roomimg { position: relative; z-index: 1; }
-.room .roomsky .sagview { position: absolute; bottom: 0; left: 36%; height: 62%; width: auto; max-width: none; transform: translateX(-50%); image-rendering: pixelated; }
-.room .roomsky .cityview, .room .roomsky .sagview { opacity: .85; filter: saturate(.7); }
+.room .roomsky .cityview { opacity: .85; filter: saturate(.7); }
 .room .roomsky .haze { position: absolute; inset: 0; background: linear-gradient(to top, rgba(210,228,245,.45), rgba(210,228,245,.12) 70%, transparent); pointer-events: none; }
 .room .roomsky .haze.n { background: linear-gradient(to top, rgba(30,40,80,.4), rgba(30,40,80,.1) 70%, transparent); }

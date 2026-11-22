@@ -6,7 +6,7 @@ import {
 import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
-import { propsHtml, skyline, sagrada, sagradaSmall, SKYLINE_M, SAGRADA_M, SAGRADA_X } from './props.js';
+import { propsHtml, skyline, SKYLINE_M, SAGRADA_X } from './props.js';
 import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom, ROOM_W, ROOM_H, ROOM_WINDOW } from './rooms.js';
 import { store, REPO } from './store.js';
@@ -380,14 +380,10 @@ function partyScene(scores) {
   const starBot = Math.min(earthY0, yOf(ptsOf(2.5e4)));
   const stars = starBot > 0 ? `<i class="starfield" style="height:${starBot.toFixed(1)}px"></i>` : '';
   // Barcelona skyline standing on the grass (dark with lit windows at night)
-  // Barcelona skyline drawn to scale: the sprite's 44 rows = SKYLINE_M meters; the Sagrada Família is its own detailed sprite (SAGRADA_M tall)
-  const night = ['night', 'twilight', 'dusk'].includes(sky.phase), sk = skyline(night), sg = sagrada(night);
+  // Barcelona skyline drawn to scale: the sprite's 44 rows = SKYLINE_M meters (Sagrada Família's cross at the top)
+  const night = ['night', 'twilight', 'dusk'].includes(sky.phase), sk = skyline(night);
   const cityH = Math.max(6, earthY0 - yOf(SKYLINE_M)), cityW = cityH * sk.w / sk.h;
-  const sgH = Math.max(6, earthY0 - yOf(SAGRADA_M)), sgW = sgH * sg.w / sg.h;
-  const city = earthY0 > -10 && earthY0 - Math.max(cityH, sgH) < SCENE_H
-    ? `<img class="skyline" alt="" src="${sk.url}" style="top:${(earthY0 - 4).toFixed(1)}px;height:${cityH.toFixed(1)}px;width:${cityW.toFixed(1)}px;left:calc(34% - ${(cityW * SAGRADA_X).toFixed(1)}px)">`
-      + `<img class="skyline" alt="Sagrada Família" src="${sg.url}" style="top:${(earthY0 - 4).toFixed(1)}px;height:${sgH.toFixed(1)}px;width:${sgW.toFixed(1)}px;left:calc(34% - ${(sgW / 2).toFixed(1)}px)">`
-    : '';
+  const city = earthY0 > -10 && earthY0 - cityH < SCENE_H ? `<img class="skyline" alt="" src="${sk.url}" style="top:${(earthY0 - 4).toFixed(1)}px;height:${cityH.toFixed(1)}px;width:${cityW.toFixed(1)}px;left:calc(34% - ${(cityW * SAGRADA_X).toFixed(1)}px)">` : '';
   const props = `<div class="props">${city}${propsHtml(ptsOf, yOf, SCENE_H, { minPts: PTS_MIN, maxPts: PTS_MAX })}</div>`;
   const skyHtml = skyBot - skyTop > 6 ? `<div class="sky" style="top:${skyTop.toFixed(1)}px;height:${(skyBot - skyTop).toFixed(1)}px">
     <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
@@ -614,7 +610,7 @@ function roomsView(scores, now) {
   // the window shows the same live sky as the leaderboard, with Barcelona outside
   const W = ROOM_WINDOW, pc = (v, of) => `${(v / of * 100).toFixed(3)}%`;
   const view = `<div class="roomsky" style="left:${pc(W.x, ROOM_W)};top:${pc(W.y, ROOM_H)};width:${pc(W.w, ROOM_W)};height:${pc(W.h, ROOM_H)};background-color:${skyStops(sky.phase, grey)[0][1]}">
-    <i class="skyimg" style="background-image:${sky.image}"></i>${sky.tint ? `<i class="skytint" style="opacity:${sky.tint}"></i>` : ''}<img class="cityview" alt="" src="${skyline(night).url}"><img class="sagview" alt="" src="${sagradaSmall(night).url}"><i class="haze ${night ? 'n' : ''}"></i></div>`;
+    <i class="skyimg" style="background-image:${sky.image}"></i>${sky.tint ? `<i class="skytint" style="opacity:${sky.tint}"></i>` : ''}<img class="cityview" alt="" src="${skyline(night).url}"><i class="haze ${night ? 'n' : ''}"></i></div>`;
   const flies = dirt >= 4 ? [12, 30, 55, 78].map((x, i) => `<i class="fly" style="left:${x}%;top:${50 + (i % 2) * 14}%;animation-delay:-${i * 0.7}s"></i>`).join('') : '';
   const month = ymd(now).slice(0, 7);
   const monthName = now.toLocaleDateString('en-GB', { month: 'long' });

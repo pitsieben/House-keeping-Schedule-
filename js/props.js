@@ -147,58 +147,22 @@ export function skyline(night) {
       for (let wy = H - h + 2; wy < H - 1; wy += 3) for (let wx = x + 1; wx < x + w - 1; wx += 2) r(rnd() > (night ? 0.55 : 0.2) ? P.win : P.winOff, wx, wy);
       x += w + (rnd() > 0.7 ? 1 : 0);
     }
-    // (the Sagrada Família is its own detailed sprite, see sagrada())
+    // Sagrada Família: four facade towers on each side, tall central tower with its cross
+    const spire = (cx, top, w, col, sh) => {
+      for (let y = top; y < H; y++) { const ww = Math.max(1, Math.min(w, 1 + Math.floor((y - top) / 3))); r(col, cx - Math.floor(ww / 2), y, ww, 1); if (ww > 2) r(sh, cx + Math.ceil(ww / 2) - 1, y, 1, 1); }
+      r(col, cx - 1, top - 1, 3, 1); r(col, cx, top - 2, 1, 1);
+    };
+    const sx = Math.round(SAGRADA_X * 320);
+    r(P.stone2, sx - 15, H - 14, 30, 14); r(P.stone, sx - 14, H - 13, 28, 13);
+    for (const [dx, top] of [[-12, 15], [-9, 11], [-6, 12], [-3, 16], [3, 16], [6, 12], [9, 11], [12, 15]]) spire(sx + dx, top, 4, P.stone, P.stone2);
+    spire(sx, 3, 6, P.stone, P.stone2);                                                              // Tower of Jesus Christ
+    r(night ? '#fde68a' : '#f8fafc', sx - 1, 1, 3, 1); r(night ? '#fde68a' : '#f8fafc', sx, 0, 1, 3);   // cross
+    for (let y = H - 11; y < H - 2; y += 3) r(night ? P.win : P.stone2, sx - 1, y, 3, 1);
     // Torre Glòries
     const gx = 188;
     for (let y = 14; y < H; y++) { const top = y - 14, ww = top < 3 ? 3 + top * 2 : 9; r(P.glass, gx - Math.floor(ww / 2), y, ww, 1); }
     for (let y = 18; y < H - 1; y += 2) for (let x = gx - 3; x < gx + 4; x += 2) r((x + y) % 3 ? P.win : P.glass, x, y);
     r(P.glass, gx, 12, 1, 2);
-  });
-}
-
-// ---------- Sagrada Família for the leaderboard (48 × 88 px, medium detail) ----------
-export const SAGRADA_M = 110;
-export function sagrada(night) {
-  return sprite(`sagrada${night ? 'n' : 'd'}`, 48, 88, (r) => {
-    const P = night
-      ? { s: '#4c4c66', m: '#3e3e56', d: '#30304a', win: '#f6c55c', glass: '#e9a94a', red: '#a04545', yel: '#d9ad4e', wht: '#ece6d4' }
-      : { s: '#dcc8a2', m: '#c2aa82', d: '#9f8963', win: '#6f5d43', glass: '#6d8db5', red: '#c0392b', yel: '#e9b949', wht: '#f6f1e6' };
-    const H = 88;
-    // tapering spire: light face, shaded right side, a few window slits
-    const tower = (cx, top, baseW, bottom) => {
-      for (let y = top; y < bottom; y++) {
-        const w = Math.max(2, Math.round(baseW * Math.sqrt((y - top) / (bottom - top)) + 0.6)), x0 = cx - Math.floor(w / 2);
-        r(P.s, x0, y, w, 1); r(P.m, x0 + w - 1, y, 1, 1);
-        if (w >= 4 && (y - top) % 10 === 6) r(P.win, cx - 1, y, 1, 2);
-      }
-    };
-    const tip = (cx, top) => { r(P.s, cx - 1, top - 1, 2, 1); r(P.s, cx - 1, top - 2, 1, 1); };   // plain stone point
-    tower(19, 14, 5, 70); tower(29, 15, 5, 70);                              // evangelist towers (behind)
-    tower(24, 6, 8, 72);                                                     // Tower of Jesus Christ
-    r(P.wht, 23, 0, 2, 6); r(P.wht, 21, 2, 6, 2);                           // cross
-    for (const [cx, top] of [[5, 22], [9, 16], [13, 15], [17, 21]]) { tower(cx, top, 4, 74); tip(cx, top); }   // Nativity façade
-    for (const [cx, top] of [[31, 21], [35, 15], [39, 16], [43, 22]]) { tower(cx, top, 4, 74); tip(cx, top); } // Passion façade
-    // nave with two gables, rose window, a few windows and portals
-    r(P.s, 1, 72, 46, 16); r(P.m, 1, 85, 46, 3);
-    for (let i = 0; i < 6; i++) { r(P.s, 11 - i, 66 + i, 2 * i + 2, 1); r(P.s, 37 - i, 66 + i, 2 * i + 2, 1); }
-    for (const x of [4, 10, 34, 40]) { r(P.glass, x, 75, 2, 4); }
-    for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 5) r(P.glass, 24 + x, 77 + y, 1, 1);
-    for (const x of [7, 13, 31, 37]) r(P.d, x, 81, 3, 7);
-  });
-}
-// small, simple version for the room window (like the original skyline drawing)
-export function sagradaSmall(night) {
-  return sprite(`sagradaS${night ? 'n' : 'd'}`, 30, 44, (r) => {
-    const stone = night ? '#3b3f5c' : '#d4bd8e', stone2 = night ? '#30344f' : '#b49a6c', H = 44;
-    const spire = (cx, top, w) => {
-      for (let y = top; y < H; y++) { const ww = Math.max(1, Math.min(w, 1 + Math.floor((y - top) / 3))); r(stone, cx - Math.floor(ww / 2), y, ww, 1); if (ww > 2) r(stone2, cx + Math.ceil(ww / 2) - 1, y, 1, 1); }
-      r(stone, cx - 1, top - 1, 3, 1); r(stone, cx, top - 2, 1, 1);
-    };
-    const sx = 15;
-    r(stone2, sx - 15, H - 14, 30, 14); r(stone, sx - 14, H - 13, 28, 13);
-    for (const [dx, top] of [[-12, 15], [-9, 11], [-6, 12], [-3, 16], [3, 16], [6, 12], [9, 11], [12, 15]]) spire(sx + dx, top, 4);
-    spire(sx, 3, 6);
-    r(night ? '#fde68a' : '#f8fafc', sx - 1, 1, 3, 1); r(night ? '#fde68a' : '#f8fafc', sx, 0, 1, 3);
   });
 }
 

@@ -1,8 +1,8 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
-  { id: 32, date: '2026-11-22', emoji: '⛪', title: 'Sharper Sagrada Família',
-    text: 'The Sagrada Família on the leaderboard is sharper and solid (no more see-through clouds): bell towers, the central tower with its cross, lit windows at night. Through your room window the city is simpler and a little hazy, like far away.' },
+  { id: 32, date: '2026-11-22', emoji: '⛪', title: 'Solid skyline, hazy window view',
+    text: 'The Barcelona skyline on the leaderboard is no longer see-through (no more clouds showing through the Sagrada Família), and the view from your room window is a little hazy, like far away.' },
   { id: 31, date: '2026-11-22', emoji: '📏', title: 'Real-size leaderboard',
     text: 'The leaderboard is now linear: 1 point = 1 meter. Barcelona is drawn to the same scale: rooftops at 15–30 m, the Sagrada Família ≈ 110 m. The ruler adapts as the view zooms out.' },
   { id: 30, date: '2026-11-22', emoji: '🛏', title: 'Cosier rooms',

@@ -226,15 +226,6 @@ Template (one entry per completed step, newest last):
 - Changed: `js/props.js` bird flocks moved from 8–70 m to 110 / 165 / 220 / 320 m (above the rooftops and the Sagrada Família).
 - Checked: headless: no flocks near the ground, 1 at the live scores (110 m), 4 when higher up.
 
-### 2026-11-22 Detailed, opaque Sagrada Família
-- Changed: `js/props.js` new `sagrada(night)` sprite (64×120 px ≈ 1 px/m, `SAGRADA_M` 110): evangelist towers + Virgin Mary star, central Tower of Jesus with cross, 4+4 bell towers with slits, bands and mosaic finials, nave with gables, buttresses, gothic windows, rose window, portals; night palette with lit windows. Removed from the 320-px skyline sprite. `js/app.js` draws it as its own image anchored at 34 %; skyline no longer semi-transparent (was opacity .72, so clouds showed through). Room window view shows it too. Changelog #32.
-- Checked: headless at night and by day with live-like scores (118/98/78) and zoomed in near 0; room window; `npm test` passes.
-- Not verified: on a real phone.
-
-### 2026-11-22 Sagrada Família: medium detail; simple + hazy in the room window
-- Changed: `js/props.js` `sagrada()` reduced to 48×88 px (no bands/buttresses, fewer slits and windows, small coloured tips); new `sagradaSmall()` (the original 30×44 spire drawing) for the room window. `js/app.js` room view uses `sagradaSmall` + a `.haze` layer (light by day, bluish at night); city/Sagrada in the window slightly faded/desaturated.
-- Checked: headless leaderboard by day/night (118/98/78), room window by day/night; `npm test` passes.
-
-### 2026-11-22 Sagrada Família: plain tower tips
-- Changed: `js/props.js` `sagrada()` bell-tower tips are plain stone (no red/yellow); changelog #32 text adjusted.
-- Checked: headless by day and night.
+### 2026-11-22 Skyline opaque, hazy room window (detailed Sagrada reverted)
+- Changed: reverted the separate detailed Sagrada Família sprites (user preferred the original skyline drawing); `.scene .skyline` no longer semi-transparent (opacity/saturate removed); room window: `.haze` layer (light by day, bluish at night) and the city slightly faded. Changelog #32.
+- Checked: headless leaderboard by day/night (118/98/78) and room window; `npm test` passes.
