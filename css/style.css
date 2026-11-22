@@ -366,7 +366,7 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 @keyframes propflyl { from { left: 112%; } to { left: -12%; } }
 @keyframes propbob { 50% { margin-top: -5px; } }
 @media (prefers-reduced-motion: reduce) { .scene .prop { animation: none !important; } }
-.scene .skyline { position: absolute; max-width: none; transform: translateY(-100%); image-rendering: pixelated; opacity: .72; filter: saturate(.75); } /* far away: a bit of haze */
+.scene .skyline { position: absolute; max-width: none; transform: translateY(-100%); image-rendering: pixelated; }
 /* plants status bubble on Today (pixel speech bubble with a tail on the left) */
 .plantpill { position: relative; display: inline-block; margin: 4px 0 10px 10px; padding: 6px 10px; font-size: 12.5px; color: #15171a; background: #fdfdfb;
   border: 3px solid #101214; box-shadow: 0 3px 0 #0004; }
@@ -379,3 +379,6 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .room .roomsky .skytint { position: absolute; inset: 0; background: #2b3441; }
 .room .roomsky .cityview { position: absolute; bottom: 0; left: -116%; width: 380%; max-width: none; image-rendering: pixelated; }
 .room .roomimg { position: relative; z-index: 1; }
+.room .roomsky .cityview { opacity: .85; filter: saturate(.7); }
+.room .roomsky .haze { position: absolute; inset: 0; background: linear-gradient(to top, rgba(210,228,245,.45), rgba(210,228,245,.12) 70%, transparent); pointer-events: none; }
+.room .roomsky .haze.n { background: linear-gradient(to top, rgba(30,40,80,.4), rgba(30,40,80,.1) 70%, transparent); }
