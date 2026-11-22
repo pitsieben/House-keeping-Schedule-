@@ -121,6 +121,47 @@ const PROPS = [
   { m: -12262, x: 44, s: borehole },
 ];
 
+// ---------- Barcelona skyline at ground level (160 × 44 px): Tibidabo, Eixample, Sagrada Família, Torre Glòries, Montjuïc ----------
+export function skyline(night) {
+  return sprite(`skyline${night ? 'n' : 'd'}`, 160, 44, (r) => {
+    const P = night
+      ? { hill: '#1c2547', hill2: '#232d55', city: '#2a3358', city2: '#323c66', stone: '#3b3f5c', stone2: '#30344f', glass: '#2b4a7a', win: '#fcd34d', winOff: '#3a4470' }
+      : { hill: '#86a6c6', hill2: '#9bb7d2', city: '#a7bcd0', city2: '#b7c9da', stone: '#d4bd8e', stone2: '#b49a6c', glass: '#5b8fcf', win: '#e8f1fb', winOff: '#93aac2' };
+    const H = 44;
+    // hills: Tibidabo (left, with its church) and Montjuïc (right, low)
+    for (let x = 0; x < 160; x++) {
+      const tib = Math.max(0, 22 - Math.abs(x - 26) * 0.55), mont = Math.max(0, 12 - Math.abs(x - 140) * 0.4);
+      const h = Math.round(Math.max(tib, mont));
+      if (h) r(P.hill, x, H - 8 - h, 1, h);
+    }
+    r(P.hill2, 24, H - 33, 4, 4); r(P.hill2, 25, H - 37, 2, 4); r(P.hill2, 25, H - 39, 1, 2);       // Tibidabo church
+    // Eixample blocks (with windows)
+    let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    for (let x = 0; x < 160;) {
+      const w = 5 + Math.floor(rnd() * 6), h = 6 + Math.floor(rnd() * 7);
+      r(rnd() > 0.5 ? P.city : P.city2, x, H - h, w, h);
+      for (let wy = H - h + 2; wy < H - 1; wy += 3) for (let wx = x + 1; wx < x + w - 1; wx += 2) r(rnd() > (night ? 0.55 : 0.2) ? P.win : P.winOff, wx, wy);
+      x += w + (rnd() > 0.7 ? 1 : 0);
+    }
+    // Sagrada Família: four facade towers on each side, tall central tower with its cross
+    const spire = (cx, top, w, col, sh) => {
+      for (let y = top; y < H; y++) { const ww = Math.max(1, Math.min(w, 1 + Math.floor((y - top) / 3))); r(col, cx - Math.floor(ww / 2), y, ww, 1); if (ww > 2) r(sh, cx + Math.ceil(ww / 2) - 1, y, 1, 1); }
+      r(col, cx - 1, top - 1, 3, 1); r(col, cx, top - 2, 1, 1);                                     // pinnacle
+    };
+    const sx = 53; // between the first two heroes, so it stays visible
+    r(P.stone2, sx - 15, H - 14, 30, 14); r(P.stone, sx - 14, H - 13, 28, 13);                       // nave
+    for (const [dx, top] of [[-12, 15], [-9, 11], [-6, 12], [-3, 16], [3, 16], [6, 12], [9, 11], [12, 15]]) spire(sx + dx, top, 4, P.stone, P.stone2);
+    spire(sx, 3, 6, P.stone, P.stone2);                                                              // Tower of Jesus Christ
+    r(night ? '#fde68a' : '#f8fafc', sx - 1, 1, 3, 1); r(night ? '#fde68a' : '#f8fafc', sx, 0, 1, 3);   // cross
+    for (let y = H - 11; y < H - 2; y += 3) r(night ? P.win : P.stone2, sx - 1, y, 3, 1);
+    // Torre Glòries (rounded tower with lit dots)
+    const gx = 108; // Torre Glòries, in the gap on the right
+    for (let y = 14; y < H; y++) { const top = y - 14, ww = top < 3 ? 3 + top * 2 : 9; r(P.glass, gx - Math.floor(ww / 2), y, ww, 1); }
+    for (let y = 18; y < H - 1; y += 2) for (let x = gx - 3; x < gx + 4; x += 2) r((x + y) % 3 ? P.win : P.glass, x, y);
+    r(P.glass, gx, 12, 1, 2);
+  });
+}
+
 /**
  * HTML for the landmarks currently in view. ptsOf(m) → points for a height in meters, yOf(pts) → pixel row.
  * scale: CSS px per sprite pixel.

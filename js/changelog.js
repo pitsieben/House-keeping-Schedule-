@@ -1,6 +1,8 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
+  { id: 28, date: '2026-11-22', emoji: '⛪', title: 'Barcelona skyline',
+    text: 'At ground level the leaderboard now shows Barcelona: the Sagrada Família, Torre Glòries, the Eixample and the hills of Tibidabo and Montjuïc, with lit windows at night.' },
   { id: 27, date: '2026-11-22', emoji: '🎈', title: 'Endless sky (and underground)',
     text: 'The leaderboard sky now flows smoothly from the clouds into space. On the way up you pass birds, balloons, a little house on balloons, planes, satellites, space junk, the ISS and the Moon; down below: fossils, dinosaur skeletons, treasure chests, nuclear waste, mines and the deepest borehole.' },
   { id: 26, date: '2026-11-22', emoji: '⭐', title: 'New levels',

@@ -366,3 +366,4 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 @keyframes propflyl { from { left: 112%; } to { left: -12%; } }
 @keyframes propbob { 50% { margin-top: -5px; } }
 @media (prefers-reduced-motion: reduce) { .scene .prop { animation: none !important; } }
+.scene .skyline { position: absolute; left: 0; width: 100%; transform: translateY(-100%); image-rendering: pixelated; opacity: .95; }
