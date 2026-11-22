@@ -366,7 +366,7 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 @keyframes propflyl { from { left: 112%; } to { left: -12%; } }
 @keyframes propbob { 50% { margin-top: -5px; } }
 @media (prefers-reduced-motion: reduce) { .scene .prop { animation: none !important; } }
-.scene .skyline { position: absolute; left: 0; width: 100%; transform: translateY(-100%); image-rendering: pixelated; opacity: .95; }
+.scene .skyline { position: absolute; max-width: none; transform: translateY(-100%); image-rendering: pixelated; opacity: .72; filter: saturate(.75); } /* far away: a bit of haze */
 /* plants status bubble on Today (pixel speech bubble with a tail on the left) */
 .plantpill { position: relative; display: inline-block; margin: 4px 0 10px 10px; padding: 6px 10px; font-size: 12.5px; color: #15171a; background: #fdfdfb;
   border: 3px solid #101214; box-shadow: 0 3px 0 #0004; }
@@ -377,5 +377,5 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .room .roomsky { position: absolute; overflow: hidden; z-index: 0; }
 .room .roomsky .skyimg { position: absolute; inset: 0; background-size: cover; background-position: center bottom; image-rendering: pixelated; }
 .room .roomsky .skytint { position: absolute; inset: 0; background: #2b3441; }
-.room .roomsky .cityview { position: absolute; bottom: 0; left: -22%; width: 190%; image-rendering: pixelated; }
+.room .roomsky .cityview { position: absolute; bottom: 0; left: -116%; width: 380%; max-width: none; image-rendering: pixelated; }
 .room .roomimg { position: relative; z-index: 1; }

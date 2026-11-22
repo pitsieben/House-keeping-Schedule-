@@ -6,7 +6,7 @@ import {
 import { spriteURL, planeURL, OUTFITS, OUTFIT_KEYS } from './sprites.js';
 import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
-import { propsHtml, skyline } from './props.js';
+import { propsHtml, skyline, SKYLINE_M, SAGRADA_X } from './props.js';
 import { groundTexture, grassEdge } from './ground.js';
 import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom, ROOM_W, ROOM_H, ROOM_WINDOW } from './rooms.js';
 import { store, REPO } from './store.js';
@@ -278,12 +278,11 @@ function hearts(n) { return '❤'.repeat(Math.max(0, 3 - n)) + '🖤'.repeat(Mat
 // ---- The Ascent: points → altitude. 1 point ≈ a log step: meters = 10^(|pts|/20) − 1 (above the ground = up, below = digging down).
 // The camera zooms out to keep all three of you (and the ground) in view.
 const SCENE_H = 560, HERO_W = 84; // sprite is 16×29 px → height = width × 29/16
-// Points → altitude on a log scale: ×10 every 50 points, so 100 pts ≈ 100 m, 200 ≈ 10 km, 250 ≈ space (100 km), ~430 = the Moon.
-const PTS_PER_DECADE = 50;
-const PTS_MIN = -325, PTS_MAX = 430;   // magma hell … the Moon: the ends of the scale
+// Points → altitude, linear: 1 point = 1 meter. Buildings are ~15–30 m, the Sagrada Família ~110 m to its cross.
+const PTS_MIN = -3e6, PTS_MAX = 4e8;   // the core … the Moon: the ends of the scale
 const clampPts = (p) => Math.max(PTS_MIN, Math.min(PTS_MAX, p));
-const meters = (p) => 10 ** (Math.abs(p) / PTS_PER_DECADE) - 1;
-const ptsOf = (m) => Math.sign(m) * PTS_PER_DECADE * Math.log10(Math.abs(m) + 1); // meters (negative = depth) → points
+const meters = (p) => Math.abs(p);
+const ptsOf = (m) => m; // meters (negative = depth) → points
 // one continuous sky from the ground to space: colour stops by height (m), the low part follows the time of day / weather
 function skyStops(phase, grey) {
   const low = grey && phase !== 'night' ? ['#a3b1bf', '#7f92a7'] : {
@@ -304,30 +303,31 @@ function fmtMeters(p) {
   return `${(km / 1000).toFixed(km < 1e4 ? 1 : 0)}k km`;
 }
 // ascending by points; each layer runs from its `from` up to the next layer's `from`
-const LAYERS = [
+const LAYERS = [ // heights in meters (= points)
   { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames', tex: 'magma' },
-  { from: -325, name: 'Lower mantle', color: '#b3331a', tex: 'mantle' },
-  { from: -288, name: 'Upper mantle', color: '#8a2c16', tex: 'mantle' },
-  { from: -228, name: "Earth's crust", color: '#5c4a44', tex: 'crust' },
-  { from: -150, name: 'Bedrock', color: '#55575c', tex: 'rock' },
-  { from: -85, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones', tex: 'sand' },
-  { from: -50, name: 'Roots & worms', color: '#5d3f25', tex: 'dirt' },
+  { from: -2.9e6, name: 'Lower mantle', color: '#b3331a', tex: 'mantle' },
+  { from: -6.6e5, name: 'Upper mantle', color: '#8a2c16', tex: 'mantle' },
+  { from: -3.5e4, name: "Earth's crust", color: '#5c4a44', tex: 'crust' },
+  { from: -1000, name: 'Bedrock', color: '#55575c', tex: 'rock' },
+  { from: -60, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones', tex: 'sand' },
+  { from: -15, name: 'Roots & worms', color: '#5d3f25', tex: 'dirt' },
   { from: 0, name: 'Ground level', color: '#8fd3f7' },
-  { from: 50, name: 'Birds & rooftops', color: '#7cc4f5' },
-  { from: 100, name: 'Skyscrapers', color: '#62b2ec' },
-  { from: 150, name: 'Clouds', color: '#4b9ae0', deco: 'clouds' },
-  { from: 200, name: 'Airliners', color: '#3169ad' },
-  { from: 235, name: 'Edge of space', color: '#1f3b78' },
-  { from: 250, name: '🚀 SPACE', color: '#0a0e2c', deco: 'stars' },
-  { from: 280, name: 'Orbit (ISS)', color: '#070a20', deco: 'stars' },
-  { from: 375, name: 'Geostationary', color: '#05071a', deco: 'stars' },
-  { from: 430, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
+  { from: 30, name: 'Birds & rooftops', color: '#7cc4f5' },
+  { from: 150, name: 'Skyscrapers', color: '#62b2ec' },
+  { from: 1000, name: 'Clouds', color: '#4b9ae0', deco: 'clouds' },
+  { from: 1e4, name: 'Airliners', color: '#3169ad' },
+  { from: 5e4, name: 'Edge of space', color: '#1f3b78' },
+  { from: 1e5, name: '🚀 SPACE', color: '#0a0e2c', deco: 'stars' },
+  { from: 4e5, name: 'Orbit (ISS)', color: '#070a20', deco: 'stars' },
+  { from: 3.58e7, name: 'Geostationary', color: '#05071a', deco: 'stars' },
+  { from: 3.84e8, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
 ];
 
 const fmtDist = (m) => (m < 1000 ? `${m} m` : `${(m / 1000).toLocaleString('en-US')} km`);
 
 function niceStep(span) {
-  return [5, 10, 20, 25, 50, 100].find((st) => span / st <= 9) || 200;
+  for (let e = 1; e < 1e12; e *= 10) for (const k of [1, 2, 5]) if (span / (k * e) <= 8) return k * e;
+  return 1e12;
 }
 
 function partyScene(scores) {
@@ -380,35 +380,26 @@ function partyScene(scores) {
   const starBot = Math.min(earthY0, yOf(ptsOf(2.5e4)));
   const stars = starBot > 0 ? `<i class="starfield" style="height:${starBot.toFixed(1)}px"></i>` : '';
   // Barcelona skyline standing on the grass (dark with lit windows at night)
+  // Barcelona skyline drawn to scale: the sprite's 44 rows = SKYLINE_M meters (Sagrada Família's cross at the top)
   const night = ['night', 'twilight', 'dusk'].includes(sky.phase), sk = skyline(night);
-  const city = earthY0 > -10 && earthY0 < SCENE_H + 140 ? `<img class="skyline" alt="" src="${sk.url}" style="top:${(earthY0 - 8).toFixed(1)}px">` : '';
+  const cityH = Math.max(6, earthY0 - yOf(SKYLINE_M)), cityW = cityH * sk.w / sk.h;
+  const city = earthY0 > -10 && earthY0 - cityH < SCENE_H ? `<img class="skyline" alt="" src="${sk.url}" style="top:${(earthY0 - 4).toFixed(1)}px;height:${cityH.toFixed(1)}px;width:${cityW.toFixed(1)}px;left:calc(34% - ${(cityW * SAGRADA_X).toFixed(1)}px)">` : '';
   const props = `<div class="props">${city}${propsHtml(ptsOf, yOf, SCENE_H, { minPts: PTS_MIN, maxPts: PTS_MAX })}</div>`;
   const skyHtml = skyBot - skyTop > 6 ? `<div class="sky" style="top:${skyTop.toFixed(1)}px;height:${(skyBot - skyTop).toFixed(1)}px">
     <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
 
   const earthY = yOf(0);
-  // ruler: plain tick lines every 25 points (longer every 50 = each ×10 in meters)
+  // ruler (linear): a tick every `step` meters, labelled every other tick (or every tick when there's room)
   const ruler = [];
-  for (let p = Math.ceil(lo / 25) * 25; p <= hi; p += 25) {
+  const step = niceStep(hi - lo), pxPer = (yBot - yTop) / (hi - lo), labelEvery = step * pxPer >= 26 ? 1 : 2;
+  const pAt = (y) => hi - (y - yTop) / pxPer;                       // whole visible height, not just lo…hi
+  for (let p = Math.ceil(pAt(SCENE_H) / step) * step, i = 0; p <= pAt(0); p += step, i++) {
     const y = yOf(p);
     if (y < 4 || y > SCENE_H - 4 || p < PTS_MIN || p > PTS_MAX) continue;
-    ruler.push(`<i class="tk ${p % 50 === 0 ? 'major' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px"></i>`);
+    const label = p !== 0 && Math.round(p / step) % labelEvery === 0 ? `<b>${p < 0 ? '−' : ''}${fmtDist(Math.abs(p))}</b>` : '';
+    ruler.push(`<i class="tk ${label ? 'mark' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px">${label}</i>`);
   }
-  // small distance labels: 50 m, then round 1-2-5 steps (100 m, 200 m, 500 m, 1 km …) (skipped when too close together)
-  const marks = [10, 20, 50];
-  for (let e = 100; e <= 1e9; e *= 10) marks.push(e, 2 * e, 5 * e);
-  for (const dir of [1, -1]) {
-    let last = yOf(0);
-    for (const m of marks) {
-      const p = dir * PTS_PER_DECADE * Math.log10(m + 1);
-      if (p < PTS_MIN || p > PTS_MAX) break;
-      const y = yOf(p);
-      if (y < 8 || y > SCENE_H - 8) continue;
-      if (Math.abs(y - last) < 26) continue;
-      last = y;
-      ruler.push(`<i class="tk mark" style="top:${y.toFixed(1)}px"><b>${dir < 0 ? '−' : ''}${fmtDist(m)}</b></i>`);
-    }
-  }
+
 
   const heroes = ROOMMATES.map((r, i) => {
     const o = scores[r.id];

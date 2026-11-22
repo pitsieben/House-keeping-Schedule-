@@ -216,3 +216,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/rooms.js` `drawRoom` base redrawn (still 128×80): striped/patterned wallpaper with moulding and corner shading, baseboard, varied wooden planks with seams/knots, green shutters with slats, framed window + sill + flower pot, shelf with shadow (moved right, item slots shifted), wall lamp, quilted blanket in the roommate's colour, shadows under bed and hero; lighting by `phase`/`grey` (sunbeam by day, warm at golden hour, purple at dusk, dark at night with the lamp glowing); the glass (`ROOM_WINDOW`) is cut out of the canvas. `js/app.js` `roomsView`: `.roomsky` layer behind the canvas with the same live sky images/tint as the leaderboard and the pixel Barcelona skyline (`skyline(night)`). Changelog #30.
 - Checked: headless screenshots of Pit's room at 13:00, 16:50 and 23:00 and Paco's messy room; no page errors; `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-22 Linear leaderboard scale (1 pt = 1 m), skyline to scale
+- Changed: `js/app.js` `meters(p) = |p|`, `ptsOf(m) = m`, clamp −3,000 km … 400,000 km; `LAYERS` in real meters (roots −15, bones −60, bedrock −1 km, crust −35 km, mantles, core); ruler: tick every `niceStep(span)` (1-2-5 × 10ⁿ m) over the whole visible height, labels every tick or every other; Barcelona skyline scaled so its 44 rows = `SKYLINE_M` 110 m and anchored with the Sagrada Família at 34 % of the width (`SAGRADA_X`), slight haze. `js/props.js` skyline sprite widened to 320 px (more Eixample/hills); room window view re-anchored. Changelog #31.
+- Checked: headless with live scores (88/95/78 → around the Sagrada's top), near 0, underground (−45 with dinosaur), far (+600 with balloons); `npm test` passes.
+- Not verified: on a real phone.
