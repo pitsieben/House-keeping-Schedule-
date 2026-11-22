@@ -343,6 +343,10 @@
   "1795365569009-3few": {
    "t": 1795365569009,
    "text": "🛡 Admin removed Pit's steal"
+  },
+  "1795365569655-fvit": {
+   "t": 1795365569655,
+   "text": "🛡 Admin cleared the fake on Hritik's weekly cleaning: shared bathroom (pit & hritik)"
   }
  },
  "admin": {
@@ -431,12 +435,7 @@
    "confirmedAt": 1795347914104
   }
  },
- "fakes": {
-  "2026-11-22:bath": {
-   "by": "pit",
-   "at": 1795365422483
-  }
- },
+ "fakes": {},
  "outfits": {
   "pit": "tracksuit"
  }
