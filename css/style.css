@@ -373,3 +373,9 @@ input { border: 2px solid #3f4752; border-bottom-color: #000; }
 .plantpill::before { content: ''; position: absolute; left: -10px; top: 50%; margin-top: -5px; border: 5px solid transparent; border-right: 7px solid #101214; }
 .plantpill.ok { background: #dcfce7; } .plantpill.bad { background: #fde2e2; } .plantpill.todo { background: #fef9c3; }
 .plantpill b { font-weight: 800; }
+/* room window: live sky + Barcelona behind the (transparent) glass of the room picture */
+.room .roomsky { position: absolute; overflow: hidden; z-index: 0; }
+.room .roomsky .skyimg { position: absolute; inset: 0; background-size: cover; background-position: center bottom; image-rendering: pixelated; }
+.room .roomsky .skytint { position: absolute; inset: 0; background: #2b3441; }
+.room .roomsky .cityview { position: absolute; bottom: 0; left: -22%; width: 190%; image-rendering: pixelated; }
+.room .roomimg { position: relative; z-index: 1; }

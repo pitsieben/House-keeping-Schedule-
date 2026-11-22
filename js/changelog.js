@@ -1,6 +1,8 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
+  { id: 30, date: '2026-11-22', emoji: '🛏', title: 'Cosier rooms',
+    text: 'Rooms are more detailed: wallpaper, wooden floor, green Barcelona shutters, a quilted blanket in your colour and a wall lamp. The window shows the same live sky as the leaderboard with the Sagrada Família outside, and the light follows the time of day (sunbeam by day, lamp on at night).' },
   { id: 29, date: '2026-11-22', emoji: '💧', title: 'Plants status bubble',
     text: 'The Today tab now shows all week whether the plants have been watered and by whom (yellow: not yet, green: watered, red: nobody did it). With notifications on, you get a ping when someone waters them.' },
   { id: 28, date: '2026-11-22', emoji: '⛪', title: 'Barcelona skyline',

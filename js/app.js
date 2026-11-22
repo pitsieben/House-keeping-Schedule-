@@ -8,7 +8,7 @@ import { initUI, iconize } from './ui.js';
 import { skyFor, refreshWeather } from './sky.js';
 import { propsHtml, skyline } from './props.js';
 import { groundTexture, grassEdge } from './ground.js';
-import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom } from './rooms.js';
+import { ACHIEVEMENTS, ITEMS, ITEM_SOURCE, SLOTS, DIRT, computeAchievements, ownedItems, placedItems, dirtLevel, drawRoom, ROOM_W, ROOM_H, ROOM_WINDOW } from './rooms.js';
 import { store, REPO } from './store.js';
 import { buildICS, FEEDS } from './ics.js';
 import { openJump } from './jump.js';
@@ -614,7 +614,12 @@ function roomsView(scores, now) {
   const dirt = dirtLevel(scores[who].points);
   const d = DIRT[dirt];
   const outfit = outfitOf(who);
-  const img = roomImage({ who, color: r.color, items: placed, dirt, outfit, heroKey: HEROES[who] });
+  const sky = skyFor(now), grey = ['cloudy', 'fog', 'rain', 'snow', 'storm'].includes(sky.weather), night = ['night', 'twilight', 'dusk'].includes(sky.phase);
+  const img = roomImage({ who, color: r.color, items: placed, dirt, outfit, heroKey: HEROES[who], phase: sky.phase, grey });
+  // the window shows the same live sky as the leaderboard, with Barcelona outside
+  const W = ROOM_WINDOW, pc = (v, of) => `${(v / of * 100).toFixed(3)}%`;
+  const view = `<div class="roomsky" style="left:${pc(W.x, ROOM_W)};top:${pc(W.y, ROOM_H)};width:${pc(W.w, ROOM_W)};height:${pc(W.h, ROOM_H)};background-color:${skyStops(sky.phase, grey)[0][1]}">
+    <i class="skyimg" style="background-image:${sky.image}"></i>${sky.tint ? `<i class="skytint" style="opacity:${sky.tint}"></i>` : ''}<img class="cityview" alt="" src="${skyline(night).url}"></div>`;
   const flies = dirt >= 4 ? [12, 30, 55, 78].map((x, i) => `<i class="fly" style="left:${x}%;top:${50 + (i % 2) * 14}%;animation-delay:-${i * 0.7}s"></i>`).join('') : '';
   const month = ymd(now).slice(0, 7);
   const monthName = now.toLocaleDateString('en-GB', { month: 'long' });
@@ -623,7 +628,7 @@ function roomsView(scores, now) {
   const fmtMonth = (m) => parseYmd(`${m}-01`).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
   return `
   <div class="roompick">${ROOMMATES.map((p) => `<button class="btn c-${p.id} ${p.id === who ? 'sel' : 'ghost'}" data-act="room" data-who="${p.id}" style="--c:${p.color}">${hero(p.id, null, { size: 'xs' })}${p.name}</button>`).join('')}</div>
-  <section class="room ${dirt >= 5 ? 'gross' : ''}"><img src="${img}" alt="${r.name}'s room">${flies}</section>
+  <section class="room ${dirt >= 5 ? 'gross' : ''}">${view}<img class="roomimg" src="${img}" alt="${r.name}'s room">${flies}</section>
   <p class="tiny roomstate">${d.emoji} <b>${r.name}'s room: ${d.name}</b>${dirt ? ` · ${scores[who].points} pts — back above 0 cleans it up` : ''}</p>
 
   <h2>🏅 ${monthName} achievements</h2>

@@ -211,3 +211,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/app.js` `weekPlants(now)` (this week's Tuesday plants duty), `plantsPill(now)` under the captain/laundry line on Today all week (yellow open "not watered yet · until Tue midnight · +5", green "watered by X · day time", red "nobody watered" / fake), `notifyPlants()` (once per week when someone else waters them; first run on a phone only seeds `house-quest-plants-notified`); CSS `.plantpill`. Changelog #29.
 - Checked: headless Mon open / Tue + Thu watered / Thu skipped; notification fired on Hritik's phone when Paco watered after load; `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-22 More detailed rooms with a live window view
+- Changed: `js/rooms.js` `drawRoom` base redrawn (still 128×80): striped/patterned wallpaper with moulding and corner shading, baseboard, varied wooden planks with seams/knots, green shutters with slats, framed window + sill + flower pot, shelf with shadow (moved right, item slots shifted), wall lamp, quilted blanket in the roommate's colour, shadows under bed and hero; lighting by `phase`/`grey` (sunbeam by day, warm at golden hour, purple at dusk, dark at night with the lamp glowing); the glass (`ROOM_WINDOW`) is cut out of the canvas. `js/app.js` `roomsView`: `.roomsky` layer behind the canvas with the same live sky images/tint as the leaderboard and the pixel Barcelona skyline (`skyline(night)`). Changelog #30.
+- Checked: headless screenshots of Pit's room at 13:00, 16:50 and 23:00 and Paco's messy room; no page errors; `npm test` passes.
+- Not verified: on a real phone.
