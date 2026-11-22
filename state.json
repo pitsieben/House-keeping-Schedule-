@@ -65,6 +65,10 @@
   "2026-11-22:clean:hrithik": {
    "by": "hrithik",
    "at": 1795352378219
+  },
+  "2026-11-22:bath": {
+   "by": "hrithik",
+   "at": 1795352381948
   }
  },
  "swaps": {
@@ -319,6 +323,10 @@
   "1795352378219-enzn": {
    "t": 1795352378219,
    "text": "Hritik completed weekly cleaning: kitchen (+30)"
+  },
+  "1795352381948-tv9u": {
+   "t": 1795352381948,
+   "text": "Hritik completed weekly cleaning: shared bathroom (pit & hritik) (+30)"
   }
  },
  "admin": {
