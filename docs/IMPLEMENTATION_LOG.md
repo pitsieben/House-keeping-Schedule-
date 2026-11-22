@@ -230,3 +230,7 @@ Template (one entry per completed step, newest last):
 - Changed: `js/props.js` new `sagrada(night)` sprite (64×120 px ≈ 1 px/m, `SAGRADA_M` 110): evangelist towers + Virgin Mary star, central Tower of Jesus with cross, 4+4 bell towers with slits, bands and mosaic finials, nave with gables, buttresses, gothic windows, rose window, portals; night palette with lit windows. Removed from the 320-px skyline sprite. `js/app.js` draws it as its own image anchored at 34 %; skyline no longer semi-transparent (was opacity .72, so clouds showed through). Room window view shows it too. Changelog #32.
 - Checked: headless at night and by day with live-like scores (118/98/78) and zoomed in near 0; room window; `npm test` passes.
 - Not verified: on a real phone.
+
+### 2026-11-22 Sagrada Família: medium detail; simple + hazy in the room window
+- Changed: `js/props.js` `sagrada()` reduced to 48×88 px (no bands/buttresses, fewer slits and windows, small coloured tips); new `sagradaSmall()` (the original 30×44 spire drawing) for the room window. `js/app.js` room view uses `sagradaSmall` + a `.haze` layer (light by day, bluish at night); city/Sagrada in the window slightly faded/desaturated.
+- Checked: headless leaderboard by day/night (118/98/78), room window by day/night; `npm test` passes.
