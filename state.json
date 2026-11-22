@@ -372,17 +372,16 @@
   "1795366507375-17e2": {
    "t": 1795366507375,
    "text": "🚩 Pit flagged Hritik's weekly cleaning: shared bathroom (pit & hritik) — admin will check"
+  },
+  "1795366509496-agzp": {
+   "t": 1795366509496,
+   "text": "🛡 Admin: Hritik's weekly cleaning: shared bathroom (pit & hritik) wasn't really done — 2× penalty. Anyone can steal it for 24 h!"
   }
  },
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {
-  "2026-11-22:bath": {
-   "by": "pit",
-   "at": 1795366507375
-  }
- },
+ "flags": {},
  "messages": {
   "1794928767826-pit": {
    "from": "pit",
@@ -465,7 +464,12 @@
    "confirmedAt": 1795347914104
   }
  },
- "fakes": {},
+ "fakes": {
+  "2026-11-22:bath": {
+   "by": "pit",
+   "at": 1795366509496
+  }
+ },
  "outfits": {
   "pit": "tracksuit"
  }
