@@ -376,6 +376,10 @@
   "1795366509496-agzp": {
    "t": 1795366509496,
    "text": "🛡 Admin: Hritik's weekly cleaning: shared bathroom (pit & hritik) wasn't really done — 2× penalty. Anyone can steal it for 24 h!"
+  },
+  "1795366517650-ifqx": {
+   "t": 1795366517650,
+   "text": "🦹 Pit stole Hritik's weekly cleaning: shared bathroom (pit & hritik) (+30)"
   }
  },
  "admin": {
@@ -467,7 +471,9 @@
  "fakes": {
   "2026-11-22:bath": {
    "by": "pit",
-   "at": 1795366509496
+   "at": 1795366509496,
+   "stolenBy": "pit",
+   "stolenAt": 1795366517650
   }
  },
  "outfits": {
