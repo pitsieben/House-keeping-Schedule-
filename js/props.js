@@ -172,7 +172,7 @@ export function sagrada(night) {
         if (w >= 4 && (y - top) % 10 === 6) r(P.win, cx - 1, y, 1, 2);
       }
     };
-    const tip = (cx, top) => { r(P.red, cx - 1, top - 2, 2, 1); r(P.yel, cx - 1, top - 1, 2, 1); r(P.wht, cx - 1, top - 3, 1, 1); };
+    const tip = (cx, top) => { r(P.s, cx - 1, top - 1, 2, 1); r(P.s, cx - 1, top - 2, 1, 1); };   // plain stone point
     tower(19, 14, 5, 70); tower(29, 15, 5, 70);                              // evangelist towers (behind)
     tower(24, 6, 8, 72);                                                     // Tower of Jesus Christ
     r(P.wht, 23, 0, 2, 6); r(P.wht, 21, 2, 6, 2);                           // cross

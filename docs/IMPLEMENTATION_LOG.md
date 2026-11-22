@@ -234,3 +234,7 @@ Template (one entry per completed step, newest last):
 ### 2026-11-22 Sagrada Família: medium detail; simple + hazy in the room window
 - Changed: `js/props.js` `sagrada()` reduced to 48×88 px (no bands/buttresses, fewer slits and windows, small coloured tips); new `sagradaSmall()` (the original 30×44 spire drawing) for the room window. `js/app.js` room view uses `sagradaSmall` + a `.haze` layer (light by day, bluish at night); city/Sagrada in the window slightly faded/desaturated.
 - Checked: headless leaderboard by day/night (118/98/78), room window by day/night; `npm test` passes.
+
+### 2026-11-22 Sagrada Família: plain tower tips
+- Changed: `js/props.js` `sagrada()` bell-tower tips are plain stone (no red/yellow); changelog #32 text adjusted.
+- Checked: headless by day and night.
