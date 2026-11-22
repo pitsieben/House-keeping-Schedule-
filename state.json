@@ -339,6 +339,10 @@
   "1795365459658-tune": {
    "t": 1795365459658,
    "text": "🦹 Pit stole Hritik's weekly cleaning: shared bathroom (pit & hritik) (+30)"
+  },
+  "1795365569009-3few": {
+   "t": 1795365569009,
+   "text": "🛡 Admin removed Pit's steal"
   }
  },
  "admin": {
@@ -430,9 +434,7 @@
  "fakes": {
   "2026-11-22:bath": {
    "by": "pit",
-   "at": 1795365422483,
-   "stolenBy": "pit",
-   "stolenAt": 1795365459658
+   "at": 1795365422483
   }
  },
  "outfits": {
