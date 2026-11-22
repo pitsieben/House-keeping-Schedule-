@@ -355,12 +355,21 @@
   "1795366473491-n0at": {
    "t": 1795366473491,
    "text": "🛡 Admin removed the take-over on weekly cleaning: shared bathroom (pit & hritik) (Sun 22 Nov)"
+  },
+  "1795366479390-zzjq": {
+   "t": 1795366479390,
+   "text": "🚩 Pit flagged Hritik's weekly cleaning: kitchen — admin will check"
   }
  },
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {},
+ "flags": {
+  "2026-11-22:clean:hrithik": {
+   "by": "pit",
+   "at": 1795366479390
+  }
+ },
  "messages": {
   "1794928767826-pit": {
    "from": "pit",
