@@ -183,6 +183,16 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
 }
 // ---- shared bathroom: Hritik on Sun 22 Nov, then alternating with Pit
 {
+  {
+    const b = S.dutiesForDate(S.parseYmd('2026-11-29')).find((x) => x.id.endsWith(':bath')); // Pit's turn
+    const after = new Date('2026-11-30T12:00'), base = S.computeScores(empty(), after);
+    const st = empty(); st.completions[b.id] = { by: 'pit', at: b.deadline - 3600e3 };
+    check('bathroom done → 0 points (but no penalty)', S.computeScores(st, after).pit.points === base.pit.points + 30);
+    const st2 = empty(); st2.completions[b.id] = { by: 'pit', at: b.deadline + 3600e3 };
+    check('bathroom late → −15 + strike', S.computeScores(st2, after).pit.points === base.pit.points + 15 && S.computeScores(st2, after).pit.recentStrikes === base.pit.recentStrikes);
+    check('bathroom missed → −30', base.pit.points <= -30 && S.statusOf(b, empty(), after) === 'missed');
+    check('weekly cleaning still +30', S.donePoints(S.dutiesForDate(S.parseYmd('2026-11-29')).find((x) => x.id.endsWith(':clean:pit'))) === 30 && S.donePoints(b) === 0);
+  }
   const bath = (day) => S.dutiesForDate(S.parseYmd(day)).find((x) => x.id.endsWith(':bath'));
   check('bathroom: none before 22 Nov', !bath('2026-11-15'));
   check('bathroom: Hritik 22 Nov, Pit 29 Nov, Hritik 6 Dec', bath('2026-11-22')?.assignee === 'hrithik' && bath('2026-11-29')?.assignee === 'pit' && bath('2026-12-06')?.assignee === 'hrithik');
