@@ -1,6 +1,10 @@
 // "What's new" board in the app (Rules tab). Newest first. Add an entry for every change roommates notice.
 // id: unique and increasing; used to show "new" notes since your last visit.
 export const CHANGELOG = [
+  { id: 26, date: '2026-11-22', emoji: '⭐', title: 'New levels',
+    text: 'Levels now double: level 1 at 75 XP, then 150, 300, 600, 1,200… Room collectibles unlock at levels 1–5.' },
+  { id: 25, date: '2026-11-22', emoji: '📏', title: 'Gentler leaderboard scale',
+    text: 'The leaderboard climbs much more slowly now: 100 points ≈ 100 m, 200 ≈ 10 km (airliners), 250 ≈ space, ~430 = the Moon (same downwards).' },
   { id: 24, date: '2026-11-22', emoji: '🚿', title: 'Bathroom: no points, half penalty',
     text: "Pit & Hritik's bathroom isn't shared with Paco, so to keep it fair it gives no points when done, and half the usual penalty if it isn't: −15 (late −7, caught fake −30) plus a strike." },
   { id: 23, date: '2026-11-21', emoji: '🏆', title: 'Perfect Week: stricter',

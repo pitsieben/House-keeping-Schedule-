@@ -233,6 +233,15 @@ const pts = (st, now) => Object.fromEntries(Object.values(S.computeScores(st, ne
   check('jump: Moon target ≈ 384,400 km', Math.abs(J.metersAt(J.MOON_PX) / 1000 - 384400) / 384400 < 0.01, J.metersAt(J.MOON_PX));
 }
 
+// ---- levels: exponential, level 1 at 75 XP, ×2 per level
+{
+  const L = (x) => S.levelFor(x).level;
+  check('levels: 0 below 75 XP, 1 at 75, 2 at 150, 3 at 300, 4 at 600, 5 at 1200', L(74) === 0 && L(75) === 1 && L(149) === 1 && L(150) === 2 && L(300) === 3 && L(600) === 4 && L(1199) === 4 && L(1200) === 5);
+  check('levels: progress bounds (base/next) for 200 XP = 150…300', S.levelFor(200).base === 150 && S.levelFor(200).next === 300);
+  check('levels: never run out (titles beyond the list)', S.levelFor(1e6).level > 10 && typeof S.levelFor(1e6).title === 'string');
+  check('collectibles: rug at level 1 (75 XP), gaming setup at level 5 (1200 XP)', R.ownedItems([], 75).includes('rug') && !R.ownedItems([], 1199).includes('gaming') && R.ownedItems([], 1200).includes('gaming'));
+}
+
 // ---- store sync against a mocked GitHub API
 async function syncRun(mode) {
   for (const k of Object.keys(ls)) delete ls[k];

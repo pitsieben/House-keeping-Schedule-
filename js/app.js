@@ -259,8 +259,11 @@ function hearts(n) { return '❤'.repeat(Math.max(0, 3 - n)) + '🖤'.repeat(Mat
 // ---- The Ascent: points → altitude. 1 point ≈ a log step: meters = 10^(|pts|/20) − 1 (above the ground = up, below = digging down).
 // The camera zooms out to keep all three of you (and the ground) in view.
 const SCENE_H = 560, HERO_W = 84; // sprite is 16×29 px → height = width × 29/16
-const clampPts = (p) => Math.max(-130, Math.min(172, p)); // the Moon and the magma are the ends of the scale
-const meters = (p) => 10 ** (Math.abs(p) / 20) - 1;
+// Points → altitude on a log scale: ×10 every 50 points, so 100 pts ≈ 100 m, 200 ≈ 10 km, 250 ≈ space (100 km), ~430 = the Moon.
+const PTS_PER_DECADE = 50;
+const PTS_MIN = -325, PTS_MAX = 430;   // magma hell … the Moon: the ends of the scale
+const clampPts = (p) => Math.max(PTS_MIN, Math.min(PTS_MAX, p));
+const meters = (p) => 10 ** (Math.abs(p) / PTS_PER_DECADE) - 1;
 function fmtMeters(p) {
   const m = meters(p);
   if (m < 1) return '0 m';
@@ -272,22 +275,22 @@ function fmtMeters(p) {
 // ascending by points; each layer runs from its `from` up to the next layer's `from`
 const LAYERS = [
   { from: -Infinity, name: '🔥 MAGMA HELL', color: '#e0390c', deco: 'flames', tex: 'magma' },
-  { from: -130, name: 'Lower mantle', color: '#b3331a', tex: 'mantle' },
-  { from: -115, name: 'Upper mantle', color: '#8a2c16', tex: 'mantle' },
-  { from: -91, name: "Earth's crust", color: '#5c4a44', tex: 'crust' },
-  { from: -60, name: 'Bedrock', color: '#55575c', tex: 'rock' },
-  { from: -34, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones', tex: 'sand' },
-  { from: -20, name: 'Roots & worms', color: '#5d3f25', tex: 'dirt' },
+  { from: -325, name: 'Lower mantle', color: '#b3331a', tex: 'mantle' },
+  { from: -288, name: 'Upper mantle', color: '#8a2c16', tex: 'mantle' },
+  { from: -228, name: "Earth's crust", color: '#5c4a44', tex: 'crust' },
+  { from: -150, name: 'Bedrock', color: '#55575c', tex: 'rock' },
+  { from: -85, name: '🦴 Dinosaur bones', color: '#8a7150', deco: 'bones', tex: 'sand' },
+  { from: -50, name: 'Roots & worms', color: '#5d3f25', tex: 'dirt' },
   { from: 0, name: 'Ground level', color: '#8fd3f7' },
-  { from: 20, name: 'Birds & rooftops', color: '#7cc4f5' },
-  { from: 40, name: 'Skyscrapers', color: '#62b2ec' },
-  { from: 60, name: 'Clouds', color: '#4b9ae0', deco: 'clouds' },
-  { from: 80, name: 'Airliners', color: '#3169ad' },
-  { from: 94, name: 'Edge of space', color: '#1f3b78' },
-  { from: 100, name: '🚀 SPACE', color: '#0a0e2c', deco: 'stars' },
-  { from: 112, name: 'Orbit (ISS)', color: '#070a20', deco: 'stars' },
-  { from: 150, name: 'Geostationary', color: '#05071a', deco: 'stars' },
-  { from: 172, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
+  { from: 50, name: 'Birds & rooftops', color: '#7cc4f5' },
+  { from: 100, name: 'Skyscrapers', color: '#62b2ec' },
+  { from: 150, name: 'Clouds', color: '#4b9ae0', deco: 'clouds' },
+  { from: 200, name: 'Airliners', color: '#3169ad' },
+  { from: 235, name: 'Edge of space', color: '#1f3b78' },
+  { from: 250, name: '🚀 SPACE', color: '#0a0e2c', deco: 'stars' },
+  { from: 280, name: 'Orbit (ISS)', color: '#070a20', deco: 'stars' },
+  { from: 375, name: 'Geostationary', color: '#05071a', deco: 'stars' },
+  { from: 430, name: '🌙 The Moon', color: '#03040f', deco: 'stars' },
 ];
 
 const fmtDist = (m) => (m < 1000 ? `${m} m` : `${(m / 1000).toLocaleString('en-US')} km`);
@@ -343,21 +346,21 @@ function partyScene(scores) {
     <i class="skyimg" style="background-image:${sky.image}"></i><i class="skytint" style="opacity:${sky.tint}"></i>${sky.fx ? `<i class="fx ${sky.fx}"></i>` : ''}</div>` : '';
 
   const earthY = yOf(0);
-  // ruler: plain tick lines, every 10 points (longer every 20 = each ×10 in meters); no labels, purely illustrative
+  // ruler: plain tick lines every 25 points (longer every 50 = each ×10 in meters)
   const ruler = [];
-  for (let p = Math.ceil(lo / 10) * 10; p <= hi; p += 10) {
+  for (let p = Math.ceil(lo / 25) * 25; p <= hi; p += 25) {
     const y = yOf(p);
-    if (y < 4 || y > SCENE_H - 4 || p < -130 || p > 172) continue;
-    ruler.push(`<i class="tk ${p % 20 === 0 ? 'major' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px"></i>`);
+    if (y < 4 || y > SCENE_H - 4 || p < PTS_MIN || p > PTS_MAX) continue;
+    ruler.push(`<i class="tk ${p % 50 === 0 ? 'major' : ''} ${p === 0 ? 'zero' : ''}" style="top:${y.toFixed(1)}px"></i>`);
   }
   // small distance labels: 50 m, then round 1-2-5 steps (100 m, 200 m, 500 m, 1 km …) (skipped when too close together)
-  const marks = [50];
+  const marks = [10, 20, 50];
   for (let e = 100; e <= 1e9; e *= 10) marks.push(e, 2 * e, 5 * e);
   for (const dir of [1, -1]) {
     let last = yOf(0);
     for (const m of marks) {
-      const p = dir * 20 * Math.log10(m + 1);
-      if (p < -130 || p > 172) break;
+      const p = dir * PTS_PER_DECADE * Math.log10(m + 1);
+      if (p < PTS_MIN || p > PTS_MAX) break;
       const y = yOf(p);
       if (y < 8 || y > SCENE_H - 8) continue;
       if (Math.abs(y - last) < 26) continue;
@@ -634,7 +637,7 @@ function ranksView(scores) {
     <tr><td>🛡 Genuine emergency (excused by a roommate)</td><td>no penalty</td></tr>
     <tr><td>🚨 3 strikes in 30 days</td><td class="minus">household review</td></tr>
   </tbody></table>
-  <p class="tiny muted">Levels: ${LEVELS.map((l, i) => `${i + 1} ${l.title} (${l.xp} XP)`).join(' · ')}. Penalties start ${fmtDay(parseYmd(CONFIG.penaltyStart))}.</p>`;
+  <p class="tiny muted">Levels (each needs twice the XP of the one before): ${LEVELS.slice(0, 7).map((l, i) => `${i} ${l.title} (${l.xp} XP)`).join(' · ')} … Penalties start ${fmtDay(parseYmd(CONFIG.penaltyStart))}.</p>`;
 }
 
 function feedUrl(file, scheme = 'https') {
