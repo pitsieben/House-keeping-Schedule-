@@ -191,3 +191,8 @@ Template (one entry per completed step, newest last):
 - Changed: `js/schedule.js` `missPoints(duty)` (halved for `halfPenalty` duties; bathroom has it): missed −15, late −7, caught fake −30, strike unchanged; `computeScores`, `js/rooms.js` and all penalty texts in `js/app.js` use it. Changelog #24 and TUTORIAL updated.
 - Checked: `npm test` ALL CHECKS PASSED (76); live `state.json` (main → this PR): Hritik 48 → 78 (22 Nov bathroom fake −60 → −30), Pit 125 → 95 (steal gives 0), Paco 88 unchanged.
 - Not verified: on a real phone.
+
+### 2026-11-22 Gentler leaderboard scale, exponential levels
+- Changed: `js/app.js` scale `PTS_PER_DECADE = 50` (was 20): meters = 10^(|pts|/50) − 1 → 100 pts ≈ 100 m, 200 ≈ 10 km, 250 ≈ 100 km (space), ~430 = Moon; `LAYERS` thresholds ×2.5 (same meters), clamp `PTS_MIN/MAX` −325…430, ruler ticks every 25 pts (major 50), labels from 10 m. `js/schedule.js` levels: `levelXp(lv) = 75 · 2^(lv−1)` (level 0 below 75 XP), endless titles (`levelTitle`), `levelFor` returns level/base/next; `js/rooms.js` level collectibles at levels 1–5 (75…1,200 XP). Rules text, changelog #25–26.
+- Checked: `npm test` ALL CHECKS PASSED (80, incl. 4 level checks); headless with live data: Paco +88 → 57 m, Pit +95 → 78 m, Hritik +78 → 35 m (were in space), all LV 1; screenshot of the scene.
+- Not verified: on a real phone.

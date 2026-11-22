@@ -227,19 +227,17 @@ export function statusOf(duty, state, now = new Date()) {
   return 'open';
 }
 
-export const LEVELS = [
-  { xp: 0, title: 'Dust Bunny' },
-  { xp: 40, title: 'Sponge Squire' },
-  { xp: 100, title: 'Mop Knight' },
-  { xp: 200, title: 'Broom Wizard' },
-  { xp: 350, title: 'House Captain' },
-  { xp: 550, title: 'Legendary Janitor' },
-];
+// Levels grow exponentially: level 1 at 75 XP, then ×2 each level (150, 300, 600, 1,200, …). XP = points earned (penalties don't take XP away).
+export const LEVEL_BASE_XP = 75, LEVEL_GROWTH = 2;
+const LEVEL_TITLES = ['Dust Bunny', 'Sponge Squire', 'Mop Knight', 'Broom Wizard', 'House Captain', 'Legendary Janitor', 'Grand Tidy Master', 'Mythic Maid', 'Cosmic Custodian'];
+/** XP needed to reach a level (level 0 = 0 XP). */
+export const levelXp = (lv) => (lv <= 0 ? 0 : Math.round(LEVEL_BASE_XP * LEVEL_GROWTH ** (lv - 1)));
+export const levelTitle = (lv) => LEVEL_TITLES[lv] || `${LEVEL_TITLES[LEVEL_TITLES.length - 1]} ${lv - LEVEL_TITLES.length + 2}`;
+export const LEVELS = LEVEL_TITLES.map((title, lv) => ({ xp: levelXp(lv), title })); // first levels, for the rules text
 export function levelFor(xp) {
   let lv = 0;
-  LEVELS.forEach((l, i) => { if (xp >= l.xp) lv = i; });
-  const next = LEVELS[lv + 1];
-  return { level: lv + 1, title: LEVELS[lv].title, next: next ? next.xp : null, base: LEVELS[lv].xp };
+  while (xp >= levelXp(lv + 1)) lv++;
+  return { level: lv, title: levelTitle(lv), next: levelXp(lv + 1), base: levelXp(lv) };
 }
 
 const mondayOf = (d) => addDays(startOfDay(d), -((d.getDay() + 6) % 7));

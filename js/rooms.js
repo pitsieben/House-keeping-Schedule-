@@ -19,7 +19,7 @@ export const ACHIEVEMENTS = {
   green: { emoji: '🪴', name: 'Green Thumb', desc: 'Water the plants 3 times in one month', item: 'cactus' },
 };
 // Collectibles you get from levelling up (LV 2…6)
-export const LEVEL_ITEMS = { 2: 'rug', 3: 'poster', 4: 'guitar', 5: 'fishtank', 6: 'gaming' };
+export const LEVEL_ITEMS = { 1: 'rug', 2: 'poster', 3: 'guitar', 4: 'fishtank', 5: 'gaming' }; // levels: 75 / 150 / 300 / 600 / 1,200 XP
 
 const monthKey = (d) => ymd(d).slice(0, 7);
 const monthStart = (key) => parseYmd(`${key}-01`);
