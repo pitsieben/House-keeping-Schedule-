@@ -347,6 +347,10 @@
   "1795365597295-8nd5": {
    "t": 1795365597295,
    "text": "🛡 Admin un-ticked Hritik's weekly cleaning: shared bathroom (pit & hritik)"
+  },
+  "1795365605644-xxjy": {
+   "t": 1795365605644,
+   "text": "✋ Pit did Hritik's weekly cleaning: shared bathroom (pit & hritik) (Sun 22 Nov)"
   }
  },
  "admin": {
@@ -433,6 +437,12 @@
    "by": "pit",
    "at": 1795347900395,
    "confirmedAt": 1795347914104
+  },
+  "2026-11-22:bath": {
+   "status": "claimed",
+   "from": "hrithik",
+   "by": "pit",
+   "at": 1795365605644
   }
  },
  "fakes": {},
