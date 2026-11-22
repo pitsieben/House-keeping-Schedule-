@@ -65,10 +65,6 @@
   "2026-11-22:clean:hrithik": {
    "by": "hrithik",
    "at": 1795352378219
-  },
-  "2026-11-22:bath": {
-   "by": "hrithik",
-   "at": 1795352381948
   }
  },
  "swaps": {
@@ -347,6 +343,10 @@
   "1795365569655-fvit": {
    "t": 1795365569655,
    "text": "🛡 Admin cleared the fake on Hritik's weekly cleaning: shared bathroom (pit & hritik)"
+  },
+  "1795365597295-8nd5": {
+   "t": 1795365597295,
+   "text": "🛡 Admin un-ticked Hritik's weekly cleaning: shared bathroom (pit & hritik)"
   }
  },
  "admin": {
