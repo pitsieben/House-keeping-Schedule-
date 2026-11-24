@@ -87,6 +87,10 @@
   "2026-11-24:AM": {
    "by": "paco",
    "at": 1795548243125
+  },
+  "2026-11-23:AM": {
+   "by": "paco",
+   "at": 1795548273389
   }
  },
  "swaps": {
@@ -430,6 +434,10 @@
   },
   "1795548243125-81o9": {
    "t": 1795548243125,
+   "text": "Paco completed morning reset (late)"
+  },
+  "1795548273389-w8tn": {
+   "t": 1795548273389,
    "text": "Paco completed morning reset (late)"
   }
  },
