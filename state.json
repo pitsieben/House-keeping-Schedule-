@@ -104,8 +104,9 @@
   "2026-11-24:PM": {
    "from": "paco",
    "to": "pit",
-   "status": "pending",
-   "at": 1795548257343
+   "status": "accepted",
+   "at": 1795548257343,
+   "acceptedAt": 1795548275598
   }
  },
  "excused": {
@@ -439,6 +440,10 @@
   "1795548273389-w8tn": {
    "t": 1795548273389,
    "text": "Paco completed morning reset (late)"
+  },
+  "1795548275598-si93": {
+   "t": 1795548275598,
+   "text": "Pit accepted Paco's swap: evening reset on Tue 24 Nov"
   }
  },
  "admin": {
