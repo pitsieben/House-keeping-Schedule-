@@ -83,6 +83,10 @@
   "2026-11-24:plants": {
    "by": "pit",
    "at": 1795390119991
+  },
+  "2026-11-24:AM": {
+   "by": "paco",
+   "at": 1795548243125
   }
  },
  "swaps": {
@@ -417,6 +421,10 @@
   "1795548230072-mnau": {
    "t": 1795548230072,
    "text": "✓ Paco confirmed: Pit did the evening reset (+10)"
+  },
+  "1795548243125-81o9": {
+   "t": 1795548243125,
+   "text": "Paco completed morning reset (late)"
   }
  },
  "admin": {
