@@ -96,6 +96,12 @@
    "status": "accepted",
    "at": 1795251838404,
    "acceptedAt": 1795254570202
+  },
+  "2026-11-24:PM": {
+   "from": "paco",
+   "to": "pit",
+   "status": "pending",
+   "at": 1795548257343
   }
  },
  "excused": {
