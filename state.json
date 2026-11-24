@@ -91,6 +91,10 @@
   "2026-11-23:AM": {
    "by": "paco",
    "at": 1795548273389
+  },
+  "2026-11-24:PM": {
+   "by": "pit",
+   "at": 1795555187666
   }
  },
  "swaps": {
@@ -444,6 +448,10 @@
   "1795548275598-si93": {
    "t": 1795548275598,
    "text": "Pit accepted Paco's swap: evening reset on Tue 24 Nov"
+  },
+  "1795555187666-r14r": {
+   "t": 1795555187666,
+   "text": "Pit completed evening reset (+10)"
   }
  },
  "admin": {
