@@ -460,6 +460,10 @@
   "1795595228098-9mah": {
    "t": 1795595228098,
    "text": "Pit completed morning reset (+10)"
+  },
+  "1795640482673-m7i8": {
+   "t": 1795640482673,
+   "text": "✋ Hritik did Pit's evening reset (Wed 25 Nov)"
   }
  },
  "admin": {
@@ -559,6 +563,12 @@
    "by": "pit",
    "at": 1795507173887,
    "confirmedAt": 1795548230072
+  },
+  "2026-11-25:PM": {
+   "status": "claimed",
+   "from": "pit",
+   "by": "hrithik",
+   "at": 1795640482673
   }
  },
  "fakes": {
