@@ -480,6 +480,10 @@
   "1795730579186-db60": {
    "t": 1795730579186,
    "text": "Hritik completed evening reset (+10)"
+  },
+  "1795768900435-rolh": {
+   "t": 1795768900435,
+   "text": "✋ Paco did Hritik's morning reset (Fri 27 Nov)"
   }
  },
  "admin": {
@@ -585,6 +589,12 @@
    "from": "pit",
    "by": "hrithik",
    "at": 1795640482673
+  },
+  "2026-11-27:AM": {
+   "status": "claimed",
+   "from": "hrithik",
+   "by": "paco",
+   "at": 1795768900435
   }
  },
  "fakes": {
