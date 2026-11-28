@@ -500,6 +500,10 @@
   "1795869026931-k8o3": {
    "t": 1795869026931,
    "text": "Hritik completed evening reset (late)"
+  },
+  "1795869045433-c231": {
+   "t": 1795869045433,
+   "text": "✓ Hritik confirmed: Paco did the morning reset (+10)"
   }
  },
  "admin": {
@@ -607,10 +611,11 @@
    "at": 1795640482673
   },
   "2026-11-27:AM": {
-   "status": "claimed",
+   "status": "confirmed",
    "from": "hrithik",
    "by": "paco",
-   "at": 1795768900435
+   "at": 1795768900435,
+   "confirmedAt": 1795869045433
   }
  },
  "fakes": {
