@@ -504,12 +504,21 @@
   "1795869045433-c231": {
    "t": 1795869045433,
    "text": "✓ Hritik confirmed: Paco did the morning reset (+10)"
+  },
+  "1795869086595-vp7j": {
+   "t": 1795869086595,
+   "text": "🚩 Hritik flagged Pit's morning reset — admin will check"
   }
  },
  "admin": {
   "pinHash": "2c8bca91c124d8f286dd1d1e5d3d55331e5731ff95f8d56e8fc9abad7c5b251f"
  },
- "flags": {},
+ "flags": {
+  "2026-11-28:AM": {
+   "by": "hrithik",
+   "at": 1795869086595
+  }
+ },
  "messages": {
   "1794928767826-pit": {
    "from": "pit",
